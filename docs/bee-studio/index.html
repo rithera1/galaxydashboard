@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐝 Bee Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --yellow:#FFD93D; --orange:#FF6B35; --green:#6BCB77;
+    --red:#FF4D6D; --blue:#4D96FF; --purple:#C77DFF;
+    --teal:#2EC4B6; --bg:#FFF8E7; --card:#ffffff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:'Nunito',sans-serif; background:var(--bg);
+    min-height:100vh; display:flex; flex-direction:column; align-items:center;
+    padding:20px 16px 48px;
+    background-image:radial-gradient(circle at 15% 15%,#ffe08a44 0%,transparent 50%),
+                     radial-gradient(circle at 85% 85%,#c7f4c244 0%,transparent 50%);
+  }
+
+  /* SCREENS */
+  .screen{display:none;flex-direction:column;align-items:center;width:100%;animation:fadeIn .25s ease;}
+  .screen.active{display:flex;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+  /* HEADER */
+  .app-header{position:relative;width:100%;max-width:640px;display:flex;align-items:center;justify-content:center;margin-bottom:4px;}
+  h1{font-family:'Fredoka One',cursive;font-size:clamp(1.8rem,5vw,3rem);color:var(--orange);text-shadow:3px 3px 0 #ffd93d;letter-spacing:1px;text-align:center;}
+  .subtitle{color:#aaa;font-size:.92rem;margin-bottom:20px;font-weight:700;text-align:center;}
+  .hdr-btn{position:absolute;background:none;border:2px solid #e0d0b0;border-radius:99px;font-family:'Nunito',sans-serif;font-weight:800;cursor:pointer;transition:all .15s;padding:6px 15px;font-size:.88rem;color:#bba;}
+  .hdr-btn:hover{background:#fff3d6;color:var(--orange);border-color:var(--yellow);}
+  .hdr-btn.left{left:0;}
+  .hdr-btn.right{right:0;font-size:1.1rem;padding:5px 12px;}
+
+  /* HOME */
+  #homeScreen{max-width:560px;}
+  .bee-hero{font-size:5rem;margin:6px 0 16px;animation:float 3s ease-in-out infinite;user-select:none;}
+  @keyframes float{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-14px) rotate(3deg)}}
+  .mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;width:100%;}
+  .mode-card{background:white;border-radius:20px;padding:26px 18px;display:flex;flex-direction:column;align-items:center;gap:10px;cursor:pointer;border:3px solid transparent;box-shadow:0 6px 20px rgba(0,0,0,.08);transition:transform .18s,box-shadow .18s;text-align:center;}
+  .mode-card:hover{transform:translateY(-4px) scale(1.02);box-shadow:0 12px 32px rgba(0,0,0,.12);}
+  .mode-card.spelling{border-color:var(--orange);}
+  .mode-card.matching{border-color:var(--teal);}
+  .mode-icon{font-size:2.8rem;}
+  .mode-title{font-family:'Fredoka One',cursive;font-size:1.25rem;color:#333;}
+  .mode-desc{font-size:.82rem;color:#999;font-weight:700;line-height:1.4;}
+
+  /* LIST PICKER */
+  #listPickerScreen{max-width:560px;}
+  .list-grid{display:flex;flex-direction:column;gap:10px;width:100%;}
+  .list-card{background:white;border-radius:16px;padding:18px 20px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;border:3px solid #f0e0d0;box-shadow:0 4px 14px rgba(0,0,0,.07);transition:all .18s;}
+  .list-card:hover:not(.played){border-color:var(--orange);transform:translateX(4px);box-shadow:0 6px 20px rgba(255,107,53,.15);}
+  .list-card.played{opacity:.55;cursor:default;}
+  .list-card.match-type{border-color:#d0f0ee;}
+  .list-card.match-type:hover:not(.played){border-color:var(--teal);box-shadow:0 6px 20px rgba(46,196,182,.15);}
+  .list-card-name{font-family:'Fredoka One',cursive;font-size:1.1rem;color:#333;}
+  .list-card-meta{font-size:.78rem;font-weight:700;color:#bbb;}
+  .list-card-badge{padding:5px 12px;border-radius:99px;font-size:.78rem;font-weight:800;color:white;}
+  .badge-spell{background:var(--orange);}
+  .badge-match{background:var(--teal);}
+  .badge-played{background:#ccc;}
+  .empty-lists{background:#fff8ee;border:2px dashed #ffd093;border-radius:16px;padding:30px;text-align:center;width:100%;}
+  .empty-lists p{font-weight:700;color:#cc8844;font-size:.95rem;line-height:1.7;}
+
+  /* PROGRESS */
+  .progress-wrap{width:100%;max-width:640px;background:#e0e0e0;border-radius:99px;height:12px;margin-bottom:5px;overflow:hidden;}
+  .progress-bar{height:100%;border-radius:99px;transition:width .4s ease;}
+  .spell-bar{background:linear-gradient(90deg,var(--yellow),var(--orange));}
+  .match-bar{background:linear-gradient(90deg,#2EC4B6,#4D96FF);}
+  .progress-label{font-size:.82rem;color:#aaa;font-weight:800;margin-bottom:14px;text-align:right;width:100%;max-width:640px;}
+
+  /* CARD */
+  .card{background:var(--card);border-radius:24px;padding:32px 28px;width:100%;max-width:560px;box-shadow:0 8px 32px rgba(0,0,0,.10);display:flex;flex-direction:column;align-items:center;gap:15px;position:relative;border:3px solid #f0e6cc;}
+  .word-number{position:absolute;top:13px;left:17px;font-size:.78rem;font-weight:800;color:#ccc;}
+  .bee-icon{font-size:3rem;animation:float 2.5s ease-in-out infinite;user-select:none;}
+  .speak-btn{background:linear-gradient(135deg,var(--yellow),var(--orange));color:white;border:none;border-radius:99px;padding:12px 26px;font-size:1.05rem;font-family:'Fredoka One',cursive;cursor:pointer;box-shadow:0 4px 16px rgba(255,107,53,.28);transition:transform .15s;display:flex;align-items:center;gap:8px;}
+  .speak-btn:hover{transform:scale(1.05);}
+  .speak-btn.speaking{background:linear-gradient(135deg,var(--purple),var(--blue));animation:pulse .6s ease-in-out infinite alternate;}
+  @keyframes pulse{from{box-shadow:0 4px 16px rgba(77,150,255,.3)}to{box-shadow:0 4px 28px rgba(77,150,255,.65)}}
+  .spell-input{width:100%;border:3px solid #e0e0e0;border-radius:14px;padding:12px 15px;font-size:1.25rem;font-family:'Nunito',sans-serif;font-weight:700;text-align:center;outline:none;transition:border-color .2s;color:#333;letter-spacing:2px;}
+  .spell-input:focus{border-color:var(--blue);}
+  .spell-input.correct{border-color:var(--green);background:#f0fff3;}
+  .spell-input.incorrect{border-color:var(--red);background:#fff0f3;}
+  .submit-btn{background:linear-gradient(135deg,var(--blue),var(--purple));color:white;border:none;border-radius:99px;padding:11px 30px;font-size:.97rem;font-family:'Fredoka One',cursive;cursor:pointer;box-shadow:0 4px 16px rgba(77,150,255,.22);transition:transform .15s;}
+  .submit-btn:hover{transform:scale(1.05);}
+  .submit-btn:disabled{opacity:.45;cursor:not-allowed;transform:none;}
+  .feedback{font-size:1.1rem;font-weight:800;text-align:center;min-height:28px;}
+  .feedback.correct{color:var(--green);}
+  .feedback.incorrect{color:var(--red);}
+  .nav-btns{display:flex;gap:12px;}
+  .nav-btn{background:#f5f5f5;border:2px solid #e0e0e0;border-radius:99px;padding:8px 19px;font-size:.88rem;font-family:'Nunito',sans-serif;font-weight:800;cursor:pointer;color:#666;transition:background .15s;}
+  .nav-btn:hover{background:#ffe;border-color:var(--yellow);color:var(--orange);}
+  .nav-btn:disabled{opacity:.35;cursor:not-allowed;}
+
+  /* MATCH */
+  #matchScreen{max-width:700px;}
+  .match-instructions{background:white;border-radius:14px;padding:10px 16px;font-size:.85rem;font-weight:700;color:#999;margin-bottom:10px;border:2px solid #e8f4f8;text-align:center;width:100%;}
+  .match-container{display:grid;grid-template-columns:1fr 1fr;gap:11px;width:100%;}
+  .match-col{display:flex;flex-direction:column;gap:8px;}
+  .match-col-label{font-family:'Fredoka One',cursive;font-size:.92rem;text-align:center;padding:6px;border-radius:10px;color:white;margin-bottom:2px;}
+  .words-label{background:var(--orange);}
+  .defs-label{background:var(--teal);}
+  .match-chip{background:white;border:3px solid #e0e0e0;border-radius:13px;padding:12px 11px;font-family:'Nunito',sans-serif;font-weight:700;font-size:.88rem;cursor:pointer;transition:all .18s;text-align:center;line-height:1.4;min-height:52px;display:flex;align-items:center;justify-content:center;position:relative;user-select:none;}
+  .match-chip:hover:not(.locked){border-color:var(--blue);box-shadow:0 4px 14px rgba(77,150,255,.18);transform:translateY(-2px);}
+  .match-chip.selected-word{border-color:var(--orange);background:#fff8ee;box-shadow:0 4px 14px rgba(255,107,53,.2);transform:translateY(-2px);}
+  .match-chip.selected-def{border-color:var(--teal);background:#f0fffe;box-shadow:0 4px 14px rgba(46,196,182,.2);transform:translateY(-2px);}
+  .match-chip.matched-correct{border-color:var(--green);background:#f0fff3;cursor:default;color:#2a8040;}
+  .match-chip.matched-wrong{border-color:var(--red);background:#fff0f3;animation:shake .4s ease;}
+  .match-chip.locked{cursor:default;}
+  @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+  .match-badge{position:absolute;top:-7px;right:-7px;width:21px;height:21px;border-radius:50%;font-size:.68rem;display:flex;align-items:center;justify-content:center;font-weight:800;border:2px solid white;background:var(--green);color:white;}
+
+  /* RESULTS */
+  .results{background:var(--card);border-radius:24px;padding:32px 24px;width:100%;max-width:560px;box-shadow:0 8px 32px rgba(0,0,0,.10);display:flex;flex-direction:column;align-items:center;gap:15px;border:3px solid #f0e6cc;}
+  .results h2{font-family:'Fredoka One',cursive;font-size:1.65rem;color:var(--orange);text-align:center;}
+  .score-ring{width:106px;height:106px;border-radius:50%;background:conic-gradient(var(--green) var(--pct),#e0e0e0 0);display:flex;align-items:center;justify-content:center;position:relative;}
+  .score-ring::before{content:'';position:absolute;width:78px;height:78px;background:white;border-radius:50%;}
+  .score-text{position:relative;z-index:1;font-family:'Fredoka One',cursive;font-size:1.45rem;color:var(--orange);}
+  .results-list{width:100%;display:flex;flex-direction:column;gap:6px;max-height:240px;overflow-y:auto;}
+  .result-item{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-radius:10px;font-weight:700;font-size:.88rem;}
+  .result-item.correct{background:#f0fff3;}
+  .result-item.incorrect{background:#fff0f3;}
+  .result-answer{font-size:.76rem;color:#aaa;font-weight:600;}
+  .btn-row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;}
+  .restart-btn{background:linear-gradient(135deg,var(--yellow),var(--orange));color:white;border:none;border-radius:99px;padding:11px 30px;font-size:.97rem;font-family:'Fredoka One',cursive;cursor:pointer;box-shadow:0 4px 16px rgba(255,107,53,.28);transition:transform .15s;}
+  .restart-btn:hover{transform:scale(1.05);}
+  .home-btn{background:#f5f5f5;border:2px solid #e0e0e0;border-radius:99px;padding:10px 22px;font-size:.88rem;font-family:'Nunito',sans-serif;font-weight:800;cursor:pointer;color:#666;transition:background .15s;}
+  .home-btn:hover{background:#ffe;border-color:var(--yellow);color:var(--orange);}
+
+  /* PIN MODAL */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px;animation:fadeIn .2s ease;}
+  .modal-overlay.hidden{display:none;}
+  .modal{background:white;border-radius:24px;padding:36px 32px;max-width:380px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.2);display:flex;flex-direction:column;align-items:center;gap:18px;border:3px solid #f0e6cc;}
+  .modal h2{font-family:'Fredoka One',cursive;font-size:1.6rem;color:var(--orange);}
+  .modal p{font-size:.88rem;color:#aaa;font-weight:700;text-align:center;}
+  .pin-dots{display:flex;gap:12px;}
+  .pin-dot{width:18px;height:18px;border-radius:50%;border:2px solid #ddd;background:white;transition:all .15s;}
+  .pin-dot.filled{background:var(--orange);border-color:var(--orange);}
+  .pin-dot.error{background:var(--red);border-color:var(--red);animation:shake .4s ease;}
+  .pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;}
+  .pin-key{background:#f8f5f0;border:2px solid #ede8df;border-radius:14px;padding:16px 10px;font-family:'Fredoka One',cursive;font-size:1.3rem;color:#444;cursor:pointer;text-align:center;transition:all .15s;user-select:none;}
+  .pin-key:hover{background:#fff3e0;border-color:var(--yellow);color:var(--orange);}
+  .pin-key:active{transform:scale(.93);}
+  .pin-key.del{font-size:1rem;color:#aaa;}
+  .pin-key.cancel{font-size:.85rem;color:#bbb;}
+  .pin-error{font-size:.85rem;font-weight:800;color:var(--red);min-height:20px;}
+
+  /* ADMIN */
+  #adminScreen{max-width:680px;}
+  .admin-tabs{display:flex;gap:8px;width:100%;max-width:680px;margin-bottom:16px;}
+  .admin-tab{flex:1;padding:10px;border-radius:12px;border:2px solid #e0d8cc;background:white;font-family:'Fredoka One',cursive;font-size:.95rem;color:#bbb;cursor:pointer;text-align:center;transition:all .15s;}
+  .admin-tab.active{background:var(--orange);color:white;border-color:var(--orange);}
+  .admin-tab:hover:not(.active){border-color:var(--yellow);color:var(--orange);}
+  .admin-panel{display:none;flex-direction:column;gap:12px;width:100%;max-width:680px;}
+  .admin-panel.active{display:flex;}
+  .saved-list-item{background:white;border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px;border:2px solid #f0e6cc;box-shadow:0 3px 10px rgba(0,0,0,.06);}
+  .sli-name{font-family:'Fredoka One',cursive;font-size:1rem;color:#333;flex:1;}
+  .sli-meta{font-size:.76rem;color:#bbb;font-weight:700;}
+  .sli-btns{display:flex;gap:7px;}
+  .sli-btn{border:none;border-radius:8px;padding:6px 11px;font-size:.78rem;font-family:'Nunito',sans-serif;font-weight:800;cursor:pointer;transition:all .15s;}
+  .sli-btn.toggle-on{background:#e8fff0;color:var(--green);}
+  .sli-btn.toggle-on:hover{background:var(--green);color:white;}
+  .sli-btn.toggle-off{background:#fff0f0;color:var(--red);}
+  .sli-btn.toggle-off:hover{background:var(--red);color:white;}
+  .sli-btn.del-btn{background:#fafafa;color:#ccc;}
+  .sli-btn.del-btn:hover{background:var(--red);color:white;}
+  .add-form{background:white;border-radius:18px;padding:22px 20px;border:2px solid #f0e6cc;box-shadow:0 4px 14px rgba(0,0,0,.07);display:flex;flex-direction:column;gap:13px;}
+  .add-form h3{font-family:'Fredoka One',cursive;font-size:1.1rem;color:#555;}
+  .form-field{display:flex;flex-direction:column;gap:5px;}
+  .form-field label{font-size:.78rem;font-weight:800;color:#aaa;text-transform:uppercase;letter-spacing:.5px;}
+  .form-field input{border:2px solid #e8e0d5;border-radius:10px;padding:9px 12px;font-family:'Nunito',sans-serif;font-size:.92rem;font-weight:700;color:#444;outline:none;transition:border-color .2s;}
+  .form-field input:focus{border-color:var(--blue);}
+  .format-hint{background:#f9f5ec;border-radius:10px;padding:10px 13px;font-size:.78rem;color:#aaa;font-weight:600;line-height:1.75;border-left:3px solid var(--yellow);}
+  .format-hint code{background:#efe8d4;padding:1px 5px;border-radius:4px;font-size:.75rem;color:#888;}
+  textarea{width:100%;border:2px solid #e8e0d5;border-radius:12px;padding:11px 13px;font-family:'Nunito',sans-serif;font-size:.88rem;font-weight:600;color:#444;resize:vertical;outline:none;transition:border-color .2s;min-height:100px;}
+  textarea:focus{border-color:var(--blue);}
+  .upload-btn{display:inline-block;background:#f5f5f5;border:2px dashed #d0c8b8;border-radius:10px;padding:9px 16px;font-size:.82rem;font-weight:800;color:#bbb;cursor:pointer;transition:all .18s;}
+  .upload-btn:hover{border-color:var(--orange);color:var(--orange);background:#fff8ee;}
+  .upload-btn input{display:none;}
+  .file-lbl{font-size:.78rem;color:#aaa;font-weight:700;}
+  .add-list-btn{background:linear-gradient(135deg,var(--teal),var(--blue));color:white;border:none;border-radius:99px;padding:11px 28px;font-size:.97rem;font-family:'Fredoka One',cursive;cursor:pointer;transition:transform .15s;align-self:flex-start;}
+  .add-list-btn:hover{transform:scale(1.04);}
+  .pin-change-form{background:white;border-radius:18px;padding:22px 20px;border:2px solid #f0e6cc;box-shadow:0 4px 14px rgba(0,0,0,.07);display:flex;flex-direction:column;gap:13px;max-width:340px;}
+  .pin-change-form h3{font-family:'Fredoka One',cursive;font-size:1.1rem;color:#555;}
+  .pin-input-wrap{display:flex;gap:10px;align-items:center;}
+  .pin-input-wrap input{border:2px solid #e8e0d5;border-radius:10px;padding:9px 12px;font-family:'Nunito',sans-serif;font-size:1rem;font-weight:700;color:#444;outline:none;width:120px;letter-spacing:4px;text-align:center;}
+  .change-pin-btn{background:linear-gradient(135deg,var(--purple),var(--blue));color:white;border:none;border-radius:99px;padding:10px 22px;font-size:.9rem;font-family:'Fredoka One',cursive;cursor:pointer;transition:transform .15s;}
+  .change-pin-btn:hover{transform:scale(1.04);}
+
+  /* TOAST */
+  .status-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);color:white;border-radius:99px;padding:10px 24px;font-size:.88rem;font-weight:800;z-index:200;animation:slideUp .3s ease;white-space:nowrap;pointer-events:none;}
+  .status-toast.hidden{display:none;}
+  .status-toast.ok{background:var(--green);}
+  .status-toast.err{background:var(--red);}
+  @keyframes slideUp{from{opacity:0;transform:translateX(-50%) translateY(12px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+  /* LOADING */
+  .loading-overlay{position:fixed;inset:0;background:rgba(255,248,231,.9);z-index:50;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;}
+  .loading-overlay.hidden{display:none;}
+  .spinner{width:48px;height:48px;border:4px solid #f0e0c0;border-top-color:var(--orange);border-radius:50%;animation:spin .8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .loading-txt{font-family:'Fredoka One',cursive;font-size:1.1rem;color:var(--orange);}
+
+  .hidden{display:none!important;}
+  @keyframes bounce{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+  .bounce{animation:bounce .35s ease;}
+  @media(max-width:500px){
+    .mode-grid{grid-template-columns:1fr;}
+    .match-container{grid-template-columns:1fr;}
+    .card,.results,.add-form{padding:20px 14px;}
+    .admin-tabs{flex-direction:column;}
+  }
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-txt">Loading Bee Studio…</div>
+</div>
+
+<!-- TOAST -->
+<div class="status-toast hidden" id="toast"></div>
+
+<!-- PIN MODAL -->
+<div class="modal-overlay hidden" id="pinModal">
+  <div class="modal">
+    <h2>🔐 Admin Access</h2>
+    <p>Enter your PIN to continue</p>
+    <div class="pin-dots" id="pinDots">
+      <div class="pin-dot" id="dot0"></div><div class="pin-dot" id="dot1"></div>
+      <div class="pin-dot" id="dot2"></div><div class="pin-dot" id="dot3"></div>
+    </div>
+    <div class="pin-error" id="pinError"></div>
+    <div class="pin-pad">
+      <div class="pin-key" onclick="pinKey('1')">1</div><div class="pin-key" onclick="pinKey('2')">2</div><div class="pin-key" onclick="pinKey('3')">3</div>
+      <div class="pin-key" onclick="pinKey('4')">4</div><div class="pin-key" onclick="pinKey('5')">5</div><div class="pin-key" onclick="pinKey('6')">6</div>
+      <div class="pin-key" onclick="pinKey('7')">7</div><div class="pin-key" onclick="pinKey('8')">8</div><div class="pin-key" onclick="pinKey('9')">9</div>
+      <div class="pin-key cancel" onclick="closePinModal()">✕ Cancel</div>
+      <div class="pin-key" onclick="pinKey('0')">0</div>
+      <div class="pin-key del" onclick="pinDel()">⌫</div>
+    </div>
+  </div>
+</div>
+
+<!-- HOME -->
+<div id="homeScreen" class="screen active">
+  <div class="app-header">
+    <h1>🐝 Bee Studio</h1>
+    <button class="hdr-btn right" onclick="openPinModal()" title="Admin">⚙️</button>
+  </div>
+  <p class="subtitle">Pick your activity!</p>
+  <div class="bee-hero">🐝</div>
+  <div class="mode-grid">
+    <div class="mode-card spelling" onclick="goListPicker('spell')">
+      <div class="mode-icon">🔊</div>
+      <div class="mode-title">Spelling Bee</div>
+      <div class="mode-desc">Listen to the word and spell it out</div>
+    </div>
+    <div class="mode-card matching" onclick="goListPicker('match')">
+      <div class="mode-icon">🔗</div>
+      <div class="mode-title">Word Match</div>
+      <div class="mode-desc">Match each word to its definition</div>
+    </div>
+  </div>
+</div>
+
+<!-- LIST PICKER -->
+<div id="listPickerScreen" class="screen">
+  <div class="app-header">
+    <button class="hdr-btn left" onclick="goHome()">← Home</button>
+    <h1 id="listPickerTitle">Choose a List</h1>
+  </div>
+  <p class="subtitle" id="listPickerSub">Pick which word list to practice</p>
+  <div class="list-grid" id="listGrid"></div>
+</div>
+
+<!-- SPELLING -->
+<div id="spellScreen" class="screen">
+  <div class="app-header">
+    <button class="hdr-btn left" onclick="goListPicker('spell')">← Lists</button>
+    <h1>🐝 Spelling Bee</h1>
+  </div>
+  <p class="subtitle" id="spellListLabel"></p>
+  <div class="progress-wrap"><div class="progress-bar spell-bar" id="spellProgressBar" style="width:0%"></div></div>
+  <div class="progress-label" id="spellProgressLabel">0 / 0</div>
+  <div class="card" id="quizCard">
+    <span class="word-number" id="wordNumber">Word 1 of ?</span>
+    <div class="bee-icon" id="beeIcon">🐝</div>
+    <button class="speak-btn" id="speakBtn" onclick="speakCurrentWord()">🔊 Hear the Word</button>
+    <div style="width:100%;display:flex;flex-direction:column;align-items:center;gap:10px;">
+      <input class="spell-input" id="spellInput" type="text" placeholder="Type your spelling here…"
+        autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <button class="submit-btn" id="submitBtn" onclick="checkAnswer()">✔ Check Answer</button>
+    </div>
+    <div class="feedback" id="spellFeedback"></div>
+    <div class="nav-btns">
+      <button class="nav-btn" id="prevBtn" onclick="prevWord()" disabled>← Prev</button>
+      <button class="nav-btn" id="nextBtn" onclick="nextWord()">Next →</button>
+    </div>
+  </div>
+  <div class="results hidden" id="spellResults">
+    <h2 id="spellResultTitle">Quiz Complete! 🎉</h2>
+    <div class="score-ring" id="spellScoreRing"><span class="score-text" id="spellScoreText"></span></div>
+    <p id="spellScoreMsg" style="font-size:.92rem;font-weight:700;color:#666;text-align:center;"></p>
+    <div class="results-list" id="spellResultsList"></div>
+    <div class="btn-row">
+      <button class="restart-btn" onclick="restartSpelling()">🔄 Try Again</button>
+      <button class="home-btn" onclick="goHome()">🏠 Home</button>
+    </div>
+  </div>
+</div>
+
+<!-- MATCHING -->
+<div id="matchScreen" class="screen">
+  <div class="app-header">
+    <button class="hdr-btn left" onclick="goListPicker('match')">← Lists</button>
+    <h1>🔗 Word Match</h1>
+  </div>
+  <p class="subtitle" id="matchListLabel"></p>
+  <div class="progress-wrap"><div class="progress-bar match-bar" id="matchProgressBar" style="width:0%"></div></div>
+  <div class="progress-label" id="matchProgressLabel">0 / 0 matched</div>
+  <div class="match-instructions">👆 Tap a <strong style="color:var(--orange)">word</strong>, then its <strong style="color:var(--teal)">definition</strong> — or start from either side!</div>
+  <div class="match-container" id="matchContainer">
+    <div class="match-col"><div class="match-col-label words-label">📖 Words</div><div id="wordsCol"></div></div>
+    <div class="match-col"><div class="match-col-label defs-label">💬 Definitions</div><div id="defsCol"></div></div>
+  </div>
+  <div class="results hidden" id="matchResults" style="margin-top:16px;">
+    <h2 id="matchResultTitle">All Matched! 🎉</h2>
+    <div class="score-ring" id="matchScoreRing"><span class="score-text" id="matchScoreText"></span></div>
+    <p id="matchScoreMsg" style="font-size:.92rem;font-weight:700;color:#666;text-align:center;"></p>
+    <div class="results-list" id="matchResultsList"></div>
+    <div class="btn-row">
+      <button class="restart-btn" onclick="restartMatching()">🔄 Try Again</button>
+      <button class="home-btn" onclick="goHome()">🏠 Home</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div id="adminScreen" class="screen">
+  <div class="app-header">
+    <button class="hdr-btn left" onclick="goHome()">← Home</button>
+    <h1>⚙️ Admin</h1>
+  </div>
+  <p class="subtitle">Manage word lists and settings</p>
+  <div class="admin-tabs">
+    <div class="admin-tab active" id="tabSpell" onclick="switchTab('Spell')">🔊 Spelling</div>
+    <div class="admin-tab" id="tabMatch" onclick="switchTab('Match')">🔗 Matching</div>
+    <div class="admin-tab" id="tabSettings" onclick="switchTab('Settings')">🔐 PIN</div>
+  </div>
+
+  <!-- Spelling panel -->
+  <div class="admin-panel active" id="panelSpell">
+    <div id="spellListsContainer"></div>
+    <div class="add-form">
+      <h3>➕ Add Spelling List</h3>
+      <div class="form-field">
+        <label>List Name</label>
+        <input type="text" id="newSpellName" placeholder="e.g. Week 4 — Alex">
+      </div>
+      <div class="format-hint">
+        One word per line, comma-separated, or numbered (<code>1. Word</code>) — any mix works
+      </div>
+      <textarea id="newSpellWords" placeholder="Million&#10;Collect, Lumber&#10;3. Pepper"></textarea>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <label class="upload-btn">📂 Upload .txt / .csv
+          <input type="file" accept=".txt,.csv" onchange="handleUpload(event,'newSpellWords','spellFileLbl')">
+        </label>
+        <span class="file-lbl" id="spellFileLbl"></span>
+      </div>
+      <button class="add-list-btn" onclick="addList('spell')">✅ Save List</button>
+    </div>
+  </div>
+
+  <!-- Match panel -->
+  <div class="admin-panel" id="panelMatch">
+    <div id="matchListsContainer"></div>
+    <div class="add-form">
+      <h3>➕ Add Match List</h3>
+      <div class="form-field">
+        <label>List Name</label>
+        <input type="text" id="newMatchName" placeholder="e.g. Week 4 Vocab — Sam">
+      </div>
+      <div class="format-hint">
+        <code>Word: Definition</code> &nbsp;|&nbsp; <code>Word - Definition</code> &nbsp;|&nbsp;
+        <code>Word, Definition</code> &nbsp;|&nbsp; <code>Word = Definition</code>
+      </div>
+      <textarea id="newMatchPairs" placeholder="Thrifty: save money and buy only what you need&#10;Generous - gives more than necessary"></textarea>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <label class="upload-btn">📂 Upload .txt / .csv
+          <input type="file" accept=".txt,.csv" onchange="handleUpload(event,'newMatchPairs','matchFileLbl')">
+        </label>
+        <span class="file-lbl" id="matchFileLbl"></span>
+      </div>
+      <button class="add-list-btn" onclick="addList('match')">✅ Save List</button>
+    </div>
+  </div>
+
+  <!-- PIN panel -->
+  <div class="admin-panel" id="panelSettings">
+    <div class="pin-change-form">
+      <h3>🔐 Change Admin PIN</h3>
+      <p style="font-size:.82rem;color:#aaa;font-weight:700;">Enter a new 4-digit PIN:</p>
+      <div class="pin-input-wrap">
+        <input type="password" id="newPinInput" maxlength="4" placeholder="••••" inputmode="numeric" pattern="[0-9]*">
+        <button class="change-pin-btn" onclick="changePIN()">Update</button>
+      </div>
+      <p style="font-size:.75rem;color:#ccc;font-weight:700;">Stored as SHA-256 hash — never plain text anywhere.</p>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, getDoc, setDoc }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+// ── FIREBASE CONFIG ──────────────────────────────────────────────────────────
+// The web API key is safe to be public — it only identifies the project.
+// Security is enforced by Firestore Rules + PIN hashed with SHA-256 in-browser.
+const firebaseConfig = {
+  apiKey:            "AIzaSyBKGR24x-fDi3w1DoKobKFYgPtr9UGI9WA",
+  authDomain:        "bee-studio-c8d42.firebaseapp.com",
+  projectId:         "bee-studio-c8d42",
+  storageBucket:     "bee-studio-c8d42.firebasestorage.app",
+  messagingSenderId: "560505318218",
+  appId:             "1:560505318218:web:4c2cccd84dcea3112befb3"
+};
+
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
+// ── SHA-256 ──────────────────────────────────────────────────────────────────
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+// Hash of "1234" — change via admin panel after first login
+const DEFAULT_PIN_HASH = "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4";
+
+// ── STATE ────────────────────────────────────────────────────────────────────
+let allLists      = [];
+let sessionPlayed = new Set();
+let currentMode   = 'spell';
+let currentList   = null;
+let pinBuffer     = '';
+
+// Spelling state
+let spCurrent=0, spAnswers=[], spUserAnswers=[], spSubmitted=[];
+// Match state
+let mState = {};
+
+// ── VOICE ────────────────────────────────────────────────────────────────────
+let preferredVoice = null;
+function loadVoices() {
+  const all = window.speechSynthesis.getVoices();
+  if (!all.length) return;
+  const femKw = ['samantha','victoria','karen','moira','fiona','veena','zira','susan','lisa','allison','female','woman','girl'];
+  const masKw = ['daniel','david','james','alex','fred','bruce','ralph','gordon','mark','paul','peter','richard','tom','male','man'];
+  const en = all.filter(v=>v.lang.startsWith('en'));
+  for (const kw of femKw) { const m=en.find(v=>v.name.toLowerCase().includes(kw)); if(m){preferredVoice=m;return;} }
+  const lf = en.find(v=>!masKw.some(kw=>v.name.toLowerCase().includes(kw)));
+  preferredVoice = lf || en[0] || all[0];
+}
+window.speechSynthesis.onvoiceschanged = loadVoices; loadVoices();
+
+function speak(text) {
+  const synth = window.speechSynthesis;
+  if (synth.speaking) synth.cancel();
+  return new Promise(resolve=>{
+    setTimeout(()=>{
+      const u = new SpeechSynthesisUtterance(text);
+      if (preferredVoice) u.voice = preferredVoice;
+      u.lang='en-US'; u.rate=0.85; u.pitch=1.05; u.volume=1;
+      u.onend=u.onerror=resolve;
+      synth.speak(u);
+    },80);
+  });
+}
+
+// ── FIRESTORE HELPERS ────────────────────────────────────────────────────────
+async function loadAllLists() {
+  const snap = await getDocs(collection(db,'lists'));
+  allLists = snap.docs.map(d=>({id:d.id,...d.data()}));
+}
+async function getPinHash() {
+  try {
+    const snap = await getDoc(doc(db,'config','pin'));
+    return snap.exists() ? snap.data().hash : DEFAULT_PIN_HASH;
+  } catch { return DEFAULT_PIN_HASH; }
+}
+async function savePinHash(hash) { await setDoc(doc(db,'config','pin'),{hash}); }
+
+// ── BOOT ─────────────────────────────────────────────────────────────────────
+(async()=>{
+  showLoading(true);
+  try { await loadAllLists(); }
+  catch(e) { toast('Firebase connection failed. Check your config.','err'); }
+  showLoading(false);
+  showScreen('homeScreen');
+})();
+
+// ── SCREEN HELPERS ───────────────────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+function showLoading(v) { document.getElementById('loadingOverlay').classList.toggle('hidden',!v); }
+let _toastTimer;
+function toast(msg,type='ok') {
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.className=`status-toast ${type}`;
+  clearTimeout(_toastTimer); _toastTimer=setTimeout(()=>el.classList.add('hidden'),2800);
+}
+function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+// ── NAVIGATION ───────────────────────────────────────────────────────────────
+window.goHome = ()=>{ window.speechSynthesis.cancel(); showScreen('homeScreen'); };
+
+window.goListPicker = (mode)=>{
+  currentMode = mode;
+  const isSpell = mode==='spell';
+  document.getElementById('listPickerTitle').textContent = isSpell ? '🔊 Choose a List' : '🔗 Choose a List';
+  document.getElementById('listPickerSub').textContent   = isSpell ? 'Pick a spelling list to practice' : 'Pick a vocabulary list to practice';
+
+  const filtered = allLists.filter(l=>l.type===mode && l.active);
+  const grid = document.getElementById('listGrid');
+  grid.innerHTML = '';
+
+  if (!filtered.length) {
+    grid.innerHTML=`<div class="empty-lists"><p>No active ${isSpell?'spelling':'match'} lists yet.<br>Ask a parent to add some in the ⚙️ admin panel!</p></div>`;
+  } else {
+    filtered.forEach(list=>{
+      const played = sessionPlayed.has(list.id);
+      const count  = isSpell ? `${list.words.length} words` : `${list.pairs.length} pairs`;
+      const card   = document.createElement('div');
+      card.className=`list-card ${mode==='match'?'match-type':''} ${played?'played':''}`;
+      card.innerHTML=`
+        <div><div class="list-card-name">${esc(list.name)}</div>
+             <div class="list-card-meta">${count}${played?' · played this session':''}</div></div>
+        <div class="list-card-badge ${played?'badge-played':(isSpell?'badge-spell':'badge-match')}">
+          ${played?'✅ Done':'▶ Start'}</div>`;
+      if (!played) card.onclick=()=>selectList(list);
+      grid.appendChild(card);
+    });
+  }
+  showScreen('listPickerScreen');
+};
+
+function selectList(list) {
+  currentList = list;
+  if (list.type==='spell') startSpelling(list);
+  else startMatching(list);
+}
+
+// ── SPELLING ─────────────────────────────────────────────────────────────────
+function startSpelling(list) {
+  spCurrent=0;
+  spAnswers     = new Array(list.words.length).fill(null);
+  spUserAnswers = new Array(list.words.length).fill('');
+  spSubmitted   = new Array(list.words.length).fill(false);
+  document.getElementById('spellListLabel').textContent = list.name;
+  document.getElementById('quizCard').classList.remove('hidden');
+  document.getElementById('spellResults').classList.add('hidden');
+  showScreen('spellScreen');
+  loadSpellWord();
+}
+
+window.speakCurrentWord = ()=>{
+  if (!currentList) return;
+  const btn=document.getElementById('speakBtn');
+  btn.classList.add('speaking'); btn.textContent='🔊 Speaking…';
+  speak(currentList.words[spCurrent]).then(()=>{ btn.classList.remove('speaking'); btn.innerHTML='🔊 Hear the Word'; });
+};
+
+function loadSpellWord() {
+  const total=currentList.words.length;
+  const input=document.getElementById('spellInput');
+  const fb=document.getElementById('spellFeedback');
+  const sub=document.getElementById('submitBtn');
+  document.getElementById('wordNumber').textContent=`Word ${spCurrent+1} of ${total}`;
+  input.value=spUserAnswers[spCurrent];
+  input.className='spell-input'; fb.textContent=''; fb.className='feedback';
+  if (spSubmitted[spCurrent]) {
+    input.disabled=true; sub.disabled=true;
+    input.classList.add(spAnswers[spCurrent]?'correct':'incorrect');
+    fb.textContent=spAnswers[spCurrent]?'✅ Correct! Great job!':`❌ The word is: "${currentList.words[spCurrent]}"`;
+    fb.className='feedback '+(spAnswers[spCurrent]?'correct':'incorrect');
+  } else { input.disabled=false; sub.disabled=false; setTimeout(()=>input.focus(),50); }
+  document.getElementById('prevBtn').disabled=spCurrent===0;
+  document.getElementById('nextBtn').textContent=spCurrent===total-1?'Finish 🎯':'Next →';
+  updateSpellProgress();
+  window.speakCurrentWord();
+}
+
+window.checkAnswer = ()=>{
+  if (spSubmitted[spCurrent]) return;
+  const input=document.getElementById('spellInput');
+  const fb=document.getElementById('spellFeedback');
+  const val=input.value.trim();
+  if (!val) { fb.textContent='⚠️ Type something first!'; fb.className='feedback'; return; }
+  const correct=val.toLowerCase()===currentList.words[spCurrent].toLowerCase();
+  spAnswers[spCurrent]=correct; spUserAnswers[spCurrent]=val; spSubmitted[spCurrent]=true;
+  input.classList.add(correct?'correct':'incorrect');
+  input.disabled=true; document.getElementById('submitBtn').disabled=true;
+  fb.textContent=correct?'✅ Correct! Great job!':`❌ The word is: "${currentList.words[spCurrent]}"`;
+  fb.className='feedback '+(correct?'correct':'incorrect');
+  if (correct) { const b=document.getElementById('beeIcon'); b.classList.add('bounce'); setTimeout(()=>b.classList.remove('bounce'),400); }
+  updateSpellProgress();
+  if (spCurrent<currentList.words.length-1) setTimeout(window.nextWord,1700);
+  else if (spSubmitted.every(Boolean)) setTimeout(showSpellResults,1700);
+};
+
+window.nextWord = ()=>{
+  if (!currentList) return;
+  if (spCurrent<currentList.words.length-1) { spCurrent++; loadSpellWord(); }
+  else if (spSubmitted.every(Boolean)) showSpellResults();
+};
+window.prevWord = ()=>{ if(spCurrent>0){spCurrent--;loadSpellWord();} };
+
+function updateSpellProgress() {
+  const done=spSubmitted.filter(Boolean).length, total=currentList.words.length;
+  document.getElementById('spellProgressBar').style.width=(done/total*100)+'%';
+  document.getElementById('spellProgressLabel').textContent=`${done} / ${total}`;
+}
+
+function showSpellResults() {
+  sessionPlayed.add(currentList.id);
+  document.getElementById('quizCard').classList.add('hidden');
+  document.getElementById('spellResults').classList.remove('hidden');
+  const correct=spAnswers.filter(a=>a===true).length, total=currentList.words.length;
+  const pct=Math.round(correct/total*100);
+  document.getElementById('spellScoreText').textContent=`${correct}/${total}`;
+  document.getElementById('spellScoreRing').style.setProperty('--pct',pct+'%');
+  document.getElementById('spellResultTitle').textContent=pct===100?'Perfect Score! 🏆':'Quiz Complete! 🎉';
+  document.getElementById('spellScoreMsg').textContent=
+    pct===100?'🌟 You\'re a spelling superstar!':pct>=80?'🎉 Amazing! Almost perfect!':pct>=60?'👍 Good job! Keep going!':'💪 Practice makes perfect!';
+  const list=document.getElementById('spellResultsList'); list.innerHTML='';
+  currentList.words.forEach((w,i)=>{
+    const d=document.createElement('div'); d.className=`result-item ${spAnswers[i]?'correct':'incorrect'}`;
+    d.innerHTML=`<span>${i+1}. <strong>${esc(w)}</strong></span>${!spAnswers[i]?`<span class="result-answer">You wrote: "${esc(spUserAnswers[i]||'(blank)')}"</span>`:''}<span>${spAnswers[i]?'✅':'❌'}</span>`;
+    list.appendChild(d);
+  });
+}
+window.restartSpelling = ()=>startSpelling(currentList);
+document.getElementById('spellInput').addEventListener('keydown',e=>{ if(e.key==='Enter') window.checkAnswer(); });
+
+// ── MATCHING ─────────────────────────────────────────────────────────────────
+function startMatching(list) {
+  document.getElementById('matchListLabel').textContent=list.name;
+  document.getElementById('matchResults').classList.add('hidden');
+  document.getElementById('matchContainer').classList.remove('hidden');
+  mState={selWord:null,selDef:null,matched:new Array(list.pairs.length).fill(false),attempts:0};
+
+  const sw=[...list.pairs.map((p,i)=>({...p,idx:i}))].sort(()=>Math.random()-.5);
+  const sd=[...list.pairs.map((p,i)=>({...p,idx:i}))].sort(()=>Math.random()-.5);
+  const wCol=document.getElementById('wordsCol'), dCol=document.getElementById('defsCol');
+  wCol.innerHTML=''; dCol.innerHTML='';
+
+  sw.forEach(pair=>{ const c=makeChip(pair.word,'word',pair.idx); wCol.appendChild(c); });
+  sd.forEach(pair=>{ const c=makeChip(pair.def,'def',pair.idx);  dCol.appendChild(c); });
+  updateMatchProgress();
+  showScreen('matchScreen');
+}
+
+function makeChip(text,type,idx) {
+  const c=document.createElement('div');
+  c.className='match-chip'; c.dataset.idx=idx; c.dataset.type=type;
+  c.textContent=text; c.onclick=()=>selectChip(c,type,idx); return c;
+}
+
+function selectChip(chip,type,idx) {
+  if (chip.classList.contains('matched-correct')||chip.classList.contains('locked')) return;
+  if (type==='word') {
+    document.querySelectorAll('.match-chip[data-type="word"]').forEach(c=>{ if(!c.classList.contains('matched-correct')) c.classList.remove('selected-word'); });
+    if (mState.selWord===idx) { mState.selWord=null; return; }
+    mState.selWord=idx; chip.classList.add('selected-word');
+  } else {
+    document.querySelectorAll('.match-chip[data-type="def"]').forEach(c=>{ if(!c.classList.contains('matched-correct')) c.classList.remove('selected-def'); });
+    if (mState.selDef===idx) { mState.selDef=null; return; }
+    mState.selDef=idx; chip.classList.add('selected-def');
+  }
+  if (mState.selWord!==null && mState.selDef!==null) attemptMatch();
+}
+
+function attemptMatch() {
+  const wi=mState.selWord, di=mState.selDef;
+  const wc=document.querySelector(`.match-chip[data-type="word"][data-idx="${wi}"]`);
+  const dc=document.querySelector(`.match-chip[data-type="def"][data-idx="${di}"]`);
+  mState.attempts++;
+  if (wi===di) {
+    mState.matched[wi]=true;
+    [wc,dc].forEach(c=>{ c.classList.remove('selected-word','selected-def'); c.classList.add('matched-correct','locked'); const b=document.createElement('span'); b.className='match-badge'; b.textContent='✓'; c.appendChild(b); });
+    updateMatchProgress();
+    if (mState.matched.every(Boolean)) setTimeout(showMatchResults,700);
+  } else {
+    [wc,dc].forEach(c=>{ c.classList.remove('selected-word','selected-def'); c.classList.add('matched-wrong'); setTimeout(()=>c.classList.remove('matched-wrong'),500); });
+  }
+  mState.selWord=null; mState.selDef=null;
+}
+
+function updateMatchProgress() {
+  const done=mState.matched.filter(Boolean).length, total=currentList.pairs.length;
+  document.getElementById('matchProgressBar').style.width=(done/total*100)+'%';
+  document.getElementById('matchProgressLabel').textContent=`${done} / ${total} matched`;
+}
+
+function showMatchResults() {
+  sessionPlayed.add(currentList.id);
+  document.getElementById('matchContainer').classList.add('hidden');
+  document.getElementById('matchResults').classList.remove('hidden');
+  const total=currentList.pairs.length;
+  document.getElementById('matchScoreText').textContent=`${total}/${total}`;
+  document.getElementById('matchScoreRing').style.setProperty('--pct','100%');
+  document.getElementById('matchResultTitle').textContent=mState.attempts===total?'Perfect Matches! 🏆':'All Matched! 🎉';
+  document.getElementById('matchScoreMsg').textContent=
+    mState.attempts===total?'🌟 First try on every one!':mState.attempts<=total+2?'🎉 Almost perfect!':'👍 You got them all!';
+  const list=document.getElementById('matchResultsList'); list.innerHTML='';
+  currentList.pairs.forEach(p=>{ const d=document.createElement('div'); d.className='result-item correct'; d.innerHTML=`<span><strong>${esc(p.word)}</strong> — ${esc(p.def)}</span><span>✅</span>`; list.appendChild(d); });
+}
+window.restartMatching = ()=>startMatching(currentList);
+
+// ── PIN ──────────────────────────────────────────────────────────────────────
+window.openPinModal  = ()=>{ pinBuffer=''; updateDots(); document.getElementById('pinError').textContent=''; document.getElementById('pinModal').classList.remove('hidden'); };
+window.closePinModal = ()=>{ document.getElementById('pinModal').classList.add('hidden'); pinBuffer=''; };
+window.pinKey = k=>{ if(pinBuffer.length>=4) return; pinBuffer+=k; updateDots(); if(pinBuffer.length===4) setTimeout(verifyPin,120); };
+window.pinDel = ()=>{ pinBuffer=pinBuffer.slice(0,-1); document.getElementById('pinError').textContent=''; updateDots(); };
+
+function updateDots() {
+  for(let i=0;i<4;i++) { const d=document.getElementById('dot'+i); d.classList.toggle('filled',i<pinBuffer.length); d.classList.remove('error'); }
+}
+
+async function verifyPin() {
+  const entered=await sha256(pinBuffer), stored=await getPinHash();
+  if (entered===stored) {
+    document.getElementById('pinModal').classList.add('hidden'); pinBuffer='';
+    openAdmin();
+  } else {
+    document.getElementById('pinError').textContent='Incorrect PIN — try again';
+    for(let i=0;i<4;i++){const d=document.getElementById('dot'+i);d.classList.add('error');d.classList.remove('filled');}
+    setTimeout(()=>{pinBuffer='';updateDots();document.getElementById('pinError').textContent='';},900);
+  }
+}
+
+// ── ADMIN ────────────────────────────────────────────────────────────────────
+function openAdmin() { renderAdminLists(); showScreen('adminScreen'); }
+
+function renderAdminLists() {
+  renderSection('spell','spellListsContainer');
+  renderSection('match','matchListsContainer');
+}
+
+function renderSection(type,containerId) {
+  const container=document.getElementById(containerId);
+  const lists=allLists.filter(l=>l.type===type);
+  container.innerHTML='';
+  if (!lists.length) { container.innerHTML=`<p style="color:#ccc;font-weight:700;font-size:.88rem;margin-bottom:8px;">No ${type} lists yet — add one below.</p>`; return; }
+  lists.forEach(list=>{
+    const count=type==='spell'?`${list.words.length} words`:`${list.pairs.length} pairs`;
+    const div=document.createElement('div'); div.className='saved-list-item';
+    div.innerHTML=`
+      <div style="flex:1"><div class="sli-name">${esc(list.name)}</div><div class="sli-meta">${count}</div></div>
+      <div class="sli-btns">
+        <button class="sli-btn ${list.active?'toggle-off':'toggle-on'}" onclick="toggleList('${list.id}',${list.active})">
+          ${list.active?'🔴 Deactivate':'🟢 Activate'}</button>
+        <button class="sli-btn del-btn" onclick="deleteList('${list.id}')">🗑</button>
+      </div>`;
+    container.appendChild(div);
+  });
+}
+
+window.toggleList = async(id,currently)=>{
+  showLoading(true);
+  try {
+    await updateDoc(doc(db,'lists',id),{active:!currently});
+    const l=allLists.find(x=>x.id===id); if(l) l.active=!currently;
+    renderAdminLists(); toast(currently?'List deactivated':'List activated ✅','ok');
+  } catch { toast('Error updating list','err'); }
+  showLoading(false);
+};
+
+window.deleteList = async(id)=>{
+  if (!confirm('Delete this list? This cannot be undone.')) return;
+  showLoading(true);
+  try {
+    await deleteDoc(doc(db,'lists',id));
+    allLists=allLists.filter(l=>l.id!==id);
+    renderAdminLists(); toast('List deleted','ok');
+  } catch { toast('Error deleting list','err'); }
+  showLoading(false);
+};
+
+window.addList = async(type)=>{
+  const nameId  = type==='spell'?'newSpellName':'newMatchName';
+  const textId  = type==='spell'?'newSpellWords':'newMatchPairs';
+  const name    = document.getElementById(nameId).value.trim();
+  const text    = document.getElementById(textId).value.trim();
+  if (!name) { toast('Please enter a list name','err'); return; }
+  const data    = type==='spell' ? parseWords(text) : parsePairs(text);
+  const dataKey = type==='spell' ? 'words' : 'pairs';
+  if (!data.length) { toast('No items found — check your format','err'); return; }
+  showLoading(true);
+  try {
+    const ref=await addDoc(collection(db,'lists'),{name,type,active:true,[dataKey]:data});
+    allLists.push({id:ref.id,name,type,active:true,[dataKey]:data});
+    document.getElementById(nameId).value=''; document.getElementById(textId).value='';
+    document.getElementById(type==='spell'?'spellFileLbl':'matchFileLbl').textContent='';
+    renderAdminLists(); toast(`"${name}" saved — ${data.length} ${type==='spell'?'words':'pairs'} ✅`,'ok');
+  } catch(e) { toast('Error saving to Firebase: '+e.message,'err'); }
+  showLoading(false);
+};
+
+window.changePIN = async()=>{
+  const val=document.getElementById('newPinInput').value.trim();
+  if (!/^\d{4}$/.test(val)) { toast('PIN must be exactly 4 digits','err'); return; }
+  showLoading(true);
+  try { await savePinHash(await sha256(val)); document.getElementById('newPinInput').value=''; toast('PIN updated ✅','ok'); }
+  catch { toast('Error saving PIN','err'); }
+  showLoading(false);
+};
+
+window.switchTab = (tab)=>{
+  ['Spell','Match','Settings'].forEach(t=>{
+    document.getElementById('tab'+t).classList.toggle('active',t===tab);
+    document.getElementById('panel'+t).classList.toggle('active',t===tab);
+  });
+};
+
+window.handleUpload = (e,textareaId,labelId)=>{
+  const file=e.target.files[0]; if(!file) return;
+  new FileReader().onload = ev=>{ document.getElementById(textareaId).value=ev.target.result; document.getElementById(labelId).textContent='📄 '+file.name; };
+  const r=new FileReader(); r.onload=ev=>{ document.getElementById(textareaId).value=ev.target.result; document.getElementById(labelId).textContent='📄 '+file.name; }; r.readAsText(file);
+};
+
+// ── PARSERS ──────────────────────────────────────────────────────────────────
+function parseWords(text) {
+  return text.split(/[\n,]+/).map(r=>r.trim().replace(/^\d+[\.\)]\s*/,'')).filter(r=>r.length>0);
+}
+function parsePairs(text) {
+  const pairs=[];
+  const seps=[/:\s+/,/\s+-\s+/,/\s*=\s*/,/\s*\|\s*/];
+  for (let line of text.split('\n')) {
+    line=line.trim().replace(/^\d+[\.\)]\s*/,''); if(!line) continue;
+    let matched=false;
+    for (const sep of seps) {
+      const m=line.match(sep);
+      if (m&&m.index>0) { const word=line.slice(0,m.index).trim(),def=line.slice(m.index+m[0].length).trim(); if(word&&def){pairs.push({word,def});matched=true;break;} }
+    }
+    if (!matched) { const ci=line.indexOf(','); if(ci>0){const word=line.slice(0,ci).trim(),def=line.slice(ci+1).trim(); if(word&&def&&!word.includes(' '))pairs.push({word,def});} }
+  }
+  return pairs;
+}
+</script>
+</body>
+</html>
