@@ -1,6 +1,9 @@
 # Claude Code temp files
 *.tmp.*
 
+# Local Claude context (not for repo)
+CLAUDE.md
+
 # OS
 .DS_Store
 Thumbs.db

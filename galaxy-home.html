@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>🚀 Galaxy Launch Pad</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --beige: #f5ead6;
+    --beige-dark: #ecdcc0;
+    --beige-darker: #e0c99a;
+    --cream: #fdf6e8;
+    --ink: #3b2f1e;
+    --ink-light: #7a5c3a;
+    --red: #e8453c;
+    --orange: #f5832a;
+    --yellow: #f7c948;
+    --teal: #3dbfb0;
+    --blue: #4a90d9;
+    --purple: #9b6fda;
+    --green: #5cbb6f;
+    --pink: #e8668a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background-color: var(--beige);
+    font-family: 'Nunito', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* ---- BACKGROUND STARS ---- */
+  .stars-layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+
+  .star {
+    position: absolute;
+    border-radius: 50%;
+    background: var(--ink);
+    opacity: 0.12;
+    animation: twinkle 3s ease-in-out infinite;
+  }
+
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.08; transform: scale(1); }
+    50% { opacity: 0.22; transform: scale(1.4); }
+  }
+
+  /* ---- FLOATING DOODLE ROCKETS (background) ---- */
+  .bg-rocket {
+    position: fixed;
+    font-size: 2rem;
+    opacity: 0.08;
+    pointer-events: none;
+    z-index: 0;
+    animation: floatUp 18s linear infinite;
+  }
+
+  @keyframes floatUp {
+    0%   { transform: translateY(110vh) rotate(-15deg); opacity: 0; }
+    5%   { opacity: 0.08; }
+    95%  { opacity: 0.08; }
+    100% { transform: translateY(-10vh) rotate(-15deg); opacity: 0; }
+  }
+
+  /* ---- LAYOUT ---- */
+  .page-wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  /* ---- HEADER ---- */
+  header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+  }
+
+  .header-rocket {
+    font-size: 3.8rem;
+    display: inline-block;
+    animation: rocketBob 2.5s ease-in-out infinite;
+    filter: drop-shadow(0 6px 12px rgba(0,0,0,0.15));
+  }
+
+  @keyframes rocketBob {
+    0%, 100% { transform: translateY(0) rotate(-5deg); }
+    50%       { transform: translateY(-10px) rotate(5deg); }
+  }
+
+  .header-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(2.4rem, 7vw, 3.8rem);
+    color: var(--ink);
+    letter-spacing: 0.02em;
+    line-height: 1.1;
+    margin-top: 0.3rem;
+    text-shadow: 3px 3px 0px var(--beige-darker);
+  }
+
+  .header-title span {
+    color: var(--red);
+  }
+
+  .header-sub {
+    font-size: 1.05rem;
+    color: var(--ink-light);
+    font-weight: 700;
+    margin-top: 0.4rem;
+    letter-spacing: 0.04em;
+  }
+
+  /* ---- DIVIDER ---- */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+  }
+  .divider-line {
+    flex: 1;
+    height: 3px;
+    background: repeating-linear-gradient(
+      90deg,
+      var(--beige-darker) 0, var(--beige-darker) 8px,
+      transparent 8px, transparent 16px
+    );
+    border-radius: 2px;
+  }
+  .divider-icon { font-size: 1.4rem; }
+
+  /* ---- GRID ---- */
+  .links-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1.25rem;
+  }
+
+  /* ---- CARD ---- */
+  .card {
+    background: var(--cream);
+    border-radius: 22px;
+    border: 3px solid var(--ink);
+    padding: 1.6rem 1.2rem 1.4rem;
+    text-align: center;
+    text-decoration: none;
+    color: var(--ink);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.18s cubic-bezier(.34,1.56,.64,1), box-shadow 0.18s ease;
+    box-shadow:
+      4px 4px 0px var(--ink),
+      0 0 0 0 transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.55rem;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 19px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .card:hover, .card:focus-visible {
+    transform: translateY(-5px) scale(1.03);
+    box-shadow:
+      4px 4px 0px var(--ink),
+      0 0 28px 6px var(--card-glow, rgba(255,200,80,0.45));
+    outline: none;
+  }
+
+  .card:hover::before {
+    opacity: 1;
+  }
+
+  .card:active {
+    transform: translateY(-1px) scale(1.01);
+  }
+
+  /* Color variants */
+  .card.c-yellow { --card-glow: rgba(247,201,72,0.5); }
+  .card.c-yellow .card-icon-wrap { background: #fef3c2; border-color: var(--yellow); }
+  .card.c-yellow .card-name { color: #a07010; }
+
+  .card.c-red { --card-glow: rgba(232,69,60,0.4); }
+  .card.c-red .card-icon-wrap { background: #fde8e7; border-color: var(--red); }
+  .card.c-red .card-name { color: #b02020; }
+
+  .card.c-teal { --card-glow: rgba(61,191,176,0.45); }
+  .card.c-teal .card-icon-wrap { background: #d6f5f2; border-color: var(--teal); }
+  .card.c-teal .card-name { color: #1a7a72; }
+
+  .card.c-blue { --card-glow: rgba(74,144,217,0.45); }
+  .card.c-blue .card-icon-wrap { background: #dbeeff; border-color: var(--blue); }
+  .card.c-blue .card-name { color: #1e5a99; }
+
+  .card.c-purple { --card-glow: rgba(155,111,218,0.45); }
+  .card.c-purple .card-icon-wrap { background: #ede0ff; border-color: var(--purple); }
+  .card.c-purple .card-name { color: #5c2ea8; }
+
+  .card.c-green { --card-glow: rgba(92,187,111,0.45); }
+  .card.c-green .card-icon-wrap { background: #ddf5e3; border-color: var(--green); }
+  .card.c-green .card-name { color: #1e7a35; }
+
+  .card.c-orange { --card-glow: rgba(245,131,42,0.45); }
+  .card.c-orange .card-icon-wrap { background: #fdecd4; border-color: var(--orange); }
+  .card.c-orange .card-name { color: #a04010; }
+
+  .card.c-pink { --card-glow: rgba(232,102,138,0.45); }
+  .card.c-pink .card-icon-wrap { background: #fde0ea; border-color: var(--pink); }
+  .card.c-pink .card-name { color: #a02050; }
+
+  .card-icon-wrap {
+    width: 68px;
+    height: 68px;
+    border-radius: 18px;
+    border: 2.5px solid currentColor;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.2rem;
+    margin-bottom: 0.2rem;
+  }
+
+  .card-name {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.15rem;
+    line-height: 1.2;
+  }
+
+  .card-desc {
+    font-size: 0.78rem;
+    color: var(--ink-light);
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  /* ---- FOOTER ---- */
+  footer {
+    text-align: center;
+    margin-top: 3rem;
+    font-size: 0.82rem;
+    color: var(--ink-light);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+
+  footer .rocket-trail {
+    letter-spacing: 0.02em;
+    font-size: 1rem;
+  }
+
+  /* ---- RESPONSIVE ---- */
+  @media (max-width: 500px) {
+    .links-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .card-icon-wrap { width: 56px; height: 56px; font-size: 1.8rem; }
+    .card-name { font-size: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Background stars -->
+<div class="stars-layer" id="starsLayer"></div>
+
+<!-- Page content -->
+<div class="page-wrapper">
+
+  <header>
+    <div class="header-rocket">🚀</div>
+    <h1 class="header-title">Galaxy <span>Launch Pad</span></h1>
+    <p class="header-sub">✨ Pick a mission and blast off! ✨</p>
+  </header>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-icon">🌟</div>
+    <div class="divider-line"></div>
+    <div class="divider-icon">🪐</div>
+    <div class="divider-line"></div>
+    <div class="divider-icon">🌟</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <!-- LINK GRID — add / remove cards here freely -->
+  <div class="links-grid" id="linksGrid">
+
+    <a href="spelling-bee.html" class="card c-yellow" tabindex="0">
+      <div class="card-icon-wrap">🐝</div>
+      <div class="card-name">Spelling Bee</div>
+      <div class="card-desc">Buzz buzz! Spell it right!</div>
+    </a>
+
+    <a href="galaxy-link.html" class="card c-purple" tabindex="0">
+      <div class="card-icon-wrap">🔭</div>
+      <div class="card-name">Galaxy Link</div>
+      <div class="card-desc">Explore the cosmos</div>
+    </a>
+
+    <a href="dashboard.html" class="card c-blue" tabindex="0">
+      <div class="card-icon-wrap">📊</div>
+      <div class="card-name">Dashboard</div>
+      <div class="card-desc">Mission control stats</div>
+    </a>
+
+    <!-- PLACEHOLDER cards to show how the grid grows -->
+    <a href="#" class="card c-teal" tabindex="0">
+      <div class="card-icon-wrap">🎮</div>
+      <div class="card-name">Coming Soon</div>
+      <div class="card-desc">A new mission awaits!</div>
+    </a>
+
+    <a href="#" class="card c-green" tabindex="0">
+      <div class="card-icon-wrap">🌱</div>
+      <div class="card-name">Coming Soon</div>
+      <div class="card-desc">Growing every day</div>
+    </a>
+
+    <a href="#" class="card c-orange" tabindex="0">
+      <div class="card-icon-wrap">🎨</div>
+      <div class="card-name">Coming Soon</div>
+      <div class="card-desc">Something creative!</div>
+    </a>
+
+  </div>
+
+  <footer>
+    <div class="rocket-trail">🚀 · · · · · · · · 🌙 · · · · · · · · ⭐</div>
+    <div style="margin-top:0.5rem;">Galaxy Launch Pad — Keep Exploring!</div>
+  </footer>
+
+</div>
+
+<script>
+  // ---- Generate twinkling background stars ----
+  const starsLayer = document.getElementById('starsLayer');
+  const starCount = 55;
+  const sizes = [3, 4, 5, 6, 7];
+  for (let i = 0; i < starCount; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const size = sizes[Math.floor(Math.random() * sizes.length)];
+    s.style.width = size + 'px';
+    s.style.height = size + 'px';
+    s.style.left = Math.random() * 100 + '%';
+    s.style.top = Math.random() * 100 + '%';
+    s.style.animationDelay = (Math.random() * 4).toFixed(2) + 's';
+    s.style.animationDuration = (2.5 + Math.random() * 3).toFixed(2) + 's';
+    starsLayer.appendChild(s);
+  }
+
+  // ---- Floating background rockets ----
+  const rocketEmojis = ['🚀', '🛸', '🛩️'];
+  for (let i = 0; i < 4; i++) {
+    const r = document.createElement('div');
+    r.className = 'bg-rocket';
+    r.textContent = rocketEmojis[i % rocketEmojis.length];
+    r.style.left = (10 + i * 22) + '%';
+    r.style.animationDelay = (i * 4.5) + 's';
+    r.style.animationDuration = (16 + i * 3) + 's';
+    r.style.fontSize = (1.6 + Math.random()) + 'rem';
+    starsLayer.appendChild(r);
+  }
+
+  // ---- Card touch feedback on iPad ----
+  document.querySelectorAll('.card').forEach(card => {
+    card.addEventListener('touchstart', () => {
+      card.style.transform = 'scale(0.97)';
+    }, { passive: true });
+    card.addEventListener('touchend', () => {
+      card.style.transform = '';
+    }, { passive: true });
+  });
+</script>
+</body>
+</html>
