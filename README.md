@@ -4,7 +4,9 @@
 
 A spelling and vocabulary practice app for kids.
 
-**Live site:** [rithera1.github.io/galaxydashboard/bee-studio](https://rithera1.github.io/galaxydashboard/bee-studio/)
+**Live site:** [rithera1.github.io/galaxydashboard](https://rithera1.github.io/galaxydashboard/)
+
+**Bee Studio directly:** [rithera1.github.io/galaxydashboard/bee-studio](https://rithera1.github.io/galaxydashboard/bee-studio/)
 
 ### Features
 - **Spelling Bee** — hear a word read aloud and type the spelling
