@@ -51,10 +51,9 @@
   #listPickerScreen{max-width:560px;}
   .list-grid{display:flex;flex-direction:column;gap:10px;width:100%;}
   .list-card{background:white;border-radius:16px;padding:18px 20px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;border:3px solid #f0e0d0;box-shadow:0 4px 14px rgba(0,0,0,.07);transition:all .18s;}
-  .list-card:hover:not(.played){border-color:var(--orange);transform:translateX(4px);box-shadow:0 6px 20px rgba(255,107,53,.15);}
-  .list-card.played{opacity:.55;cursor:default;}
+  .list-card:hover{border-color:var(--orange);transform:translateX(4px);box-shadow:0 6px 20px rgba(255,107,53,.15);}
   .list-card.match-type{border-color:#d0f0ee;}
-  .list-card.match-type:hover:not(.played){border-color:var(--teal);box-shadow:0 6px 20px rgba(46,196,182,.15);}
+  .list-card.match-type:hover{border-color:var(--teal);box-shadow:0 6px 20px rgba(46,196,182,.15);}
   .list-card-name{font-family:'Fredoka One',cursive;font-size:1.1rem;color:#333;}
   .list-card-meta{font-size:.78rem;font-weight:700;color:#bbb;}
   .list-card-badge{padding:5px 12px;border-radius:99px;font-size:.78rem;font-weight:800;color:white;}
@@ -386,8 +385,8 @@
         <input type="text" id="newMatchName" placeholder="e.g. Week 4 Vocab — Sam">
       </div>
       <div class="format-hint">
-        <code>Word: Definition</code> &nbsp;|&nbsp; <code>Word - Definition</code> &nbsp;|&nbsp;
-        <code>Word, Definition</code> &nbsp;|&nbsp; <code>Word = Definition</code>
+        <code>Word: Definition</code> &nbsp;|&nbsp; <code>Word - Definition</code> &nbsp;|&nbsp; <code>Word- Definition</code><br>
+        <code>Word, Definition</code> &nbsp;|&nbsp; <code>Word = Definition</code> &nbsp;|&nbsp; numbered lines OK: <code>1. Word- Definition</code>
       </div>
       <textarea id="newMatchPairs" placeholder="Thrifty: save money and buy only what you need&#10;Generous - gives more than necessary"></textarea>
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
@@ -444,9 +443,8 @@ async function sha256(str) {
 const DEFAULT_PIN_HASH = "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4";
 
 // ── STATE ────────────────────────────────────────────────────────────────────
-let allLists      = [];
-let sessionPlayed = new Set();
-let currentMode   = 'spell';
+let allLists    = [];
+let currentMode = 'spell';
 let currentList   = null;
 let pinBuffer     = '';
 
@@ -537,16 +535,14 @@ window.goListPicker = (mode)=>{
     grid.innerHTML=`<div class="empty-lists"><p>No active ${isSpell?'spelling':'match'} lists yet.<br>Ask a parent to add some in the ⚙️ admin panel!</p></div>`;
   } else {
     filtered.forEach(list=>{
-      const played = sessionPlayed.has(list.id);
-      const count  = isSpell ? `${list.words.length} words` : `${list.pairs.length} pairs`;
-      const card   = document.createElement('div');
-      card.className=`list-card ${mode==='match'?'match-type':''} ${played?'played':''}`;
+      const count = isSpell ? `${list.words.length} words` : `${list.pairs.length} pairs`;
+      const card  = document.createElement('div');
+      card.className=`list-card ${mode==='match'?'match-type':''}`;
       card.innerHTML=`
         <div><div class="list-card-name">${esc(list.name)}</div>
-             <div class="list-card-meta">${count}${played?' · played this session':''}</div></div>
-        <div class="list-card-badge ${played?'badge-played':(isSpell?'badge-spell':'badge-match')}">
-          ${played?'✅ Done':'▶ Start'}</div>`;
-      if (!played) card.onclick=()=>selectList(list);
+             <div class="list-card-meta">${count}</div></div>
+        <div class="list-card-badge ${isSpell?'badge-spell':'badge-match'}">▶ Start</div>`;
+      card.onclick=()=>selectList(list);
       grid.appendChild(card);
     });
   }
@@ -631,7 +627,6 @@ function updateSpellProgress() {
 }
 
 function showSpellResults() {
-  sessionPlayed.add(currentList.id);
   document.getElementById('quizCard').classList.add('hidden');
   document.getElementById('spellResults').classList.remove('hidden');
   const correct=spAnswers.filter(a=>a===true).length, total=currentList.words.length;
@@ -712,7 +707,6 @@ function updateMatchProgress() {
 }
 
 function showMatchResults() {
-  sessionPlayed.add(currentList.id);
   document.getElementById('matchContainer').classList.add('hidden');
   document.getElementById('matchResults').classList.remove('hidden');
   const total=currentList.pairs.length;
@@ -844,7 +838,7 @@ function parseWords(text) {
 }
 function parsePairs(text) {
   const pairs=[];
-  const seps=[/:\s+/,/\s+-\s+/,/\s*=\s*/,/\s*\|\s*/];
+  const seps=[/:\s+/,/\s+-\s+/,/-\s+/,/\s*=\s*/,/\s*\|\s*/];
   for (let line of text.split('\n')) {
     line=line.trim().replace(/^\d+[\.\)]\s*/,''); if(!line) continue;
     let matched=false;
