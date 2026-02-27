@@ -1414,6 +1414,9 @@ function drawScaleView(){
   const sumR=PDATA.reduce((s,p)=>s+2*p.ratio,0); // ≈62
   let eR=(W-SUN_VIS-GAP*(n+1)-MARGIN)/sumR;
   eR=Math.max(2,Math.min(12,eR));
+  // On wide screens (eR hits cap), spread leftover space as extra gap (max +35px)
+  const usedW=SUN_VIS+GAP*(n+1)+sumR*eR+MARGIN;
+  const gap=GAP+Math.min(35,Math.max(0,(W-usedW)/(n+1)));
 
   const sunR=eR*109.3;
   const base=H*.58;     // baseline: all planet bottoms sit here
@@ -1433,7 +1436,7 @@ function drawScaleView(){
   const lSz=Math.min(11,Math.max(8,eR*1.1));
   const labelBase=base+Math.max(50, lSz*5); // enough gap for label diagonal not to reach planet
 
-  let x=SUN_VIS+GAP;
+  let x=SUN_VIS+gap;
   for(const p of PDATA){
     const pr=Math.max(1.5,eR*p.ratio);
     const cy=base-pr;  // center y: bottom of planet at baseline
@@ -1477,7 +1480,7 @@ function drawScaleView(){
     sCtx.fillText(p.name,0,0);
     sCtx.restore();
 
-    x+=pr+GAP;
+    x+=pr+gap;
   }
 
   // Sun label (below and left, in label zone)
