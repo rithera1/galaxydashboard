@@ -1,0 +1,1329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>🌌 Solar System Explorer</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{width:100%;height:100%;overflow:hidden;background:#00000f;}
+body{font-family:'Space Grotesk',sans-serif;touch-action:none;user-select:none;}
+
+#canvas{position:absolute;inset:0;cursor:grab;}
+#canvas.grabbing{cursor:grabbing;}
+
+/* ── MINIMAP ── */
+#minimap{
+  position:absolute;bottom:20px;right:20px;
+  width:140px;height:100px;
+  background:rgba(0,0,20,.75);
+  border:1px solid rgba(100,180,255,.2);
+  border-radius:10px;backdrop-filter:blur(6px);
+  overflow:hidden;cursor:pointer;z-index:20;
+}
+#minimapCanvas{width:100%;height:100%;}
+#minimapLabel{
+  position:absolute;bottom:4px;left:0;right:0;
+  text-align:center;font-family:'Space Grotesk',sans-serif;
+  font-size:.45rem;color:rgba(100,180,255,.4);letter-spacing:.1em;text-transform:uppercase;
+}
+
+/* ── BACK BUTTON ── */
+#backBtn{
+  position:absolute;top:18px;left:18px;z-index:30;
+  display:none;align-items:center;gap:8px;
+  background:rgba(0,0,20,.8);border:1px solid rgba(100,180,255,.3);
+  border-radius:99px;padding:10px 18px;cursor:pointer;
+  font-family:'Space Grotesk',sans-serif;font-size:.8rem;font-weight:600;
+  color:rgba(180,220,255,.9);letter-spacing:.06em;
+  backdrop-filter:blur(8px);transition:all .2s;
+}
+#backBtn:hover{background:rgba(20,40,80,.9);border-color:rgba(100,180,255,.6);}
+#backBtn.visible{display:flex;}
+
+/* ── TITLE ── */
+#titleBar{
+  position:absolute;top:18px;left:0;right:0;z-index:20;
+  text-align:center;pointer-events:none;
+}
+#titleBar h1{
+  font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;
+  color:rgba(180,220,255,.7);letter-spacing:.2em;text-transform:uppercase;
+}
+#titleBar .sub{
+  font-size:.55rem;color:rgba(100,160,255,.4);letter-spacing:.18em;
+  text-transform:uppercase;margin-top:2px;
+}
+
+/* ── ZOOM HINT ── */
+#zoomHint{
+  position:absolute;bottom:130px;right:20px;z-index:20;
+  font-size:.55rem;color:rgba(100,160,255,.35);letter-spacing:.08em;
+  text-align:right;pointer-events:none;line-height:1.8;
+}
+
+/* ── FACT SHEET ── */
+#factSheet{
+  position:absolute;bottom:0;left:0;right:0;z-index:50;
+  transform:translateY(100%);transition:transform .4s cubic-bezier(.34,1.2,.64,1);
+  background:linear-gradient(180deg,rgba(0,5,25,.97) 0%,rgba(0,2,15,1) 100%);
+  border-top:1px solid rgba(100,180,255,.2);
+  border-radius:24px 24px 0 0;
+  padding:0 0 env(safe-area-inset-bottom,16px);
+  max-height:32vh;
+  overflow:hidden;
+  backdrop-filter:blur(20px);
+}
+#factSheet.open{transform:translateY(0);}
+.sheet-handle{
+  width:40px;height:4px;border-radius:99px;
+  background:rgba(100,180,255,.25);margin:12px auto 0;
+}
+.sheet-header{
+  display:flex;align-items:center;gap:14px;
+  padding:7px 16px 7px;border-bottom:1px solid rgba(100,180,255,.1);
+}
+.sheet-icon{font-size:1.5rem;line-height:1;}
+.sheet-titles{flex:1;}
+.sheet-name{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;
+  color:white;letter-spacing:.04em;}
+.sheet-type{font-size:.6rem;color:rgba(100,180,255,.5);letter-spacing:.12em;
+  text-transform:uppercase;margin-top:1px;}
+
+/* Fact cards */
+#factCards{
+  overflow:hidden;position:relative;
+  height:calc(52vh - 110px);
+}
+.fact-track{
+  display:flex;height:100%;
+  transition:transform .35s cubic-bezier(.4,0,.2,1);
+}
+.fact-card{
+  min-width:100%;padding:8px 16px 6px;
+  
+  flex-direction:column;justify-content:center;
+  cursor:pointer;
+}
+.fact-label{
+  font-size:.55rem;color:rgba(100,200,255,.45);letter-spacing:.15em;
+  text-transform:uppercase;margin-bottom:8px;font-weight:600;
+}
+.fact-text{
+  font-size:1.4rem;line-height:1.55;color:rgba(220,235,255,.92);font-weight:400;
+}
+.fact-text strong{color:#78C8FF;font-weight:600;}
+.fact-nav{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:8px 0 12px;
+}
+.fact-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:rgba(100,180,255,.25);transition:all .2s;cursor:pointer;
+}
+.fact-dot.active{background:rgba(100,180,255,.9);width:18px;border-radius:99px;}
+.fact-tap-hint{
+  position:absolute;bottom:50px;right:22px;
+  font-size:.5rem;color:rgba(100,180,255,.3);letter-spacing:.08em;pointer-events:none;
+}
+
+/* Object name tooltip on hover */
+#tooltip{
+  position:absolute;pointer-events:none;z-index:25;
+  background:rgba(0,5,25,.85);border:1px solid rgba(100,180,255,.2);
+  border-radius:8px;padding:5px 10px;
+  font-family:'Space Grotesk',sans-serif;font-size:.68rem;font-weight:600;
+  color:rgba(200,230,255,.9);letter-spacing:.06em;
+  backdrop-filter:blur(6px);opacity:0;transition:opacity .15s;
+  white-space:nowrap;
+}
+#tooltip.show{opacity:1;}
+</style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+
+<div id="titleBar">
+  <h1>Solar System</h1>
+  <div class="sub">Explorer</div>
+</div>
+
+<button id="backBtn" onclick="zoomOut()">← Back</button>
+
+<div id="minimap">
+  <canvas id="minimapCanvas"></canvas>
+  <div id="minimapLabel">Solar System</div>
+</div>
+
+<div id="zoomHint">scroll to zoom<br>drag to pan<br>tap to explore</div>
+
+<div id="tooltip"></div>
+
+<!-- FACT SHEET -->
+<div id="factSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-header">
+    <div class="sheet-icon" id="sheetIcon">🌍</div>
+    <div class="sheet-titles">
+      <div class="sheet-name" id="sheetName">Earth</div>
+      <div class="sheet-type" id="sheetType">Planet</div>
+    </div>
+    <button onclick="closeFactSheet()" style="background:none;border:none;color:rgba(100,180,255,.5);font-size:1.3rem;cursor:pointer;padding:4px;">✕</button>
+  </div>
+  <div id="factCards">
+    <div class="fact-track" id="factTrack"></div>
+  </div>
+  <div class="fact-nav" id="factNav"></div>
+</div>
+
+<script>
+'use strict';
+// ═══════════════════════════════════════════
+// CANVAS SETUP
+// ═══════════════════════════════════════════
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const mmCanvas = document.getElementById('minimapCanvas');
+const mmCtx = mmCanvas.getContext('2d');
+
+let W, H, DPR;
+function resize(){
+  DPR = Math.min(window.devicePixelRatio||1,2);
+  W = window.innerWidth; H = window.innerHeight;
+  canvas.width=W*DPR; canvas.height=H*DPR;
+  canvas.style.width=W+'px'; canvas.style.height=H+'px';
+  ctx.scale(DPR,DPR);
+  mmCanvas.width=140*DPR; mmCanvas.height=100*DPR;
+  mmCtx.scale(DPR,DPR);
+}
+window.addEventListener('resize',()=>{resize();});
+resize();
+
+// ═══════════════════════════════════════════
+// VIEW STATE
+// ═══════════════════════════════════════════
+let view = { x: 0, y: 0, zoom: 1 };
+let targetView = { x: 0, y: 0, zoom: 1 };
+let zoomed = false;      // are we zoomed into a planet?
+let zoomedObj = null;    // which object
+let animating = false;
+
+// ═══════════════════════════════════════════
+// SOLAR SYSTEM DATA
+// ═══════════════════════════════════════════
+const SUN_R = 52;
+
+// Orbital radii (canvas units from center) — compressed but ordered
+const ORBITS = [75, 118, 158, 196, 420, 575, 740, 905, 1000];
+// Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto
+
+function mkFacts(arr){ return arr; }
+
+const OBJECTS = [
+  {
+    id:'sun', name:'The Sun', type:'Star', icon:'☀️',
+    r:SUN_R, orbitR:0, orbitSpeed:0, angle:0,
+    color:'#FDB813',
+    draw: drawSun,
+    facts: mkFacts([
+      {label:'What is it?', text:'The Sun is a <strong>giant ball of hot gas</strong> called plasma. It\'s so big that about <strong>1.3 million Earths</strong> could fit inside it!'},
+      {label:'How hot?', text:'The surface of the Sun is about <strong>5,500°C</strong> — that\'s hotter than anything on Earth. But the outer atmosphere (corona) is even hotter at over <strong>1 million°C!</strong>'},
+      {label:'Distance from Earth', text:'The Sun is about <strong>150 million kilometres</strong> from Earth. Light from the Sun takes <strong>8 minutes and 20 seconds</strong> to reach us.'},
+      {label:'How old?', text:'The Sun is about <strong>4.6 billion years old</strong> — roughly halfway through its life. It has enough fuel to shine for another 5 billion years!'},
+      {label:'Wow fact!', text:'The Sun contains <strong>99.86%</strong> of all the mass in our entire solar system. Everything else — all the planets, moons, and asteroids — make up just 0.14%.'},
+      {label:'Did you know?', text:'The Sun is actually a <strong>medium-sized star</strong>. Some stars in the galaxy are so big that if they were placed where our Sun is, they would swallow Jupiter!'},
+      {label:'Solar wind', text:'The Sun constantly blows a stream of particles called <strong>solar wind</strong> into space. This is what causes the beautiful Northern Lights on Earth!'},
+    ]),
+    moons:[]
+  },
+  {
+    id:'mercury', name:'Mercury', type:'Planet', icon:'🪨',
+    r:7, orbitR:ORBITS[0], orbitSpeed:0.0020, angle:0.8,
+    color:'#9E8E7A',
+    draw: drawMercury,
+    facts: mkFacts([
+      {label:'Size', text:'Mercury is the <strong>smallest planet</strong> in our solar system — only slightly bigger than Earth\'s Moon. You could fit Mercury inside Earth <strong>18 times!</strong>'},
+      {label:'Distance from Sun', text:'Mercury is the <strong>closest planet to the Sun</strong>, only 57.9 million kilometres away. But it\'s not the hottest planet — that\'s Venus!'},
+      {label:'A year on Mercury', text:'Mercury moves so fast that its year (one trip around the Sun) lasts only <strong>88 Earth days</strong>. But one day on Mercury lasts <strong>59 Earth days!</strong>'},
+      {label:'Temperature', text:'Without an atmosphere to trap heat, Mercury swings from <strong>430°C during the day</strong> to <strong>-180°C at night</strong> — the biggest temperature swing of any planet!'},
+      {label:'Wow fact!', text:'Mercury has <strong>huge cliffs</strong> called scarps that stretch hundreds of kilometres long. Scientists think they formed as Mercury\'s core slowly shrank and the surface wrinkled!'},
+      {label:'No moons!', text:'Mercury has <strong>no moons and no rings</strong>. It\'s one of only two planets in our solar system without a moon — the other is Venus.'},
+    ]),
+    moons:[]
+  },
+  {
+    id:'venus', name:'Venus', type:'Planet', icon:'🌕',
+    r:13, orbitR:ORBITS[1], orbitSpeed:0.0028, angle:2.1,
+    color:'#E8C270',
+    draw: drawVenus,
+    facts: mkFacts([
+      {label:'Size', text:'Venus is almost exactly the same size as Earth — sometimes called Earth\'s twin. But that\'s where the similarities end!'},
+      {label:'Distance from Sun', text:'Venus is <strong>108 million kilometres</strong> from the Sun. It\'s the <strong>brightest object</strong> in our night sky after the Moon — you can even see it during the day!'},
+      {label:'Hottest planet!', text:'Venus is the <strong>hottest planet</strong> at 465°C — even hotter than Mercury! Its thick atmosphere of carbon dioxide traps heat like a giant greenhouse.'},
+      {label:'Backwards spin', text:'Venus spins <strong>backwards</strong> compared to most planets! On Venus, the Sun rises in the west and sets in the east. And one day on Venus is longer than its year!'},
+      {label:'Crushing pressure', text:'The air pressure on Venus is <strong>90 times stronger than on Earth</strong> — like being nearly 1 kilometre underwater. Spacecraft sent there are crushed within hours!'},
+      {label:'Wow fact!', text:'Venus is covered in <strong>thousands of volcanoes</strong>. Scientists think some might still be active today, making Venus one of the most volcanically active places in the solar system!'},
+    ]),
+    moons:[]
+  },
+  {
+    id:'earth', name:'Earth', type:'Planet', icon:'🌍',
+    r:14, orbitR:ORBITS[2], orbitSpeed:0.0024, angle:4.0,
+    color:'#3FA7D6',
+    draw: drawEarth,
+    facts: mkFacts([
+      {label:'Our home!', text:'Earth is the <strong>only planet known to have life</strong>. It\'s the perfect distance from the Sun — not too hot, not too cold — called the <strong>Goldilocks Zone!</strong>'},
+      {label:'Size & distance', text:'Earth is about <strong>12,742 km wide</strong> and sits <strong>150 million km from the Sun</strong>. One trip around the Sun takes exactly <strong>365.25 days</strong> — that\'s why we have a leap year!'},
+      {label:'Water world', text:'About <strong>71% of Earth\'s surface is covered in water</strong>. Our planet is the only one in the solar system with liquid water on its surface — which is essential for life!'},
+      {label:'The atmosphere', text:'Earth\'s atmosphere is a thin blanket of gases that keeps us warm, gives us air to breathe, and protects us from harmful radiation. Without it, the temperature would swing wildly like Mercury!'},
+      {label:'Plate tectonics', text:'Earth\'s surface is made of huge moving pieces called <strong>tectonic plates</strong>. When they crash together, they create mountains and earthquakes. They move at about the speed your fingernails grow!'},
+      {label:'Wow fact!', text:'Earth is actually <strong>not perfectly round</strong>! It bulges at the equator because of its spin, making it slightly wider around the middle than from pole to pole.'},
+    ]),
+    moons:[
+      {id:'moon', name:'The Moon', icon:'🌕', r:5, orbitR:58, orbitSpeed:0.00104, angle:0,
+       facts:mkFacts([
+        {label:'Our Moon', text:'The Moon is Earth\'s only natural satellite. It\'s the <strong>fifth-largest moon</strong> in the solar system and the largest relative to the size of its planet!'},
+        {label:'Distance', text:'The Moon is about <strong>384,400 km from Earth</strong>. Light from the Moon takes <strong>1.3 seconds</strong> to reach us. Astronauts took about 3 days to get there!'},
+        {label:'Tidal lock', text:'The Moon is <strong>tidally locked</strong> to Earth, meaning we always see the same side. The "far side" of the Moon was only photographed for the first time in 1959!'},
+        {label:'Wow fact!', text:'The Moon is slowly moving <strong>away from Earth</strong> at about 3.8 cm per year — about the same rate your fingernails grow. In billions of years, our nights will be much darker!'},
+        {label:'Moonquakes!', text:'The Moon has <strong>moonquakes!</strong> Seismometers left by Apollo astronauts detected thousands of them. Some last over 10 minutes — much longer than earthquakes on Earth.'},
+       ])}
+    ]
+  },
+  {
+    id:'mars', name:'Mars', type:'Planet', icon:'🔴',
+    r:18, orbitR:ORBITS[3], orbitSpeed:0.0016, angle:1.0,
+    color:'#C1440E',
+    draw: drawMars,
+    facts: mkFacts([
+      {label:'The Red Planet', text:'Mars gets its red colour from <strong>iron oxide (rust)</strong> covering its surface. Its sky is a pinkish-tan colour during the day, and turns blue around sunset!'},
+      {label:'Size & distance', text:'Mars is about <strong>half the size of Earth</strong> and orbits the Sun at <strong>228 million km away</strong>. One year on Mars lasts <strong>687 Earth days.</strong>'},
+      {label:'Tallest mountain', text:'<strong>Olympus Mons</strong> on Mars is the tallest volcano in the solar system — nearly <strong>3 times the height of Mount Everest!</strong> It\'s so wide it would cover France.'},
+      {label:'Giant canyon', text:'<strong>Valles Marineris</strong> is a canyon system on Mars so big it would stretch across the entire United States. It\'s <strong>10 times longer and 5 times deeper</strong> than the Grand Canyon!'},
+      {label:'Thin air', text:'The atmosphere on Mars is very thin — mostly carbon dioxide. Air pressure is less than 1% of Earth\'s, so without a spacesuit, your blood would boil!'},
+      {label:'Wow fact!', text:'Mars has the <strong>largest dust storms</strong> in the solar system. They can cover the entire planet and last for months, blocking sunlight and dramatically cooling the surface.'},
+    ]),
+    moons:[
+      {id:'phobos', name:'Phobos', icon:'🪨', r:3, orbitR:42, orbitSpeed:0.00125, angle:0,
+       facts:mkFacts([
+        {label:'Phobos', text:'Phobos is Mars\'s larger moon and one of the <strong>smallest moons in the solar system</strong>. It\'s so small that a marathon runner could run around its equator in just 4 hours!'},
+        {label:'Getting closer!', text:'Unlike Earth\'s Moon, Phobos is actually <strong>getting closer to Mars</strong>. In about 50 million years, it will either crash into Mars or break apart and form a ring!'},
+        {label:'Speed demon', text:'Phobos orbits Mars so fast that it goes around the planet <strong>three times a day!</strong> From Mars\'s surface, it rises in the west and sets in the east.'},
+       ])},
+      {id:'deimos', name:'Deimos', icon:'🪨', r:2, orbitR:62, orbitSpeed:0.00146, angle:2.5,
+       facts:mkFacts([
+        {label:'Deimos', text:'Deimos is the smaller and more distant of Mars\'s two moons. Its name means <strong>"dread"</strong> in Greek. It\'s one of the smallest known moons in the solar system.'},
+        {label:'Tiny world', text:'Deimos is only about <strong>12 km across</strong> — roughly the size of a city! Its gravity is so weak that if you jumped hard, you could escape into space.'},
+        {label:'Wow fact', text:'From the Martian surface, Deimos looks like a <strong>bright star</strong> rather than a moon — it\'s so small and far away. You can only tell it\'s a moon because it moves across the sky.'},
+       ])},
+    ]
+  },
+  {
+    id:'asteroidbelt', name:'Asteroid Belt', type:'Feature', icon:'☄️',
+    r:0, orbitR:(ORBITS[3]+ORBITS[4])/2, orbitSpeed:0, angle:0,
+    isAsteroidBelt:true,
+    facts: mkFacts([
+      {label:'What is it?', text:'The Asteroid Belt is a <strong>region of space between Mars and Jupiter</strong> filled with millions of rocky objects called asteroids — leftover material from when the solar system formed!'},
+      {label:'How big?', text:'Despite having millions of asteroids, if you added them all together, their total mass would be <strong>less than 4% of the Moon!</strong> Space is mostly... empty space.'},
+      {label:'Ceres', text:'The largest object in the Asteroid Belt is <strong>Ceres</strong>, a dwarf planet about 940 km wide. It\'s so large that it has enough gravity to pull itself into a round shape.'},
+      {label:'Not crowded!', text:'Movies show asteroid belts as crowded dangerous places, but in reality, spacecraft fly through the Asteroid Belt regularly. The average distance between asteroids is <strong>hundreds of thousands of km!</strong>'},
+      {label:'Wow fact!', text:'Some asteroids have <strong>their own moons!</strong> The asteroid Ida has a tiny moon called Dactyl, only about 1.4 km wide — discovered when the Galileo spacecraft flew past in 1993.'},
+    ]),
+    moons:[]
+  },
+  {
+    id:'jupiter', name:'Jupiter', type:'Planet', icon:'🟠',
+    r:38, orbitR:ORBITS[4], orbitSpeed:0.00075, angle:3.5,
+    color:'#C88B3A',
+    draw: drawJupiter,
+    facts: mkFacts([
+      {label:'The Giant!', text:'Jupiter is the <strong>largest planet</strong> in our solar system — so big that <strong>all other planets could fit inside it</strong> with room to spare! It\'s wider than 11 Earths side by side.'},
+      {label:'Distance from Sun', text:'Jupiter is <strong>778 million km from the Sun</strong>. It\'s so far away that sunlight takes <strong>43 minutes</strong> to reach it. One Jupiter year equals 12 Earth years.'},
+      {label:'The Great Red Spot', text:'Jupiter\'s famous <strong>Great Red Spot</strong> is a storm bigger than Earth that has been raging for at least <strong>350 years!</strong> Though it\'s slowly shrinking over time.'},
+      {label:'Not solid!', text:'Jupiter has <strong>no solid surface</strong>. It\'s made mostly of hydrogen and helium gas. If you tried to land on Jupiter, you\'d just sink deeper and deeper into gas under crushing pressure!'},
+      {label:'Fastest spinner', text:'Despite being the biggest planet, Jupiter spins the fastest — one day on Jupiter is only <strong>10 hours long!</strong> This fast spin causes its distinctive striped bands of clouds.'},
+      {label:'Protector', text:'Jupiter acts as a <strong>giant shield</strong> for Earth. Its massive gravity attracts many asteroids and comets that might otherwise hit the inner planets. It may have made life on Earth possible!'},
+      {label:'Wow fact!', text:'Jupiter has <strong>95 known moons</strong> — more than any other planet. Four large moons (the Galilean moons) were discovered by Galileo in 1610 with a simple telescope!'},
+    ]),
+    moons:[
+      {id:'io', name:'Io', icon:'🟡', r:5, orbitR:90, orbitSpeed:0.00167, angle:0, color:'#E8C84A',
+       facts:mkFacts([
+        {label:'Volcanic world!', text:'Io is the <strong>most volcanically active world</strong> in the solar system! It has hundreds of volcanoes, some spewing lava fountains <strong>hundreds of kilometres high</strong> into space.'},
+        {label:'Why so volcanic?', text:'Io is constantly being squeezed and stretched by Jupiter\'s massive gravity (and the other moons). This <strong>tidal flexing</strong> generates enormous heat, driving all the volcanic activity.'},
+        {label:'Colourful surface', text:'Io\'s surface is covered in sulphur from the volcanoes, giving it a <strong>yellow, orange, red, and white</strong> patchwork — sometimes described as a giant pizza!'},
+       ])},
+      {id:'europa', name:'Europa', icon:'🔵', r:5, orbitR:118, orbitSpeed:0.00125, angle:1.5, color:'#A8C8E8',
+       facts:mkFacts([
+        {label:'Ocean world!', text:'Europa has a <strong>global ocean of liquid water</strong> beneath its icy crust — possibly containing <strong>twice as much water as all of Earth\'s oceans combined!</strong>'},
+        {label:'Could there be life?', text:'Europa is considered one of the <strong>best places to search for life</strong> beyond Earth! The ocean might have the right conditions — liquid water, chemistry, and energy from tidal heating.'},
+        {label:'Cracked ice', text:'Europa\'s surface is covered in a web of <strong>reddish cracks and ridges</strong>. The icy crust is constantly shifting, erasing craters and creating new patterns — like a cosmic jigsaw puzzle!'},
+       ])},
+      {id:'ganymede', name:'Ganymede', icon:'⚪', r:7, orbitR:150, orbitSpeed:0.00092, angle:3, color:'#8A8A9A',
+       facts:mkFacts([
+        {label:'Biggest moon ever!', text:'Ganymede is the <strong>largest moon in the entire solar system</strong> — bigger than the planet Mercury! If it orbited the Sun instead of Jupiter, it would be considered a planet.'},
+        {label:'Own magnetic field', text:'Ganymede is the <strong>only moon in the solar system with its own magnetic field</strong>. This creates small auroras (northern lights) near its poles — beautiful light shows in space!'},
+        {label:'Ice and rock', text:'Ganymede is made of roughly equal parts <strong>rock and ice</strong>. Like Europa, it probably has a layer of salty liquid water deep beneath its surface.'},
+       ])},
+      {id:'callisto', name:'Callisto', icon:'🌑', r:6, orbitR:190, orbitSpeed:0.00063, angle:5, color:'#5A5A6A',
+       facts:mkFacts([
+        {label:'Most cratered', text:'Callisto has the <strong>most cratered surface</strong> of any object in the solar system — it\'s been bombarded for billions of years with almost no geological activity to erase the craters.'},
+        {label:'Very old surface', text:'Callisto\'s surface is thought to be about <strong>4 billion years old</strong> — one of the oldest surfaces in the solar system. It\'s like a time capsule from the early solar system!'},
+        {label:'Future base?', text:'Callisto is outside Jupiter\'s intense radiation belts, making it potentially the <strong>safest of Jupiter\'s moons</strong> for a future human base to explore the Jovian system.'},
+       ])},
+      // Remaining moons shown as dots
+      ...[...Array(8)].map((_,i)=>({id:`jm${i}`, name:'', r:1.5, orbitR:225+i*15, orbitSpeed:0.00067-i*0.00005, angle:i*0.8, dot:true}))
+    ]
+  },
+  {
+    id:'saturn', name:'Saturn', type:'Planet', icon:'🪐',
+    r:32, orbitR:ORBITS[5], orbitSpeed:0.00040, angle:1.8,
+    color:'#E8D5A0',
+    draw: drawSaturn,
+    hasRings:true,
+    facts: mkFacts([
+      {label:'Lord of the Rings', text:'Saturn has the most <strong>spectacular ring system</strong> in the solar system — billions of pieces of ice and rock ranging from tiny grains to chunks as big as houses, spread across <strong>282,000 km!</strong>'},
+      {label:'Floats on water!', text:'Saturn is the <strong>least dense planet</strong> — less dense than water! If you had a bathtub big enough, Saturn would actually <strong>float in it!</strong>'},
+      {label:'Distance from Sun', text:'Saturn is <strong>1.4 billion km from the Sun</strong>. One Saturn year lasts nearly <strong>30 Earth years</strong>. The Cassini spacecraft took 7 years just to travel there!'},
+      {label:'Giant storm', text:'Saturn has a bizarre <strong>hexagonal storm at its north pole</strong> — a six-sided hurricane wider than Earth that has persisted for decades. Nothing like it exists anywhere else in the solar system!'},
+      {label:'Lots of moons!', text:'Saturn has <strong>146 known moons</strong> — the most of any planet in the solar system! Many are tiny, but some like Titan are larger than planets.'},
+      {label:'Wow fact!', text:'Saturn\'s rings are surprisingly <strong>thin</strong> — despite being hundreds of thousands of km wide, they\'re only about <strong>10-100 metres thick</strong> in most places. Like a razor-thin sheet the size of a solar system!'},
+    ]),
+    moons:[
+      {id:'titan', name:'Titan', icon:'🟠', r:7, orbitR:80, orbitSpeed:0.00104, angle:0, color:'#D4A843',
+       facts:mkFacts([
+        {label:'Atmosphere!', text:'Titan is the <strong>only moon with a thick atmosphere</strong> — even thicker than Earth\'s! It\'s mostly nitrogen, just like our air, but with clouds of methane instead of water.'},
+        {label:'Rain and rivers', text:'Titan has <strong>rain, rivers, lakes, and seas</strong> — but made of liquid methane and ethane instead of water! It\'s like Earth, but with a completely different chemistry.'},
+        {label:'Could there be life?', text:'Some scientists think Titan could harbour life in its methane lakes — completely unlike Earth life, with <strong>no need for water or oxygen</strong>. Truly alien life!'},
+       ])},
+      {id:'enceladus', name:'Enceladus', icon:'⚪', r:3.5, orbitR:108, orbitSpeed:0.00146, angle:2, color:'#E8F4FF',
+       facts:mkFacts([
+        {label:'Ice geysers!', text:'Enceladus shoots <strong>giant jets of water vapour and ice</strong> from cracks near its south pole — so powerful they blast material all the way into space, feeding Saturn\'s rings!'},
+        {label:'Hidden ocean', text:'Beneath Enceladus\'s icy surface is a <strong>warm liquid water ocean</strong>, heated by tidal forces from Saturn. The water even contains organic molecules — ingredients for life!'},
+        {label:'Tiny but exciting', text:'Enceladus is only about <strong>500 km wide</strong> — small enough to fit inside the UK — but it\'s one of the most exciting places to search for life in the solar system.'},
+       ])},
+      {id:'mimas', name:'Mimas', icon:'⚫', r:3, orbitR:135, orbitSpeed:0.00187, angle:4, color:'#AAAAAA',
+       facts:mkFacts([
+        {label:'The Death Star Moon', text:'Mimas has a giant crater (Herschel) that makes it look <strong>just like the Death Star from Star Wars!</strong> The crater is so big that the impact nearly shattered the whole moon.'},
+        {label:'Surprisingly warm', text:'Scientists recently discovered that Mimas may have a <strong>hidden liquid water ocean</strong> beneath its icy crust — making this Death Star lookalike one of the solar system\'s most surprising worlds!'},
+       ])},
+      ...[...Array(9)].map((_,i)=>({id:`sm${i}`, name:'', r:1.5, orbitR:165+i*16, orbitSpeed:0.0008-i*0.00005, angle:i*1.1, dot:true}))
+    ]
+  },
+  {
+    id:'uranus', name:'Uranus', type:'Planet', icon:'🔵',
+    r:20, orbitR:ORBITS[6], orbitSpeed:0.00020, angle:5.2,
+    color:'#7DE8E8',
+    draw: drawUranus,
+    facts: mkFacts([
+      {label:'The tilted planet', text:'Uranus is tilted on its side — its axis tilts <strong>98 degrees</strong>! It basically rolls around the Sun like a bowling ball. Scientists think a massive collision knocked it sideways billions of years ago.'},
+      {label:'Ice giant', text:'Uranus is called an <strong>ice giant</strong> — its interior is full of a slushy mix of water, methane, and ammonia ice under enormous pressure. It\'s nothing like the gas giants Jupiter and Saturn.'},
+      {label:'Distance from Sun', text:'Uranus is <strong>2.9 billion km from the Sun</strong>. One Uranus year lasts <strong>84 Earth years!</strong> Only one spacecraft, Voyager 2, has ever visited — in 1986.'},
+      {label:'Extreme seasons', text:'Because of its extreme tilt, each pole gets <strong>42 years of continuous sunlight</strong> followed by 42 years of darkness! The longest seasons in the solar system.'},
+      {label:'Rings too!', text:'Uranus has <strong>13 known rings</strong>, but they\'re much thinner and darker than Saturn\'s. They were only discovered in 1977 when Uranus passed in front of a star and dimmed it.'},
+      {label:'Wow fact!', text:'Uranus is the <strong>coldest planet</strong> with temperatures reaching -224°C — even colder than Neptune, which is much further from the Sun. Scientists don\'t fully understand why!'},
+    ]),
+    moons:[
+      {id:'miranda', name:'Miranda', icon:'⚪', r:2.5, orbitR:48, orbitSpeed:0.00229, angle:1, color:'#AAAAAA',
+       facts:mkFacts([
+        {label:'Patchwork world', text:'Miranda looks like it was <strong>smashed apart and put back together wrong</strong>! It has a chaotic surface of canyons, cliffs, and terraces — scientists think it may have been shattered by a collision.'},
+        {label:'Verona Rupes', text:'Miranda has the <strong>tallest known cliff</strong> in the solar system — Verona Rupes, about <strong>20 km high</strong>. If you fell off it, the low gravity would give you about 12 minutes before you hit the bottom!'},
+       ])},
+      {id:'ariel', name:'Ariel', icon:'⚪', r:3.5, orbitR:68, orbitSpeed:0.00167, angle:3, color:'#BBBBBB',
+       facts:mkFacts([
+        {label:'Ariel', text:'Ariel is Uranus\'s <strong>brightest moon</strong>, with a surface crisscrossed by giant valleys and smooth plains. Its bright surface suggests relatively recent geological activity.'},
+        {label:'Shakespeare moon', text:'All of Uranus\'s major moons are named after characters from <strong>Shakespeare plays and Alexander Pope poems</strong>! Ariel comes from The Tempest — unique in our solar system.'},
+       ])},
+      {id:'umbriel', name:'Umbriel', icon:'⚫', r:3.5, orbitR:88, orbitSpeed:0.00125, angle:2, color:'#555555',
+       facts:mkFacts([
+        {label:'Dark and mysterious', text:'Umbriel is one of the <strong>darkest moons in the solar system</strong> — it reflects only about 10% of sunlight. Its surface is ancient and heavily cratered.'},
+        {label:'Mysterious bright ring', text:'Umbriel has one strange feature: a <strong>bright ring of material</strong> on its dark floor. Scientists don\'t know for sure what caused it — possibly ice from an ancient comet impact.'},
+       ])},
+      {id:'titania', name:'Titania', icon:'⚪', r:4, orbitR:110, orbitSpeed:0.00092, angle:4.5, color:'#AAAAAA',
+       facts:mkFacts([
+        {label:'Largest Uranian moon', text:'Titania is the <strong>largest of Uranus\'s 28 moons</strong>. Like the others, it\'s named after a Shakespeare character — the Queen of the Fairies from A Midsummer Night\'s Dream.'},
+        {label:'Giant faults', text:'Titania\'s surface shows <strong>huge fault systems and canyons</strong> up to 1,500 km long, suggesting the moon\'s interior expanded as water froze, cracking the surface open.'},
+       ])},
+      {id:'oberon', name:'Oberon', icon:'⚫', r:4, orbitR:135, orbitSpeed:0.00067, angle:1.5, color:'#777777',
+       facts:mkFacts([
+        {label:'Oberon', text:'Oberon is the <strong>outermost of Uranus\'s large moons</strong>. Its old, cratered surface and mysterious dark patches suggest a complex geological history we\'ve barely begun to understand.'},
+        {label:'Far from home', text:'Oberon was discovered by William Herschel in <strong>1787</strong> — the same night he discovered Titania. We still know very little about it, since only Voyager 2 has ever visited.'},
+       ])},
+      ...[...Array(5)].map((_,i)=>({id:`um${i}`, name:'', r:1.5, orbitR:158+i*12, orbitSpeed:0.00067-i*0.00005, angle:i*1.3, dot:true}))
+    ]
+  },
+  {
+    id:'neptune', name:'Neptune', type:'Planet', icon:'🔵',
+    r:18, orbitR:ORBITS[7], orbitSpeed:0.00015, angle:2.8,
+    color:'#4B70DD',
+    draw: drawNeptune,
+    facts: mkFacts([
+      {label:'Windiest planet', text:'Neptune has the <strong>strongest winds in the solar system</strong> — up to 2,100 km/h, faster than the speed of sound on Earth! It\'s truly the stormiest planet.'},
+      {label:'Far away!', text:'Neptune is <strong>4.5 billion km from the Sun</strong>. It takes sunlight <strong>4 hours and 10 minutes</strong> to reach Neptune. One Neptune year lasts <strong>165 Earth years!</strong>'},
+      {label:'The Great Dark Spot', text:'Neptune once had a storm called the <strong>Great Dark Spot</strong> as big as Earth — but when Hubble looked again in 1994, it had vanished! New storms come and go on Neptune regularly.'},
+      {label:'Predicted planet', text:'Neptune was the <strong>first planet discovered by mathematics</strong>, not by accident! Scientists noticed Uranus\'s orbit was being disturbed and calculated where a hidden planet must be — then found it exactly there!'},
+      {label:'Wow fact!', text:'Deep inside Neptune, the pressure might be so extreme that it could <strong>rain diamonds!</strong> Carbon atoms could be squeezed so hard they form diamonds that sink toward the core.'},
+    ]),
+    moons:[
+      {id:'triton', name:'Triton', icon:'🔵', r:5.5, orbitR:72, orbitSpeed:-0.00040, angle:0, color:'#88AACC',
+       facts:mkFacts([
+        {label:'Backwards orbit', text:'Triton orbits Neptune <strong>backwards</strong> — the only large moon in the solar system to orbit opposite to its planet\'s rotation. This suggests it was <strong>captured</strong> from the Kuiper Belt!'},
+        {label:'Icy geysers', text:'Triton has <strong>active geysers</strong> that shoot nitrogen gas and dark material several kilometres high into its thin atmosphere. It\'s one of the geologically active worlds in the outer solar system.'},
+        {label:'Doomed moon', text:'Because of its backwards orbit, Triton is <strong>slowly spiralling toward Neptune</strong>. In about 3.6 billion years, it will get close enough to break apart and form a spectacular ring system!'},
+        {label:'Cold!', text:'Triton is the <strong>coldest measured object in the solar system</strong> at -235°C. It\'s so cold that nitrogen — a gas on Earth — exists as frost on its surface.'},
+       ])},
+      ...[...Array(4)].map((_,i)=>({id:`nm${i}`, name:'', r:1.5, orbitR:100+i*14, orbitSpeed:0.0013-i*0.0002, angle:i*1.6, dot:true}))
+    ]
+  },
+  {
+    id:'pluto', name:'Pluto', type:'Dwarf Planet', icon:'🪐',
+    r:5, orbitR:ORBITS[8], orbitSpeed:0.00010, angle:0.5,
+    color:'#C4A882',
+    draw: drawPluto,
+    facts: mkFacts([
+      {label:'Dwarf planet', text:'Pluto was considered the 9th planet until 2006, when scientists reclassified it as a <strong>dwarf planet</strong>. It\'s part of a region called the Kuiper Belt full of icy objects.'},
+      {label:'Heart of Pluto', text:'When the New Horizons spacecraft flew past in 2015, it revealed a <strong>giant heart-shaped region</strong> of frozen nitrogen on Pluto\'s surface — officially named Tombaugh Regio!'},
+      {label:'Cold and far', text:'Pluto is about <strong>5.9 billion km from the Sun</strong> on average. It\'s so cold (-230°C) that its atmosphere <strong>freezes and falls as snow</strong> when it moves further from the Sun.'},
+      {label:'Big moon!', text:'Pluto has a moon, Charon, that\'s <strong>half the size of Pluto itself</strong>! They\'re so similar in size that some scientists call them a <strong>double dwarf planet system</strong>.'},
+      {label:'Mountains of ice', text:'Pluto has <strong>mountains of water ice</strong> as tall as the Rocky Mountains — in a place so cold that water ice is as hard as rock. These mountains are geologically young and scientists don\'t know why!'},
+      {label:'Wow fact!', text:'Pluto\'s orbit is so elliptical that it sometimes comes <strong>closer to the Sun than Neptune!</strong> Between 1979 and 1999, Neptune was actually the outermost planet.'},
+    ]),
+    moons:[
+      {id:'charon', name:'Charon', icon:'⚫', r:3.5, orbitR:30, orbitSpeed:0.00084, angle:1.5, color:'#888888',
+       facts:mkFacts([
+        {label:'Giant moon', text:'Charon is <strong>half the size of Pluto</strong> — proportionally the largest moon of any planet or dwarf planet. Together they almost form a <strong>double planet</strong>, orbiting each other!'},
+        {label:'Tidal lock — both ways!', text:'Pluto and Charon are <strong>both tidally locked to each other</strong>. They always show the same face to one another, like two dancers always facing each other as they spin.'},
+        {label:'Dark cap', text:'Charon has a mysterious <strong>dark reddish cap</strong> at its north pole. Scientists think it\'s formed from gases escaping Pluto\'s atmosphere, getting trapped and turned reddish by sunlight over time.'},
+       ])},
+    ]
+  },
+];
+
+// ═══════════════════════════════════════════
+// COMET
+// ═══════════════════════════════════════════
+const cometObj = {
+  id:'comet', name:"Halley's Comet", type:'Comet', icon:'☄️',
+  facts: mkFacts([
+    {label:'Famous visitor', text:'Halley\'s Comet swings past Earth every <strong>75–76 years</strong>. It last visited in 1986 and will return in <strong>2061</strong>. Humans have recorded every appearance for over 2,000 years!'},
+    {label:'Two tails!', text:'Comets grow <strong>two tails</strong> as they approach the Sun — a dust tail that curves behind it, and an ion tail that always points directly away from the Sun. Both can stretch for millions of kilometres!'},
+    {label:'Dirty snowball', text:'Comet nuclei are sometimes called <strong>"dirty snowballs"</strong> — a mix of ice, dust, and rock only a few kilometres wide. The glowing head (coma) can grow larger than a planet when it nears the Sun.'},
+    {label:'Ancient records', text:'The earliest confirmed sighting of Halley\'s Comet was in <strong>240 BC</strong> by Chinese astronomers. It even appears in the Bayeux Tapestry from 1066 — medieval people thought it was a bad omen!'},
+    {label:'Origins of life?', text:'Comets may have delivered <strong>water and organic molecules</strong> to the early Earth, possibly providing the ingredients that led to life. Some scientists call comets the seeds of life in the solar system.'},
+  ])
+};
+let comet = {
+  active: false,
+  x: -800, y: -600,
+  vx: 0.5, vy: 0.35,
+  tail: [],
+  timer: 0,
+  restTime: 600, // frames until next appearance
+};
+
+function resetComet(){
+  // Start from upper-left, move toward lower-right
+  comet.active = false;
+  comet.timer = comet.restTime + Math.random()*400;
+  comet.x = -820 + Math.random()*200;
+  comet.y = -620 + Math.random()*200;
+  comet.vx = 0.45 + Math.random()*0.2;
+  comet.vy = 0.28 + Math.random()*0.15;
+  comet.tail = [];
+}
+resetComet();
+
+// ═══════════════════════════════════════════
+// STARS
+// ═══════════════════════════════════════════
+const STARS = [];
+for(let i=0;i<300;i++){
+  STARS.push({
+    x: (Math.random()-0.5)*3000,
+    y: (Math.random()-0.5)*3000,
+    r: Math.random()<0.1?1.5:Math.random()<0.3?1:0.5,
+    b: 0.08+Math.random()*0.35,
+    phase: Math.random()*Math.PI*2,
+    speed: 0.01+Math.random()*0.02
+  });
+}
+
+// ═══════════════════════════════════════════
+// DRAWING FUNCTIONS
+// ═══════════════════════════════════════════
+// ── SHARED: sphere with limb darkening + highlight ──
+function sphere(cx,cy,r,c0,c1,c2){
+  // Base gradient (offset light source upper-left)
+  const g=ctx.createRadialGradient(cx-r*.32,cy-r*.32,r*.04,cx,cy,r);
+  g.addColorStop(0,c0); g.addColorStop(.55,c1); g.addColorStop(1,c2);
+  ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+  // Limb darkening
+  const ld=ctx.createRadialGradient(cx,cy,r*.55,cx,cy,r);
+  ld.addColorStop(0,'rgba(0,0,0,0)'); ld.addColorStop(1,'rgba(0,0,15,.5)');
+  ctx.fillStyle=ld; ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+  // Specular highlight
+  const hl=ctx.createRadialGradient(cx-r*.28,cy-r*.3,0,cx-r*.28,cy-r*.3,r*.52);
+  hl.addColorStop(0,'rgba(255,255,255,.18)'); hl.addColorStop(1,'rgba(255,255,255,0)');
+  ctx.fillStyle=hl; ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+}
+function clipCircle(cx,cy,r,fn){
+  ctx.save(); ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.clip(); fn(); ctx.restore();
+}
+
+function drawSun(ctx,x,y,r){
+  // Corona glow
+  const cg=ctx.createRadialGradient(x,y,r*.6,x,y,r*3.2);
+  cg.addColorStop(0,'rgba(255,190,40,.28)'); cg.addColorStop(.4,'rgba(255,120,10,.08)'); cg.addColorStop(1,'rgba(255,80,0,0)');
+  ctx.fillStyle=cg; ctx.beginPath(); ctx.arc(x,y,r*3.2,0,Math.PI*2); ctx.fill();
+  sphere(x,y,r,'#FFF8D0','#FFDD44','#E87010');
+  // Two clean sunspot hints
+  clipCircle(x,y,r,()=>{
+    ctx.globalAlpha=.22;
+    [{ox:.28,oy:-.22,sr:.09},{ox:-.3,oy:.25,sr:.07}].forEach(s=>{
+      const sg=ctx.createRadialGradient(x+s.ox*r,y+s.oy*r,0,x+s.ox*r,y+s.oy*r,s.sr*r);
+      sg.addColorStop(0,'rgba(160,60,0,.95)'); sg.addColorStop(1,'rgba(160,60,0,0)');
+      ctx.fillStyle=sg; ctx.beginPath(); ctx.arc(x+s.ox*r,y+s.oy*r,s.sr*r,0,Math.PI*2); ctx.fill();
+    });
+  });
+}
+
+function drawPlanetBase(ctx,x,y,r,colors){
+  sphere(x,y,r,colors[0],colors[1],colors[2]||colors[1]);
+}
+
+function drawMercury(ctx,x,y,r){
+  sphere(x,y,r,'#C8BCAC','#9A8A78','#6A5A48');
+  clipCircle(x,y,r,()=>{
+    ctx.globalAlpha=.22;
+    [[.28,-.18,.12],[-.22,.28,.08],[.05,.05,.1]].forEach(([ox,oy,cr])=>{
+      ctx.strokeStyle='rgba(60,40,20,.9)'; ctx.lineWidth=r*.03;
+      ctx.beginPath(); ctx.arc(x+ox*r,y+oy*r,cr*r,0,Math.PI*2); ctx.stroke();
+    });
+  });
+}
+
+function drawVenus(ctx,x,y,r){
+  sphere(x,y,r,'#F8ECC0','#EACC78','#C8A048');
+  clipCircle(x,y,r,()=>{
+    // Smooth cloud streaks
+    ctx.globalAlpha=.18; ctx.strokeStyle='rgba(255,248,200,.8)'; ctx.lineWidth=r*.12;
+    [-.3,-.05,.2,.42].forEach(yo=>{
+      ctx.beginPath(); ctx.ellipse(x,y+yo*r,r*.85,r*.05,0,0,Math.PI*2); ctx.stroke();
+    });
+  });
+}
+
+function drawEarth(ctx,x,y,r,rot=0){
+  sphere(x,y,r,'#72D8FF','#3AA8D6','#1060A0');
+  clipCircle(x,y,r,()=>{
+    // Continents — cleaner, properly clipped blobs
+    ctx.globalAlpha=.82; ctx.fillStyle='#3D9448';
+    const C=[
+      {x:-.12,y:-.2,rx:.26,ry:.38,a:.18},
+      {x:.22,y:-.08,rx:.2,ry:.4,a:-.08},
+      {x:.54,y:.06,rx:.16,ry:.25,a:.15},
+      {x:.48,y:.4,rx:.1,ry:.09,a:.25},
+      {x:-.28,y:.18,rx:.14,ry:.22,a:.3},
+    ];
+    C.forEach(c=>{
+      ctx.save(); ctx.translate(x+c.x*r,y+c.y*r); ctx.rotate(c.a);
+      ctx.beginPath(); ctx.ellipse(0,0,c.rx*r,c.ry*r,0,0,Math.PI*2); ctx.fill(); ctx.restore();
+    });
+    // Ice caps
+    ctx.globalAlpha=.9; ctx.fillStyle='rgba(238,248,255,.95)';
+    ctx.beginPath(); ctx.ellipse(x,y-r*.76,r*.34,r*.2,0,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(x,y+r*.82,r*.24,r*.15,0,0,Math.PI*2); ctx.fill();
+  });
+  // Atmosphere halo
+  const ag=ctx.createRadialGradient(x,y,r*.9,x,y,r*1.14);
+  ag.addColorStop(0,'rgba(110,170,255,.16)'); ag.addColorStop(1,'rgba(110,170,255,0)');
+  ctx.fillStyle=ag; ctx.beginPath(); ctx.arc(x,y,r*1.14,0,Math.PI*2); ctx.fill();
+}
+
+function drawMars(ctx,x,y,r){
+  sphere(x,y,r,'#E87858','#C03808','#7A2000');
+  clipCircle(x,y,r,()=>{
+    ctx.globalAlpha=.3;
+    // Polar cap
+    ctx.fillStyle='rgba(238,248,255,.92)';
+    ctx.beginPath(); ctx.ellipse(x,y-r*.76,r*.3,r*.18,0,0,Math.PI*2); ctx.fill();
+    // Valles Marineris — clean dark line
+    ctx.strokeStyle='rgba(50,10,0,.75)'; ctx.lineWidth=r*.08;
+    ctx.beginPath(); ctx.moveTo(x-r*.44,y+r*.06); ctx.bezierCurveTo(x-r*.1,y+r*.03,x+r*.15,y+r*.06,x+r*.4,y+r*.03); ctx.stroke();
+  });
+}
+
+function drawJupiter(ctx,x,y,r,rot=0){
+  sphere(x,y,r,'#EED4A8','#C88A38','#8A5818');
+  clipCircle(x,y,r,()=>{
+    // Clean bands
+    [{yo:-.56,h:.11,c:'rgba(145,78,22,.48)'},{yo:-.36,h:.09,c:'rgba(218,172,108,.3)'},{yo:-.14,h:.19,c:'rgba(138,68,16,.46)'},{yo:.13,h:.14,c:'rgba(195,132,52,.38)'},{yo:.36,h:.11,c:'rgba(135,65,18,.46)'},{yo:.56,h:.09,c:'rgba(208,155,72,.3)'}]
+      .forEach(b=>{ctx.fillStyle=b.c; ctx.fillRect(x-r,y+b.yo*r,r*2,b.h*r);});
+    // Great Red Spot
+    ctx.save(); ctx.translate(x+r*.18,y+r*.14);
+    const grs=ctx.createRadialGradient(0,0,0,0,0,r*.18);
+    grs.addColorStop(0,'rgba(175,48,20,.88)'); grs.addColorStop(.6,'rgba(158,32,8,.45)'); grs.addColorStop(1,'rgba(158,32,8,0)');
+    ctx.fillStyle=grs; ctx.beginPath(); ctx.ellipse(0,0,r*.18,r*.11,0,0,Math.PI*2); ctx.fill(); ctx.restore();
+  });
+}
+
+function drawSaturn(ctx,x,y,r,rot=0){
+  const rw=r*2.75,rh=r*.46;
+  function ringGrad(){
+    const g=ctx.createLinearGradient(x-rw,0,x+rw,0);
+    g.addColorStop(0,'rgba(180,150,80,0)'); g.addColorStop(.1,'rgba(195,168,108,.5)');
+    g.addColorStop(.3,'rgba(228,208,158,.78)'); g.addColorStop(.5,'rgba(185,158,92,.46)');
+    g.addColorStop(.7,'rgba(228,208,158,.78)'); g.addColorStop(.9,'rgba(195,168,108,.5)'); g.addColorStop(1,'rgba(180,150,80,0)');
+    return g;
+  }
+  // Back ring half
+  ctx.fillStyle=ringGrad(); ctx.beginPath(); ctx.ellipse(x,y,rw,rh*.48,0,Math.PI,Math.PI*2); ctx.fill();
+  // Planet
+  sphere(x,y,r,'#F8EEC8','#E8D8A8','#B89848');
+  clipCircle(x,y,r,()=>{
+    [{yo:-.28,h:.09,c:'rgba(155,122,48,.28)'},{yo:.08,h:.11,c:'rgba(145,112,42,.26)'},{yo:.32,h:.07,c:'rgba(155,122,48,.22)'}]
+      .forEach(b=>{ctx.fillStyle=b.c; ctx.fillRect(x-r,y+b.yo*r,r*2,b.h*r);});
+  });
+  // Front ring half
+  ctx.fillStyle=ringGrad(); ctx.beginPath(); ctx.ellipse(x,y,rw,rh*.48,0,0,Math.PI); ctx.fill();
+  // Cassini Division
+  ctx.save(); ctx.globalAlpha=.45; ctx.strokeStyle='rgba(0,0,0,.5)'; ctx.lineWidth=r*.055;
+  ctx.beginPath(); ctx.ellipse(x,y,rw*.73,rh*.73*.48,0,0,Math.PI); ctx.stroke(); ctx.restore();
+}
+
+function drawUranus(ctx,x,y,r){
+  sphere(x,y,r,'#B0F4F4','#80E8E8','#48C8C8');
+  clipCircle(x,y,r,()=>{
+    ctx.globalAlpha=.12; ctx.fillStyle='rgba(100,200,220,.6)';
+    [-r*.08,r*.04].forEach(yo=>ctx.fillRect(x-r,y+yo,r*2,r*.1));
+  });
+  // Rings (tilted — Uranus is on its side)
+  ctx.save(); ctx.globalAlpha=.28; ctx.strokeStyle='rgba(120,238,238,.65)'; ctx.lineWidth=Math.max(.8,r*.032);
+  ctx.beginPath(); ctx.ellipse(x,y,r*1.52,r*.26,Math.PI/7,0,Math.PI*2); ctx.stroke();
+  ctx.beginPath(); ctx.ellipse(x,y,r*1.7,r*.29,Math.PI/7,0,Math.PI*2); ctx.stroke();
+  ctx.restore();
+}
+
+function drawNeptune(ctx,x,y,r){
+  sphere(x,y,r,'#6898FF','#4468DD','#2238AA');
+  clipCircle(x,y,r,()=>{
+    ctx.globalAlpha=.42;
+    // Dark storm spot
+    const sg=ctx.createRadialGradient(x-r*.2,y+r*.12,0,x-r*.2,y+r*.12,r*.2);
+    sg.addColorStop(0,'rgba(10,10,80,.85)'); sg.addColorStop(1,'rgba(10,10,80,0)');
+    ctx.fillStyle=sg; ctx.beginPath(); ctx.arc(x-r*.2,y+r*.12,r*.2,0,Math.PI*2); ctx.fill();
+    // Wind bands
+    ctx.strokeStyle='rgba(140,175,255,.38)'; ctx.lineWidth=r*.05;
+    ctx.beginPath(); ctx.ellipse(x,y-r*.18,r*.88,r*.07,0,0,Math.PI*2); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(x,y+r*.22,r*.82,r*.065,0,0,Math.PI*2); ctx.stroke();
+  });
+}
+
+function drawPluto(ctx,x,y,r){
+  sphere(x,y,r,'#D8C8A8','#C4A880','#986850');
+  clipCircle(x,y,r,()=>{
+    ctx.globalAlpha=.52; ctx.fillStyle='rgba(238,232,215,.88)';
+    // Heart shape — Tombaugh Regio
+    ctx.save(); ctx.translate(x+r*.04,y+r*.1); const s=r*.017;
+    ctx.beginPath(); ctx.moveTo(0,-8*s);
+    ctx.bezierCurveTo(8*s,-16*s,16*s,-8*s,0,4*s);
+    ctx.bezierCurveTo(-16*s,-8*s,-8*s,-16*s,0,-8*s);
+    ctx.fill(); ctx.restore();
+  });
+}
+
+function drawMoon(ctx,x,y,r,color='#AAAAAA'){
+  // Simple clean sphere for moons
+  const g=ctx.createRadialGradient(x-r*.3,y-r*.3,r*.04,x,y,r);
+  g.addColorStop(0,'rgba(255,255,255,.35)'); g.addColorStop(1,'rgba(0,0,0,0)');
+  sphere(x,y,r,shiftColor(color,40),color,shiftColor(color,-35));
+}
+function shiftColor(hex,amt){
+  try {
+    const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+    return `rgb(${Math.max(0,Math.min(255,r+amt))},${Math.max(0,Math.min(255,g+amt))},${Math.max(0,Math.min(255,b+amt))})`;
+  } catch(e){ return hex; }
+}
+function lightenColor(hex,amt){ return shiftColor(hex,amt); }
+function darkenColor(hex,amt){ return shiftColor(hex,-amt); }
+
+// ═══════════════════════════════════════════
+// ANIMATION TICK
+// ═══════════════════════════════════════════
+let time = 0;
+const ORBIT_SPEED_MULTIPLIER = 1.6;
+
+function getWorldPos(obj){
+  if(obj.orbitR===0) return {x:0,y:0};
+  const a = obj.angle + time*obj.orbitSpeed*ORBIT_SPEED_MULTIPLIER;
+  return {x: Math.cos(a)*obj.orbitR, y: Math.sin(a)*obj.orbitR};
+}
+
+function getMoonWorldPos(moon, planetX, planetY){
+  const a = moon.angle + time*moon.orbitSpeed*ORBIT_SPEED_MULTIPLIER;
+  return {x: planetX+Math.cos(a)*moon.orbitR, y: planetY+Math.sin(a)*moon.orbitR};
+}
+
+// Screen space conversion
+function toScreen(wx,wy){
+  return {
+    x: W/2 + (wx-view.x)*view.zoom,
+    y: H/2 + (wy-view.y)*view.zoom
+  };
+}
+function toWorld(sx,sy){
+  return {
+    x: view.x + (sx-W/2)/view.zoom,
+    y: view.y + (sy-H/2)/view.zoom
+  };
+}
+
+// ═══════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════
+function drawStars(){
+  STARS.forEach(s=>{
+    const sc=toScreen(s.x,s.y);
+    if(sc.x<-10||sc.x>W+10||sc.y<-10||sc.y>H+10) return;
+    const b=s.b*(0.6+0.4*Math.sin(time*s.speed+s.phase));
+    ctx.globalAlpha=b;
+    ctx.fillStyle='white';
+    ctx.beginPath(); ctx.arc(sc.x,sc.y,s.r,0,Math.PI*2); ctx.fill();
+  });
+  ctx.globalAlpha=1;
+}
+
+function drawComet(){
+  if(!comet.active) return;
+  const sc=toScreen(comet.x,comet.y);
+  const tailLen=comet.tail.length;
+  comet.tail.forEach((pt,i)=>{
+    const sp=toScreen(pt.x,pt.y);
+    const t=i/tailLen;
+    ctx.globalAlpha=t*0.4;
+    ctx.fillStyle=`hsl(${180+t*60},80%,${80+t*20}%)`;
+    const tr=Math.max(0.5,(1-t)*2.5*view.zoom);
+    ctx.beginPath(); ctx.arc(sp.x,sp.y,tr,0,Math.PI*2); ctx.fill();
+  });
+  ctx.globalAlpha=1;
+  // Head
+  const cg=ctx.createRadialGradient(sc.x,sc.y,0,sc.x,sc.y,4*view.zoom);
+  cg.addColorStop(0,'rgba(255,255,255,1)');
+  cg.addColorStop(.4,'rgba(180,230,255,.8)');
+  cg.addColorStop(1,'rgba(100,200,255,0)');
+  ctx.fillStyle=cg; ctx.beginPath(); ctx.arc(sc.x,sc.y,4*view.zoom,0,Math.PI*2); ctx.fill();
+}
+
+function drawAsteroidBelt(){
+  const obj=OBJECTS.find(o=>o.id==='asteroidbelt');
+  const innerR=ORBITS[3], outerR=ORBITS[4];
+  const midR=(innerR+outerR)/2;
+  const beltW=(outerR-innerR)*.22;
+
+  // Draw many small asteroids in the belt
+  const count=55;
+  for(let i=0;i<count;i++){
+    const a=(i/count)*Math.PI*2+(time*0.002*(i%3===0?1:i%3===1?1.2:0.8));
+    const r=midR+(Math.sin(i*7.3+1.2))*beltW*.45;
+    const wx=Math.cos(a)*r, wy=Math.sin(a)*r;
+    const sc=toScreen(wx,wy);
+    if(sc.x<-5||sc.x>W+5||sc.y<-5||sc.y>H+5) continue;
+    const sz=(1.5+Math.sin(i*3.7)*.6)*view.zoom;
+    ctx.globalAlpha=0.4+Math.sin(i*2.1)*.2;
+    ctx.fillStyle=i%5===0?'#EED8A8':'#D4B878';
+    ctx.beginPath(); ctx.arc(sc.x,sc.y,Math.max(0.5,sz),0,Math.PI*2); ctx.fill();
+  }
+  ctx.globalAlpha=1;
+}
+
+let hoveredObj = null;
+
+function render(){
+  ctx.clearRect(0,0,W,H);
+
+  // Deep space background gradient
+  const bg=ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,Math.max(W,H));
+  bg.addColorStop(0,'#00000f');
+  bg.addColorStop(.5,'#000008');
+  bg.addColorStop(1,'#000005');
+  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+
+  drawStars();
+  if(!(zoomed && zoomedObj && zoomedObj.isAsteroidBelt)) drawComet();
+
+  if(zoomed && zoomedObj && zoomedObj.id!=='asteroidbelt' && zoomedObj.id!=='comet'){
+    renderPlanetView();
+  } else {
+    renderSystemView();
+  }
+
+  renderMinimap();
+}
+
+function renderSystemView(){
+  const beltZoomed = zoomed && zoomedObj && zoomedObj.isAsteroidBelt;
+
+  // Orbit paths
+  OBJECTS.forEach(obj=>{
+    if(!obj.orbitR) return;
+    if(obj.isAsteroidBelt) return;
+    const sc=toScreen(0,0);
+    ctx.strokeStyle='rgba(100,160,255,.18)';
+    ctx.lineWidth=1.5;
+    ctx.setLineDash([4,8]);
+    ctx.beginPath(); ctx.arc(sc.x,sc.y,obj.orbitR*view.zoom,0,Math.PI*2); ctx.stroke();
+    ctx.setLineDash([]);
+  });
+
+  // Asteroid belt
+  drawAsteroidBelt();
+
+  // Draw all objects
+  OBJECTS.forEach(obj=>{
+    if(obj.isAsteroidBelt) return;
+    if(beltZoomed) return; // hide planets when belt is zoomed
+    const wp=getWorldPos(obj);
+    const sc=toScreen(wp.x,wp.y);
+    if(sc.x<-200||sc.x>W+200||sc.y<-200||sc.y>H+200) return;
+
+    const displayR=obj.r*view.zoom;
+    if(displayR<1) return;
+
+    ctx.save();
+    if(obj.draw){
+      const rot=time*0.003;
+      if(obj.id==='earth') drawEarth(ctx,sc.x,sc.y,displayR,rot);
+      else if(obj.id==='jupiter') drawJupiter(ctx,sc.x,sc.y,displayR,rot);
+      else if(obj.id==='saturn') drawSaturn(ctx,sc.x,sc.y,displayR,rot);
+      else obj.draw(ctx,sc.x,sc.y,displayR,rot);
+    }
+
+    // Label
+    if(view.zoom>0.6 && obj.id!=='sun'){
+      ctx.fillStyle='rgba(200,220,255,.7)';
+      ctx.font=`${Math.max(9,Math.min(13,view.zoom*11))}px Space Grotesk`;
+      ctx.textAlign='center';
+      ctx.fillText(obj.name, sc.x, sc.y+displayR+12);
+    }
+    ctx.restore();
+  });
+
+  // Asteroid belt click zone (invisible circle for interaction)
+}
+
+function renderPlanetView(){
+  const obj=zoomedObj;
+  const cx=W/2, cy=H/2;
+  const pr=obj.r*view.zoom;
+
+  // Draw the planet large
+  ctx.save();
+  const rot=time*0.003;
+  if(obj.id==='earth') drawEarth(ctx,cx,cy,pr,rot);
+  else if(obj.id==='jupiter') drawJupiter(ctx,cx,cy,pr,rot);
+  else if(obj.id==='saturn') drawSaturn(ctx,cx,cy,pr,rot);
+  else if(obj.draw) obj.draw(ctx,cx,cy,pr,rot);
+  else drawPlanetBase(ctx,cx,cy,pr,['#888','#666']);
+  ctx.restore();
+
+  // Moons
+  obj.moons.forEach(moon=>{
+    const mr=moon.orbitR*view.zoom;
+    // Orbit circle
+    ctx.strokeStyle=moon.dot?'rgba(100,160,255,.06)':'rgba(100,160,255,.15)';
+    ctx.lineWidth=1; ctx.setLineDash([3,6]);
+    ctx.beginPath(); ctx.arc(cx,cy,mr,0,Math.PI*2); ctx.stroke();
+    ctx.setLineDash([]);
+
+    const ma=moon.angle+time*moon.orbitSpeed*ORBIT_SPEED_MULTIPLIER;
+    const mx=cx+Math.cos(ma)*mr, my=cy+Math.sin(ma)*mr;
+    const moonR=moon.r*view.zoom*.7;
+
+    if(moon.dot){
+      // Non-clickable dot moons
+      ctx.globalAlpha=0.35;
+      ctx.fillStyle='rgba(150,160,180,1)';
+      ctx.beginPath(); ctx.arc(mx,my,Math.max(1,moonR),0,Math.PI*2); ctx.fill();
+      ctx.globalAlpha=1;
+    } else {
+      drawMoon(ctx,mx,my,moonR,moon.color||'#AAAAAA');
+      // Label
+      ctx.fillStyle='rgba(200,220,255,.7)';
+      ctx.font=`${Math.max(8,Math.min(12,view.zoom*9))}px Space Grotesk`;
+      ctx.textAlign='center';
+      ctx.fillText(moon.name,mx,my+moonR+11);
+    }
+  });
+}
+
+// ═══════════════════════════════════════════
+// MINIMAP
+// ═══════════════════════════════════════════
+function renderMinimap(){
+  mmCtx.clearRect(0,0,140,100);
+  const mmW=140, mmH=100;
+  const scale=mmW/(ORBITS[8]*2.4);
+  const cx=mmW/2, cy=mmH/2;
+
+  OBJECTS.forEach(obj=>{
+    if(obj.isAsteroidBelt||!obj.orbitR) return;
+    mmCtx.strokeStyle='rgba(100,160,255,.12)';
+    mmCtx.lineWidth=.5; mmCtx.setLineDash([2,4]);
+    mmCtx.beginPath(); mmCtx.arc(cx,cy,obj.orbitR*scale,0,Math.PI*2); mmCtx.stroke();
+    mmCtx.setLineDash([]);
+  });
+
+  // Sun
+  mmCtx.fillStyle='#FDB813';
+  mmCtx.beginPath(); mmCtx.arc(cx,cy,2.5,0,Math.PI*2); mmCtx.fill();
+
+  OBJECTS.forEach(obj=>{
+    if(obj.id==='sun'||obj.isAsteroidBelt) return;
+    const wp=getWorldPos(obj);
+    const sx=cx+wp.x*scale, sy=cy+wp.y*scale;
+    mmCtx.fillStyle=obj.color||'#AAA';
+    mmCtx.beginPath(); mmCtx.arc(sx,sy,Math.max(.8,obj.r*scale*.5),0,Math.PI*2); mmCtx.fill();
+  });
+
+  // Viewport rect
+  const vx=W/2-view.x*view.zoom, vy=H/2-view.y*view.zoom;
+  const vw=W/view.zoom, vh=H/view.zoom;
+  mmCtx.strokeStyle='rgba(100,200,255,.5)'; mmCtx.lineWidth=1; mmCtx.setLineDash([]);
+  mmCtx.strokeRect(
+    cx+(-view.x-vw/2)*scale, cy+(-view.y-vh/2)*scale,
+    vw*scale, vh*scale
+  );
+}
+
+// ═══════════════════════════════════════════
+// INTERACTION — HIT TESTING
+// ═══════════════════════════════════════════
+function hitTest(sx,sy){
+  if(zoomed && zoomedObj && zoomedObj.id!=='asteroidbelt' && zoomedObj.id!=='comet'){
+    // Test moons first
+    const cx=W/2, cy=H/2;
+    const obj=zoomedObj;
+    for(const moon of obj.moons){
+      if(moon.dot) continue;
+      const ma=moon.angle+time*moon.orbitSpeed*ORBIT_SPEED_MULTIPLIER;
+      const mr=moon.orbitR*view.zoom;
+      const mx=cx+Math.cos(ma)*mr, my=cy+Math.sin(ma)*mr;
+      const moonR=moon.r*view.zoom*.7;
+      const dx=sx-mx, dy=sy-my;
+      if(dx*dx+dy*dy<(moonR+10)*(moonR+10)) return {obj:moon, isMoon:true};
+    }
+    // Test planet itself
+    const pr=obj.r*view.zoom;
+    const dx=sx-cx, dy=sy-cy;
+    if(dx*dx+dy*dy<pr*pr) return {obj:obj, isMoon:false};
+    return null;
+  }
+
+  // System view — test comet first
+  if(comet.active){
+    const csc=toScreen(comet.x, comet.y);
+    const cdx=sx-csc.x, cdy=sy-csc.y;
+    const cHit=Math.max(40, 4*view.zoom+20);
+    if(cdx*cdx+cdy*cdy < cHit*cHit) return {obj:cometObj, isMoon:false};
+  }
+
+  let best=null, bestDist=999;
+  OBJECTS.forEach(obj=>{
+    let wp;
+    if(obj.isAsteroidBelt){
+      // Hit test for asteroid belt as a ring — use actual sun screen pos to handle panning
+      const sunSc=toScreen(0,0);
+      const d=Math.sqrt((sx-sunSc.x)**2+(sy-sunSc.y)**2)/view.zoom;
+      const midR=(ORBITS[3]+ORBITS[4])/2;
+      const beltHalf=(ORBITS[4]-ORBITS[3])*0.22*0.45+12;
+      if(Math.abs(d-midR)<beltHalf) { best={obj,isMoon:false}; bestDist=-1; }
+      return;
+    }
+    wp=getWorldPos(obj);
+    const sc=toScreen(wp.x,wp.y);
+    const hitR=Math.max(18,obj.r*view.zoom+8);
+    const dx=sx-sc.x, dy=sy-sc.y;
+    const dist=Math.sqrt(dx*dx+dy*dy);
+    if(dist<hitR && dist<bestDist){ bestDist=dist; best={obj,isMoon:false}; }
+  });
+  return best;
+}
+
+// ═══════════════════════════════════════════
+// ZOOM IN / OUT
+// ═══════════════════════════════════════════
+let prevView = null;
+
+function zoomInTo(obj, isMoon=false){
+  if(isMoon){
+    showFacts(obj);
+    return;
+  }
+
+  if(obj.isAsteroidBelt){
+    prevView = {...view};
+    zoomed = true; zoomedObj = obj;
+    const midR = (ORBITS[3]+ORBITS[4])/2;
+    const targetZoom = Math.max(1.2, Math.min(4, (Math.min(W,H)*0.5)/midR));
+    animateView(0, 0, targetZoom, ()=>{
+      document.getElementById('backBtn').classList.add('visible');
+      showFacts(obj);
+    });
+    return;
+  }
+
+  if(obj.id==='comet'){
+    prevView = {...view};
+    zoomed = true; zoomedObj = obj;
+    animateView(comet.x, comet.y, 4, ()=>{
+      document.getElementById('backBtn').classList.add('visible');
+      showFacts(obj);
+    });
+    return;
+  }
+
+  prevView = {...view};
+  zoomed=true;
+  zoomedObj=obj;
+
+  // Calculate target: center planet, zoom to fill screen nicely
+  const wp=getWorldPos(obj);
+  // Find max moon orbitR so we can fit moons on screen
+  // Zoom so outermost named moon fits at ~42% of screen, planet fills ~20-25%
+  const namedMoons = obj.moons ? obj.moons.filter(m=>!m.dot) : [];
+  const maxMoonR = namedMoons.length
+    ? Math.max(...namedMoons.map(m=>m.orbitR))
+    : obj.r * 3;
+  const zoomByMoons = (Math.min(W,H)*0.40) / maxMoonR;
+  const zoomByPlanet = (Math.min(W,H)*0.28) / obj.r;
+  const targetZoom = namedMoons.length ? zoomByMoons : zoomByPlanet;
+
+  animateView(wp.x, wp.y, Math.max(1.0, Math.min(12, targetZoom)), ()=>{
+    document.getElementById('backBtn').classList.add('visible');
+    showFacts(obj);
+  });
+}
+
+function zoomOut(){
+  closeFactSheet();
+  const initZ = Math.min(W,H)/(ORBITS[8]*2.4);
+  animateView(0, 0, initZ, ()=>{
+    zoomed=false; zoomedObj=null; prevView=null;
+    document.getElementById('backBtn').classList.remove('visible');
+  });
+}
+
+function animateView(tx,ty,tz,cb){
+  animating=true;
+  const sx=view.x,sy=view.y,sz=view.zoom;
+  const dur=600; let start=null;
+  function step(ts){
+    if(!start) start=ts;
+    const p=Math.min(1,(ts-start)/dur);
+    const e=p<.5?2*p*p:(1-Math.pow(-2*p+2,2)/2); // ease-in-out
+    view.x=sx+(tx-sx)*e;
+    view.y=sy+(ty-sy)*e;
+    view.zoom=sz+(tz-sz)*e;
+    if(p<1) requestAnimationFrame(step);
+    else { view.x=tx;view.y=ty;view.zoom=tz; animating=false; if(cb)cb(); }
+  }
+  requestAnimationFrame(step);
+}
+
+// ═══════════════════════════════════════════
+// FACT SHEET
+// ═══════════════════════════════════════════
+let currentFacts=[], currentFactIdx=0;
+let touchStartY=0;
+
+function showFacts(obj){
+  // Guard: ensure facts array exists
+  const rawFacts = (obj && obj.facts && obj.facts.length) ? obj.facts : [{label:'Exploring...', text:'<strong>'+( obj&&obj.name||'Unknown')+'</strong> — tap other objects to discover facts about planets and moons!'}];
+  const pool=[...rawFacts];
+  for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; }
+  currentFacts=pool.slice(0,Math.min(6,pool.length));
+  currentFactIdx=0;
+
+  document.getElementById('sheetIcon').textContent=obj.icon||'🌍';
+  document.getElementById('sheetName').textContent=obj.name;
+  document.getElementById('sheetType').textContent=obj.type||'Moon';
+
+  buildFactCards();
+  document.getElementById('factSheet').classList.add('open');
+}
+
+function buildFactCards(){
+  const track=document.getElementById('factTrack');
+  track.innerHTML='';
+  currentFacts.forEach((f,i)=>{
+    const label = (f && f.label) ? f.label : 'Fact';
+    const text = (f && f.text) ? f.text : 'No details available for this object yet.';
+    const card=document.createElement('div');
+    card.className='fact-card';
+    card.innerHTML=`<div class="fact-label">${label}</div><div class="fact-text">${text}</div>`;
+    card.onclick=()=>nextFact();
+    track.appendChild(card);
+  });
+  track.style.transform=`translateX(0)`;
+
+  // Dots
+  const nav=document.getElementById('factNav');
+  nav.innerHTML='';
+  currentFacts.forEach((_,i)=>{
+    const d=document.createElement('div');
+    d.className='fact-dot'+(i===0?' active':'');
+    d.onclick=()=>goToFact(i);
+    nav.appendChild(d);
+  });
+}
+
+function nextFact(){
+  if(!currentFacts.length) return;
+  goToFact((currentFactIdx+1)%currentFacts.length);
+}
+
+function goToFact(i){
+  if(!currentFacts.length) return;
+  currentFactIdx=i;
+  document.getElementById('factTrack').style.transform=`translateX(-${i*100}%)`;
+  document.querySelectorAll('.fact-dot').forEach((d,j)=>d.classList.toggle('active',j===i));
+}
+
+function closeFactSheet(){
+  document.getElementById('factSheet').classList.remove('open');
+}
+window.closeFactSheet=closeFactSheet;
+window.zoomOut=zoomOut;
+
+// Swipe down to close
+const sheet=document.getElementById('factSheet');
+sheet.addEventListener('touchstart',e=>{touchStartY=e.touches[0].clientY;},{passive:true});
+sheet.addEventListener('touchend',e=>{
+  if(e.changedTouches[0].clientY-touchStartY>60) closeFactSheet();
+},{passive:true});
+
+// ═══════════════════════════════════════════
+// POINTER EVENTS
+// ═══════════════════════════════════════════
+let pointer={down:false,x:0,y:0,moved:false};
+let lastPinchDist=0;
+
+canvas.addEventListener('pointerdown',e=>{
+  pointer.down=true; pointer.x=e.clientX; pointer.y=e.clientY; pointer.moved=false;
+  canvas.setPointerCapture(e.pointerId);
+  canvas.classList.add('grabbing');
+});
+
+canvas.addEventListener('pointermove',e=>{
+  if(!pointer.down) return;
+  const dx=e.clientX-pointer.x, dy=e.clientY-pointer.y;
+  if(Math.abs(dx)>4||Math.abs(dy)>4) pointer.moved=true;
+  if(pointer.moved && !animating){
+    view.x-=dx/view.zoom; view.y-=dy/view.zoom;
+  }
+  pointer.x=e.clientX; pointer.y=e.clientY;
+});
+
+canvas.addEventListener('pointerup',e=>{
+  canvas.classList.remove('grabbing');
+  if(!pointer.moved && !animating){
+    const hit=hitTest(e.clientX,e.clientY);
+    if(hit){
+      zoomInTo(hit.obj, hit.isMoon);
+    } else if(zoomed){
+      zoomOut();
+    }
+  }
+  pointer.down=false;
+});
+
+// Tooltip on hover
+canvas.addEventListener('mousemove',e=>{
+  if(pointer.down) return;
+  const hit=hitTest(e.clientX,e.clientY);
+  const tt=document.getElementById('tooltip');
+  if(hit && hit.obj.name){
+    tt.textContent=hit.obj.name;
+    tt.style.left=(e.clientX+12)+'px';
+    tt.style.top=(e.clientY-28)+'px';
+    tt.classList.add('show');
+    canvas.style.cursor='pointer';
+  } else {
+    tt.classList.remove('show');
+    canvas.style.cursor=pointer.down?'grabbing':'grab';
+  }
+});
+canvas.addEventListener('mouseleave',()=>document.getElementById('tooltip').classList.remove('show'));
+
+// Scroll to zoom
+canvas.addEventListener('wheel',e=>{
+  e.preventDefault();
+  const factor=e.deltaY>0?0.9:1.1;
+  const wx=view.x+(e.clientX-W/2)/view.zoom;
+  const wy=view.y+(e.clientY-H/2)/view.zoom;
+  view.zoom=Math.max(0.15,Math.min(12,view.zoom*factor));
+  view.x=wx-(e.clientX-W/2)/view.zoom;
+  view.y=wy-(e.clientY-H/2)/view.zoom;
+},{passive:false});
+
+// Pinch to zoom
+let touches=[];
+canvas.addEventListener('touchstart',e=>{touches=[...e.touches];},{passive:true});
+canvas.addEventListener('touchmove',e=>{
+  if(e.touches.length===2){
+    e.preventDefault();
+    const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+    if(lastPinchDist){
+      const factor=d/lastPinchDist;
+      const cx=(e.touches[0].clientX+e.touches[1].clientX)/2;
+      const cy=(e.touches[0].clientY+e.touches[1].clientY)/2;
+      const wx=view.x+(cx-W/2)/view.zoom;
+      const wy=view.y+(cy-H/2)/view.zoom;
+      view.zoom=Math.max(0.15,Math.min(12,view.zoom*factor));
+      view.x=wx-(cx-W/2)/view.zoom;
+      view.y=wy-(cy-H/2)/view.zoom;
+    }
+    lastPinchDist=d;
+  }
+},{passive:false});
+canvas.addEventListener('touchend',()=>{lastPinchDist=0;},{passive:true});
+
+// ═══════════════════════════════════════════
+// MAIN LOOP
+// ═══════════════════════════════════════════
+function tick(){
+  time++;
+
+  // Comet logic — pause movement while zoomed in on it
+  const cometZoomed = zoomed && zoomedObj && zoomedObj.id==='comet';
+  if(comet.active){
+    if(!cometZoomed){
+      comet.tail.push({x:comet.x,y:comet.y});
+      if(comet.tail.length>80) comet.tail.shift();
+      comet.x+=comet.vx;
+      comet.y+=comet.vy;
+      if(comet.x>900||comet.y>700) resetComet();
+    }
+  } else {
+    comet.timer--;
+    if(comet.timer<=0){
+      comet.active=true;
+      comet.x=-820+Math.random()*100;
+      comet.y=-600+Math.random()*100;
+      comet.tail=[];
+    }
+  }
+
+  render();
+  requestAnimationFrame(tick);
+}
+
+// Initial view — fit solar system on screen
+view.zoom=Math.min(W,H)/(ORBITS[8]*2.4);
+view.x=0; view.y=0;
+
+tick();
+</script>
+</body>
+</html>
