@@ -822,7 +822,7 @@ function drawAsteroidBelt(){
   const beltW=(outerR-innerR)*.22;
 
   // Draw many small asteroids in the belt
-  const count=55;
+  const count=160;
   for(let i=0;i<count;i++){
     const a=(i/count)*Math.PI*2+(time*0.002*(i%3===0?1:i%3===1?1.2:0.8));
     const r=midR+(Math.sin(i*7.3+1.2))*beltW*.45;
