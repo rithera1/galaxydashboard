@@ -213,10 +213,10 @@ let animating = false;
 // ═══════════════════════════════════════════
 // SOLAR SYSTEM DATA
 // ═══════════════════════════════════════════
-const SUN_R = 52;
+const SUN_R = 72;
 
 // Orbital radii (canvas units from center) — compressed but ordered
-const ORBITS = [75, 118, 158, 196, 420, 575, 740, 905, 1000];
+const ORBITS = [95, 118, 158, 196, 420, 575, 740, 905, 1000];
 // Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto
 
 function mkFacts(arr){ return arr; }
@@ -240,7 +240,7 @@ const OBJECTS = [
   },
   {
     id:'mercury', name:'Mercury', type:'Planet', icon:'🪨',
-    r:7, orbitR:ORBITS[0], orbitSpeed:0.0020, angle:0.8,
+    r:5, orbitR:ORBITS[0], orbitSpeed:0.0020, angle:0.8,
     color:'#9E8E7A',
     draw: drawMercury,
     facts: mkFacts([
@@ -255,7 +255,7 @@ const OBJECTS = [
   },
   {
     id:'venus', name:'Venus', type:'Planet', icon:'🌕',
-    r:13, orbitR:ORBITS[1], orbitSpeed:0.0028, angle:2.1,
+    r:9, orbitR:ORBITS[1], orbitSpeed:0.0028, angle:2.1,
     color:'#E8C270',
     draw: drawVenus,
     facts: mkFacts([
@@ -270,7 +270,7 @@ const OBJECTS = [
   },
   {
     id:'earth', name:'Earth', type:'Planet', icon:'🌍',
-    r:14, orbitR:ORBITS[2], orbitSpeed:0.0024, angle:4.0,
+    r:10, orbitR:ORBITS[2], orbitSpeed:0.0024, angle:4.0,
     color:'#3FA7D6',
     draw: drawEarth,
     facts: mkFacts([
@@ -294,7 +294,7 @@ const OBJECTS = [
   },
   {
     id:'mars', name:'Mars', type:'Planet', icon:'🔴',
-    r:18, orbitR:ORBITS[3], orbitSpeed:0.0016, angle:1.0,
+    r:12, orbitR:ORBITS[3], orbitSpeed:0.0016, angle:1.0,
     color:'#C1440E',
     draw: drawMars,
     facts: mkFacts([
@@ -335,7 +335,7 @@ const OBJECTS = [
   },
   {
     id:'jupiter', name:'Jupiter', type:'Planet', icon:'🟠',
-    r:38, orbitR:ORBITS[4], orbitSpeed:0.00075, angle:3.5,
+    r:27, orbitR:ORBITS[4], orbitSpeed:0.00075, angle:3.5,
     color:'#C88B3A',
     draw: drawJupiter,
     facts: mkFacts([
@@ -378,7 +378,7 @@ const OBJECTS = [
   },
   {
     id:'saturn', name:'Saturn', type:'Planet', icon:'🪐',
-    r:32, orbitR:ORBITS[5], orbitSpeed:0.00040, angle:1.8,
+    r:22, orbitR:ORBITS[5], orbitSpeed:0.00040, angle:1.8,
     color:'#E8D5A0',
     draw: drawSaturn,
     hasRings:true,
@@ -413,7 +413,7 @@ const OBJECTS = [
   },
   {
     id:'uranus', name:'Uranus', type:'Planet', icon:'🔵',
-    r:20, orbitR:ORBITS[6], orbitSpeed:0.00020, angle:5.2,
+    r:14, orbitR:ORBITS[6], orbitSpeed:0.00020, angle:5.2,
     color:'#7DE8E8',
     draw: drawUranus,
     facts: mkFacts([
@@ -455,7 +455,7 @@ const OBJECTS = [
   },
   {
     id:'neptune', name:'Neptune', type:'Planet', icon:'🔵',
-    r:18, orbitR:ORBITS[7], orbitSpeed:0.00015, angle:2.8,
+    r:13, orbitR:ORBITS[7], orbitSpeed:0.00015, angle:2.8,
     color:'#4B70DD',
     draw: drawNeptune,
     facts: mkFacts([
@@ -478,7 +478,7 @@ const OBJECTS = [
   },
   {
     id:'pluto', name:'Pluto', type:'Dwarf Planet', icon:'🪐',
-    r:5, orbitR:ORBITS[8], orbitSpeed:0.00010, angle:0.5,
+    r:4, orbitR:ORBITS[8], orbitSpeed:0.00010, angle:0.5,
     color:'#C4A882',
     draw: drawPluto,
     facts: mkFacts([
