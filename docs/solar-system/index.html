@@ -1373,13 +1373,16 @@ function drawScaleView(){
     sCtx.fillStyle=hl; sCtx.fill();
   }
 
-  // ── Ring gradient helper (matches drawSaturn colours) ──
+  // ── Ring gradient helper — brighter stops so rings read well at any size ──
   function ringGrad(cx,rw){
     const g=sCtx.createLinearGradient(cx-rw,0,cx+rw,0);
-    g.addColorStop(0,'rgba(180,150,80,0)');   g.addColorStop(.10,'rgba(195,168,108,.5)');
-    g.addColorStop(.30,'rgba(228,208,158,.78)');g.addColorStop(.50,'rgba(185,158,92,.46)');
-    g.addColorStop(.70,'rgba(228,208,158,.78)');g.addColorStop(.90,'rgba(195,168,108,.5)');
-    g.addColorStop(1,'rgba(180,150,80,0)');
+    g.addColorStop(0,   'rgba(200,170,90,0)');
+    g.addColorStop(.07, 'rgba(228,205,140,.92)'); // rise fast to full brightness
+    g.addColorStop(.40, 'rgba(215,190,125,.78)');
+    g.addColorStop(.50, 'rgba(155,128,60,.28)');  // Cassini-like central gap
+    g.addColorStop(.60, 'rgba(215,190,125,.78)');
+    g.addColorStop(.93, 'rgba(228,205,140,.92)'); // stay bright until near edge
+    g.addColorStop(1,   'rgba(200,170,90,0)');    // fade to 0 at rw — no hard cutoff
     return g;
   }
 
@@ -1441,10 +1444,8 @@ function drawScaleView(){
     x+=pr;
 
     if(p.rings){
-      const rw=pr*1.7, rh=pr*.22;
-      // Erase stars behind ring area with opaque dark ellipse
-      sCtx.fillStyle='#00000f';
-      sCtx.beginPath(); sCtx.ellipse(x,cy,rw*1.05,rh*2,0,0,Math.PI*2); sCtx.fill();
+      // rw sized to fade to 0 just before the neighbouring planet's surface
+      const rw=pr+GAP-4, rh=pr*.22;
       // Back ring half (π→2π sweeps top of ellipse, sits behind planet)
       sCtx.fillStyle=ringGrad(x,rw);
       sCtx.beginPath(); sCtx.ellipse(x,cy,rw,rh,0,Math.PI,Math.PI*2); sCtx.fill();
@@ -1454,10 +1455,7 @@ function drawScaleView(){
       sCtx.fillStyle=ringGrad(x,rw);
       sCtx.beginPath(); sCtx.ellipse(x,cy,rw,rh,0,0,Math.PI); sCtx.fill();
     } else {
-      // Erase stars behind planet with opaque dark circle
-      sCtx.fillStyle='#00000f';
-      sCtx.beginPath(); sCtx.arc(x,cy,pr*1.05,0,Math.PI*2); sCtx.fill();
-      // Planet sphere
+      // Planet sphere (sph draws a fully opaque circle — no clearing needed)
       sph(x,cy,pr,p.c[0],p.c[1],p.c[2]);
       // Jupiter cloud bands
       if(p.bands){
