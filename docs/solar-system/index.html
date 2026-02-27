@@ -1359,34 +1359,57 @@ function drawScaleView(){
   const sCtx=sCanvas.getContext('2d');
   sCtx.scale(DPR,DPR);
 
+  // ── Sphere helper (mirrors global sphere() but uses sCtx) ──
+  function sph(cx,cy,r,c0,c1,c2){
+    r=Math.max(r,1.5);
+    const g=sCtx.createRadialGradient(cx-r*.32,cy-r*.32,r*.04,cx,cy,r);
+    g.addColorStop(0,c0); g.addColorStop(0.55,c1); g.addColorStop(1,c2||c1);
+    sCtx.beginPath(); sCtx.arc(cx,cy,r,0,Math.PI*2); sCtx.fillStyle=g; sCtx.fill();
+    const ld=sCtx.createRadialGradient(cx,cy,r*.5,cx,cy,r);
+    ld.addColorStop(0,'transparent'); ld.addColorStop(1,'rgba(0,0,0,.45)');
+    sCtx.fillStyle=ld; sCtx.fill();
+    const hl=sCtx.createRadialGradient(cx-r*.35,cy-r*.35,0,cx-r*.35,cy-r*.35,r*.55);
+    hl.addColorStop(0,'rgba(255,255,255,.30)'); hl.addColorStop(1,'transparent');
+    sCtx.fillStyle=hl; sCtx.fill();
+  }
+
+  // ── Ring gradient helper (matches drawSaturn colours) ──
+  function ringGrad(cx,rw){
+    const g=sCtx.createLinearGradient(cx-rw,0,cx+rw,0);
+    g.addColorStop(0,'rgba(180,150,80,0)');   g.addColorStop(.10,'rgba(195,168,108,.5)');
+    g.addColorStop(.30,'rgba(228,208,158,.78)');g.addColorStop(.50,'rgba(185,158,92,.46)');
+    g.addColorStop(.70,'rgba(228,208,158,.78)');g.addColorStop(.90,'rgba(195,168,108,.5)');
+    g.addColorStop(1,'rgba(180,150,80,0)');
+    return g;
+  }
+
   // Space background
   sCtx.fillStyle='#00000f'; sCtx.fillRect(0,0,W,H);
-  // Deterministic stars (top half of screen)
-  for(let i=0;i<100;i++){
+  // Stars only in top 25% of screen — well above every planet
+  for(let i=0;i<70;i++){
     const sx=(Math.sin(i*17.3+1)*.5+.5)*W;
-    const sy=(Math.sin(i*31.7+2)*.5+.5)*(H*.48);
-    sCtx.globalAlpha=.1+Math.abs(Math.sin(i*11.9))*.35;
+    const sy=(Math.sin(i*31.7+2)*.5+.5)*(H*.24);
+    sCtx.globalAlpha=.12+Math.abs(Math.sin(i*11.9))*.32;
     sCtx.fillStyle='white';
     sCtx.beginPath(); sCtx.arc(sx,sy,Math.abs(Math.sin(i*7.1))*.8+.4,0,Math.PI*2); sCtx.fill();
   }
   sCtx.globalAlpha=1;
 
   // Planet data — real size ratios relative to Earth radius = 1
-  // Emoji chosen to best represent each planet
   const PDATA=[
-    {name:'Mercury', ratio:.383,  emoji:'🪨'},
-    {name:'Venus',   ratio:.950,  emoji:'🌕'},
-    {name:'Earth',   ratio:1,     emoji:'🌍'},
-    {name:'Mars',    ratio:.532,  emoji:'🔴'},
-    {name:'Jupiter', ratio:10.97, emoji:'🟠'},
-    {name:'Saturn',  ratio:9.14,  emoji:'🪐'},  // 🪐 has rings built-in
-    {name:'Uranus',  ratio:3.98,  emoji:'🔵'},
-    {name:'Neptune', ratio:3.86,  emoji:'🌊'},
-    {name:'Pluto',   ratio:.186,  emoji:'⚪'},
+    {name:'Mercury', ratio:.383,  c:['#C8BCAC','#9A8A78','#6A5A48']},
+    {name:'Venus',   ratio:.950,  c:['#F8ECC0','#EACC78','#C8A048']},
+    {name:'Earth',   ratio:1,     c:['#72D8FF','#3AA8D6','#1060A0']},
+    {name:'Mars',    ratio:.532,  c:['#E87858','#C03808','#7A2000']},
+    {name:'Jupiter', ratio:10.97, c:['#EED4A8','#C88A38','#8A5818'], bands:true},
+    {name:'Saturn',  ratio:9.14,  c:['#F8EEC8','#E8D8A8','#B89848'], rings:true},
+    {name:'Uranus',  ratio:3.98,  c:['#B0F4F4','#80E8E8','#48C8C8']},
+    {name:'Neptune', ratio:3.86,  c:['#6898FF','#4468DD','#2238AA']},
+    {name:'Pluto',   ratio:.186,  c:['#D8C8A8','#C4A880','#986850']},
   ];
 
-  // earthR = display radius of Earth in px, scaled so everything fits width
-  // layout uses (n+1) gaps: one before each planet + one after last
+  // earthR: display radius of Earth (px), sized so everything fits across width
+  // total width = SUN_VIS + (n+1)*GAP + sum(2*ratio*eR) + MARGIN
   const SUN_VIS=60, GAP=12, MARGIN=8;
   const n=PDATA.length;
   const sumR=PDATA.reduce((s,p)=>s+2*p.ratio,0); // ≈62
@@ -1394,55 +1417,84 @@ function drawScaleView(){
   eR=Math.max(2,Math.min(12,eR));
 
   const sunR=eR*109.3;
-  const base=H*.55;          // all planet bottoms align here
-  const labelBase=base+44;   // label pivot row — well below all planets
+  const base=H*.58;     // baseline: all planet bottoms sit here
   const sunCx=SUN_VIS-sunR, sunCy=base;
 
-  // ── Sun (gradient arc peeking from left) ──
+  // ── Sun ──
   const gw=sCtx.createRadialGradient(sunCx,sunCy,sunR*.7,sunCx,sunCy,sunR*1.4);
   gw.addColorStop(0,'rgba(255,220,60,.35)'); gw.addColorStop(.6,'rgba(255,140,0,.1)'); gw.addColorStop(1,'rgba(255,100,0,0)');
   sCtx.fillStyle=gw; sCtx.beginPath(); sCtx.arc(sunCx,sunCy,sunR*1.4,0,Math.PI*2); sCtx.fill();
   const sg=sCtx.createRadialGradient(sunCx+sunR*.2,sunCy-sunR*.2,sunR*.08,sunCx,sunCy,sunR);
   sg.addColorStop(0,'#FFFFF0'); sg.addColorStop(.25,'#FFF480'); sg.addColorStop(.6,'#FDB813'); sg.addColorStop(1,'#D04000');
   sCtx.fillStyle=sg; sCtx.beginPath(); sCtx.arc(sunCx,sunCy,sunR,0,Math.PI*2); sCtx.fill();
-  // Sun label (below the visible arc, left edge)
-  const fSz=Math.min(12,Math.max(7,eR*1.1));
-  sCtx.textBaseline='alphabetic'; sCtx.textAlign='left';
-  sCtx.fillStyle='rgba(255,230,100,.85)';
-  sCtx.font=`bold ${fSz}px 'Space Grotesk',sans-serif`;
-  sCtx.fillText('SUN',5,labelBase+fSz);
-  sCtx.fillStyle='rgba(255,200,80,.4)';
-  sCtx.font=`${fSz*.8}px 'Space Grotesk',sans-serif`;
-  sCtx.fillText('1,392,700 km',5,labelBase+fSz*2+2);
 
-  // ── Planets as emoji, bottom-aligned to baseline ──
+  // ── Planets ──
+  // Labels: pivot well below baseline, textAlign:'center', rotate -45°
+  // → text is diagonally centered under each planet, parallel labels never touch
+  const lSz=Math.min(11,Math.max(8,eR*1.1));
+  const labelBase=base+Math.max(50, lSz*5); // enough gap for label diagonal not to reach planet
+
   let x=SUN_VIS+GAP;
   for(const p of PDATA){
     const pr=Math.max(1.5,eR*p.ratio);
-    const cy=base-pr;   // center y: emoji bottom lands at base
+    const cy=base-pr;  // center y: bottom of planet at baseline
     x+=pr;
 
-    // Draw planet emoji, sized to its true-scale diameter
-    const emojiSz=Math.max(4,pr*2);
-    sCtx.font=`${emojiSz}px serif`;
-    sCtx.textAlign='center';
-    sCtx.textBaseline='middle';
-    sCtx.fillText(p.emoji,x,cy);
+    if(p.rings){
+      const rw=pr*1.7, rh=pr*.22;
+      // Erase stars behind ring area with opaque dark ellipse
+      sCtx.fillStyle='#00000f';
+      sCtx.beginPath(); sCtx.ellipse(x,cy,rw*1.05,rh*2,0,0,Math.PI*2); sCtx.fill();
+      // Back ring half (π→2π sweeps top of ellipse, sits behind planet)
+      sCtx.fillStyle=ringGrad(x,rw);
+      sCtx.beginPath(); sCtx.ellipse(x,cy,rw,rh,0,Math.PI,Math.PI*2); sCtx.fill();
+      // Planet
+      sph(x,cy,pr,p.c[0],p.c[1],p.c[2]);
+      // Front ring half (0→π sweeps bottom of ellipse, sits in front)
+      sCtx.fillStyle=ringGrad(x,rw);
+      sCtx.beginPath(); sCtx.ellipse(x,cy,rw,rh,0,0,Math.PI); sCtx.fill();
+    } else {
+      // Erase stars behind planet with opaque dark circle
+      sCtx.fillStyle='#00000f';
+      sCtx.beginPath(); sCtx.arc(x,cy,pr*1.05,0,Math.PI*2); sCtx.fill();
+      // Planet sphere
+      sph(x,cy,pr,p.c[0],p.c[1],p.c[2]);
+      // Jupiter cloud bands
+      if(p.bands){
+        sCtx.save(); sCtx.beginPath(); sCtx.arc(x,cy,pr,0,Math.PI*2); sCtx.clip();
+        for(const b of [{o:-.3,w:.22,col:'rgba(180,130,60,.30)'},{o:0,w:.14,col:'rgba(200,155,75,.35)'},{o:.32,w:.18,col:'rgba(170,120,55,.28)'}])
+          { sCtx.fillStyle=b.col; sCtx.fillRect(x-pr,cy+pr*b.o-pr*b.w/2,pr*2,pr*b.w); }
+        sCtx.restore();
+      }
+    }
 
-    // Label: pivot at labelBase, rotated -45° → goes upper-right, clears all planets
-    const lSz=Math.min(11,Math.max(7,eR*1.1));
+    // Label — centered on planet x, angled -45° below baseline
+    // Math proof: with textAlign:'center' + rotate(-π/4), the label's highest
+    // point = labelBase - halfLabelWidth*sin(45°). With labelBase = base+50+,
+    // this stays well below base (planet bottoms). Adjacent parallel labels
+    // maintain perpendicular separation = planet gap * sin(45°) ≈ 8px > font.
     sCtx.save();
-    sCtx.translate(x,labelBase);
+    sCtx.translate(x, labelBase);
     sCtx.rotate(-Math.PI/4);
-    sCtx.textAlign='left';
+    sCtx.textAlign='center';
     sCtx.textBaseline='alphabetic';
-    sCtx.fillStyle='rgba(180,220,255,.85)';
+    sCtx.fillStyle='rgba(180,220,255,.9)';
     sCtx.font=`bold ${lSz}px 'Space Grotesk',sans-serif`;
-    sCtx.fillText(p.name,3,0);
+    sCtx.fillText(p.name,0,0);
     sCtx.restore();
 
     x+=pr+GAP;
   }
+
+  // Sun label (below and left, in label zone)
+  const fSz=Math.min(12,Math.max(7,eR*1.1));
+  sCtx.textBaseline='alphabetic'; sCtx.textAlign='left';
+  sCtx.fillStyle='rgba(255,230,100,.85)';
+  sCtx.font=`bold ${fSz}px 'Space Grotesk',sans-serif`;
+  sCtx.fillText('SUN',5,labelBase+fSz+2);
+  sCtx.fillStyle='rgba(255,200,80,.4)';
+  sCtx.font=`${fSz*.8}px 'Space Grotesk',sans-serif`;
+  sCtx.fillText('1,392,700 km',5,labelBase+fSz*2+4);
 
   // ── Header + close hint ──
   sCtx.textBaseline='alphabetic'; sCtx.textAlign='center';
