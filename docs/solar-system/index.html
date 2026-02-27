@@ -753,6 +753,7 @@ function darkenColor(hex,amt){ return shiftColor(hex,-amt); }
 // ═══════════════════════════════════════════
 let time = 0;
 const ORBIT_SPEED_MULTIPLIER = 1.6;
+const ZOOM_MOON_MULTIPLIER = 0.7; // slower moons when zoomed in
 
 function getWorldPos(obj){
   if(obj.orbitR===0) return {x:0,y:0};
@@ -936,7 +937,7 @@ function renderPlanetView(){
     ctx.beginPath(); ctx.arc(cx,cy,mr,0,Math.PI*2); ctx.stroke();
     ctx.setLineDash([]);
 
-    const ma=moon.angle+time*moon.orbitSpeed*ORBIT_SPEED_MULTIPLIER;
+    const ma=moon.angle+time*moon.orbitSpeed*ZOOM_MOON_MULTIPLIER+(moon._zoomOffset||0);
     const mx=cx+Math.cos(ma)*mr, my=cy+Math.sin(ma)*mr;
     const moonR=moon.r*view.zoom*.7;
 
@@ -1006,7 +1007,7 @@ function hitTest(sx,sy){
     const obj=zoomedObj;
     for(const moon of obj.moons){
       if(moon.dot) continue;
-      const ma=moon.angle+time*moon.orbitSpeed*ORBIT_SPEED_MULTIPLIER;
+      const ma=moon.angle+time*moon.orbitSpeed*ZOOM_MOON_MULTIPLIER+(moon._zoomOffset||0);
       const mr=moon.orbitR*view.zoom;
       const mx=cx+Math.cos(ma)*mr, my=cy+Math.sin(ma)*mr;
       const moonR=moon.r*view.zoom*.7;
@@ -1086,6 +1087,12 @@ function zoomInTo(obj, isMoon=false){
   prevView = {...view};
   zoomed=true;
   zoomedObj=obj;
+
+  // Shift any moon starting in the bottom half up to the top half
+  if(obj.moons) obj.moons.forEach(moon=>{
+    const a = moon.angle + time*moon.orbitSpeed*ZOOM_MOON_MULTIPLIER;
+    moon._zoomOffset = Math.sin(a) > 0 ? Math.PI : 0;
+  });
 
   // Calculate target: center planet, zoom to fill screen nicely
   const wp=getWorldPos(obj);
