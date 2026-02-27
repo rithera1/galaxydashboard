@@ -1441,7 +1441,7 @@ function drawScaleView(){
 
     if(p.rings){
       // rw sized to fade to 0 just before the neighbouring planet's surface
-      const rw=pr*2.21, rh=pr*.22;
+      const rw=pr*2.50, rh=pr*.22;
       // Back ring half (π→2π sweeps top of ellipse, sits behind planet)
       sCtx.fillStyle=ringGrad(x,rw);
       sCtx.beginPath(); sCtx.ellipse(x,cy,rw,rh,-Math.PI/4,Math.PI,Math.PI*2); sCtx.fill();
