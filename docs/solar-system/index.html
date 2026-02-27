@@ -140,6 +140,23 @@ body{font-family:'Space Grotesk',sans-serif;touch-action:none;user-select:none;}
   white-space:nowrap;
 }
 #tooltip.show{opacity:1;}
+
+/* ── SCALE VIEW ── */
+#scaleBtn{
+  position:absolute;bottom:180px;right:20px;z-index:20;
+  background:rgba(0,0,20,.75);border:1px solid rgba(100,180,255,.22);
+  border-radius:8px;padding:5px 9px;cursor:pointer;
+  font-family:'Space Grotesk',sans-serif;font-size:.5rem;font-weight:600;
+  color:rgba(120,170,255,.55);letter-spacing:.07em;text-transform:uppercase;
+  backdrop-filter:blur(6px);transition:color .2s,border-color .2s;
+  text-align:center;
+}
+#scaleBtn:hover,#scaleBtn:active{color:rgba(180,220,255,.9);border-color:rgba(100,180,255,.5);}
+#scaleView{
+  position:absolute;inset:0;z-index:95;
+  display:none;
+}
+#scaleView canvas{display:block;width:100%;height:100%;}
 </style>
 </head>
 <body>
@@ -160,6 +177,11 @@ body{font-family:'Space Grotesk',sans-serif;touch-action:none;user-select:none;}
 <div id="zoomHint">scroll to zoom<br>drag to pan<br>tap to explore</div>
 
 <div id="tooltip"></div>
+
+<button id="scaleBtn" onclick="openScaleView()">🔭 show to scale</button>
+<div id="scaleView" onclick="closeScaleView()">
+  <canvas id="scaleCanvas"></canvas>
+</div>
 
 <!-- FACT SHEET -->
 <div id="factSheet">
@@ -213,10 +235,10 @@ let animating = false;
 // ═══════════════════════════════════════════
 // SOLAR SYSTEM DATA
 // ═══════════════════════════════════════════
-const SUN_R = 72;
+const SUN_R = 52;
 
 // Orbital radii (canvas units from center) — compressed but ordered
-const ORBITS = [95, 118, 158, 196, 420, 575, 740, 905, 1000];
+const ORBITS = [75, 118, 158, 196, 420, 575, 740, 905, 1000];
 // Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto
 
 function mkFacts(arr){ return arr; }
@@ -240,7 +262,7 @@ const OBJECTS = [
   },
   {
     id:'mercury', name:'Mercury', type:'Planet', icon:'🪨',
-    r:5, orbitR:ORBITS[0], orbitSpeed:0.0020, angle:0.8,
+    r:7, orbitR:ORBITS[0], orbitSpeed:0.0020, angle:0.8,
     color:'#9E8E7A',
     draw: drawMercury,
     facts: mkFacts([
@@ -255,7 +277,7 @@ const OBJECTS = [
   },
   {
     id:'venus', name:'Venus', type:'Planet', icon:'🌕',
-    r:9, orbitR:ORBITS[1], orbitSpeed:0.0028, angle:2.1,
+    r:13, orbitR:ORBITS[1], orbitSpeed:0.0028, angle:2.1,
     color:'#E8C270',
     draw: drawVenus,
     facts: mkFacts([
@@ -270,7 +292,7 @@ const OBJECTS = [
   },
   {
     id:'earth', name:'Earth', type:'Planet', icon:'🌍',
-    r:10, orbitR:ORBITS[2], orbitSpeed:0.0024, angle:4.0,
+    r:14, orbitR:ORBITS[2], orbitSpeed:0.0024, angle:4.0,
     color:'#3FA7D6',
     draw: drawEarth,
     facts: mkFacts([
@@ -294,7 +316,7 @@ const OBJECTS = [
   },
   {
     id:'mars', name:'Mars', type:'Planet', icon:'🔴',
-    r:12, orbitR:ORBITS[3], orbitSpeed:0.0016, angle:1.0,
+    r:18, orbitR:ORBITS[3], orbitSpeed:0.0016, angle:1.0,
     color:'#C1440E',
     draw: drawMars,
     facts: mkFacts([
@@ -335,7 +357,7 @@ const OBJECTS = [
   },
   {
     id:'jupiter', name:'Jupiter', type:'Planet', icon:'🟠',
-    r:27, orbitR:ORBITS[4], orbitSpeed:0.00075, angle:3.5,
+    r:38, orbitR:ORBITS[4], orbitSpeed:0.00075, angle:3.5,
     color:'#C88B3A',
     draw: drawJupiter,
     facts: mkFacts([
@@ -378,7 +400,7 @@ const OBJECTS = [
   },
   {
     id:'saturn', name:'Saturn', type:'Planet', icon:'🪐',
-    r:22, orbitR:ORBITS[5], orbitSpeed:0.00040, angle:1.8,
+    r:32, orbitR:ORBITS[5], orbitSpeed:0.00040, angle:1.8,
     color:'#E8D5A0',
     draw: drawSaturn,
     hasRings:true,
@@ -413,7 +435,7 @@ const OBJECTS = [
   },
   {
     id:'uranus', name:'Uranus', type:'Planet', icon:'🔵',
-    r:14, orbitR:ORBITS[6], orbitSpeed:0.00020, angle:5.2,
+    r:20, orbitR:ORBITS[6], orbitSpeed:0.00020, angle:5.2,
     color:'#7DE8E8',
     draw: drawUranus,
     facts: mkFacts([
@@ -455,7 +477,7 @@ const OBJECTS = [
   },
   {
     id:'neptune', name:'Neptune', type:'Planet', icon:'🔵',
-    r:13, orbitR:ORBITS[7], orbitSpeed:0.00015, angle:2.8,
+    r:18, orbitR:ORBITS[7], orbitSpeed:0.00015, angle:2.8,
     color:'#4B70DD',
     draw: drawNeptune,
     facts: mkFacts([
@@ -478,7 +500,7 @@ const OBJECTS = [
   },
   {
     id:'pluto', name:'Pluto', type:'Dwarf Planet', icon:'🪐',
-    r:4, orbitR:ORBITS[8], orbitSpeed:0.00010, angle:0.5,
+    r:5, orbitR:ORBITS[8], orbitSpeed:0.00010, angle:0.5,
     color:'#C4A882',
     draw: drawPluto,
     facts: mkFacts([
@@ -1329,6 +1351,141 @@ function tick(){
 // Initial view — fit solar system on screen
 view.zoom=Math.min(W,H)/(ORBITS[8]*2.4);
 view.x=0; view.y=0;
+
+// ══ TRUE SIZE COMPARISON ══
+function drawScaleView(){
+  const sCanvas=document.getElementById('scaleCanvas');
+  sCanvas.width=W*DPR; sCanvas.height=H*DPR;
+  const sCtx=sCanvas.getContext('2d');
+  sCtx.scale(DPR,DPR);
+
+  // Local sphere helper (mirrors global sphere() but uses sCtx)
+  function sph(cx,cy,r,c0,c1,c2){
+    r=Math.max(r,1.5);
+    const g=sCtx.createRadialGradient(cx-r*.32,cy-r*.32,r*.04,cx,cy,r);
+    g.addColorStop(0,c0); g.addColorStop(0.55,c1); g.addColorStop(1,c2||c1);
+    sCtx.beginPath(); sCtx.arc(cx,cy,r,0,Math.PI*2); sCtx.fillStyle=g; sCtx.fill();
+    const ld=sCtx.createRadialGradient(cx,cy,r*.5,cx,cy,r);
+    ld.addColorStop(0,'transparent'); ld.addColorStop(1,'rgba(0,0,0,.45)');
+    sCtx.fillStyle=ld; sCtx.fill();
+    const hl=sCtx.createRadialGradient(cx-r*.35,cy-r*.35,0,cx-r*.35,cy-r*.35,r*.55);
+    hl.addColorStop(0,'rgba(255,255,255,.30)'); hl.addColorStop(1,'transparent');
+    sCtx.fillStyle=hl; sCtx.fill();
+  }
+
+  // Space background
+  sCtx.fillStyle='#00000f'; sCtx.fillRect(0,0,W,H);
+  // Static decorative stars (deterministic positions)
+  for(let i=0;i<100;i++){
+    const sx=(Math.sin(i*17.3+1)*.5+.5)*W;
+    const sy=(Math.sin(i*31.7+2)*.5+.5)*(H*.5);
+    sCtx.globalAlpha=.1+Math.abs(Math.sin(i*11.9))*.35;
+    sCtx.fillStyle='white';
+    sCtx.beginPath(); sCtx.arc(sx,sy,Math.abs(Math.sin(i*7.1))*.8+.4,0,Math.PI*2); sCtx.fill();
+  }
+  sCtx.globalAlpha=1;
+
+  // Planet data — size ratios relative to Earth=1
+  const PDATA=[
+    {name:'Mercury',ratio:.383, c:['#C8BCAC','#9A8A78','#6A5A48']},
+    {name:'Venus',  ratio:.950, c:['#F8ECC0','#EACC78','#C8A048']},
+    {name:'Earth',  ratio:1,    c:['#72D8FF','#3AA8D6','#1060A0']},
+    {name:'Mars',   ratio:.532, c:['#E87858','#C03808','#7A2000']},
+    {name:'Jupiter',ratio:10.97,c:['#EED4A8','#C88A38','#8A5818'],bands:true},
+    {name:'Saturn', ratio:9.14, c:['#E8D5A0','#C8A848','#908040'],rings:true},
+    {name:'Uranus', ratio:3.98, c:['#B0F4F4','#80E8E8','#48C8C8']},
+    {name:'Neptune',ratio:3.86, c:['#6898FF','#4468DD','#2238AA']},
+    {name:'Pluto',  ratio:.186, c:['#D8C8A8','#C4A880','#986850']},
+  ];
+
+  // Compute earthR so all planets fill the screen width
+  const SUN_VIS=60, GAP=14, MARGIN=10;
+  const sumR=PDATA.reduce((s,p)=>s+2*p.ratio,0); // ≈62
+  let eR=(W-SUN_VIS-GAP*PDATA.length-MARGIN)/sumR;
+  eR=Math.max(2.5,Math.min(14,eR));
+  const sunR=eR*109.3;
+  const base=H*.60;
+  const sunCx=SUN_VIS-sunR, sunCy=base;
+
+  // Sun glow
+  const gw=sCtx.createRadialGradient(sunCx,sunCy,sunR*.7,sunCx,sunCy,sunR*1.4);
+  gw.addColorStop(0,'rgba(255,220,60,.35)'); gw.addColorStop(.6,'rgba(255,140,0,.1)'); gw.addColorStop(1,'rgba(255,100,0,0)');
+  sCtx.fillStyle=gw; sCtx.beginPath(); sCtx.arc(sunCx,sunCy,sunR*1.4,0,Math.PI*2); sCtx.fill();
+  // Sun body
+  const sg=sCtx.createRadialGradient(sunCx+sunR*.2,sunCy-sunR*.2,sunR*.08,sunCx,sunCy,sunR);
+  sg.addColorStop(0,'#FFFFF0'); sg.addColorStop(.25,'#FFF480'); sg.addColorStop(.6,'#FDB813'); sg.addColorStop(1,'#D04000');
+  sCtx.fillStyle=sg; sCtx.beginPath(); sCtx.arc(sunCx,sunCy,sunR,0,Math.PI*2); sCtx.fill();
+  // Sun label
+  const fSz=Math.min(12,Math.max(7,eR*1.1));
+  sCtx.textAlign='left'; sCtx.fillStyle='rgba(255,230,100,.85)';
+  sCtx.font=`bold ${fSz}px 'Space Grotesk',sans-serif`;
+  sCtx.fillText('SUN',6,base+fSz+4);
+  sCtx.fillStyle='rgba(255,200,80,.4)';
+  sCtx.font=`${fSz*.8}px 'Space Grotesk',sans-serif`;
+  sCtx.fillText('1,392,700 km',6,base+fSz*2+5);
+
+  // Draw each planet
+  let x=SUN_VIS+GAP;
+  for(const p of PDATA){
+    const pr=Math.max(1.5,eR*p.ratio);
+    const cy=base-pr; // bottom-aligned to baseline
+    x+=pr;
+    // Saturn rings — back half
+    if(p.rings){
+      const rw=pr*2.6,rh=pr*.44;
+      sCtx.save(); sCtx.translate(x,cy); sCtx.globalAlpha=.8;
+      const rg=sCtx.createLinearGradient(-rw,0,rw,0);
+      rg.addColorStop(0,'rgba(220,195,130,0)'); rg.addColorStop(.18,'rgba(220,195,130,.9)');
+      rg.addColorStop(.48,'rgba(200,175,110,.55)'); rg.addColorStop(.52,'rgba(200,175,110,.55)');
+      rg.addColorStop(.82,'rgba(220,195,130,.9)'); rg.addColorStop(1,'rgba(220,195,130,0)');
+      sCtx.beginPath(); sCtx.ellipse(0,0,rw,rh,0,Math.PI,Math.PI*2);
+      sCtx.fillStyle=rg; sCtx.fill(); sCtx.globalAlpha=1; sCtx.restore();
+    }
+    sph(x,cy,pr,p.c[0],p.c[1],p.c[2]);
+    // Jupiter bands
+    if(p.bands){
+      sCtx.save(); sCtx.beginPath(); sCtx.arc(x,cy,pr,0,Math.PI*2); sCtx.clip();
+      for(const b of [{o:-.3,w:.22,col:'rgba(180,130,60,.30)'},{o:0,w:.14,col:'rgba(200,155,75,.35)'},{o:.32,w:.18,col:'rgba(170,120,55,.28)'}]){
+        sCtx.fillStyle=b.col; sCtx.fillRect(x-pr,cy+pr*b.o-pr*b.w/2,pr*2,pr*b.w);
+      }
+      sCtx.restore();
+    }
+    // Saturn rings — front half
+    if(p.rings){
+      const rw=pr*2.6,rh=pr*.44;
+      sCtx.save(); sCtx.translate(x,cy); sCtx.globalAlpha=.8;
+      const rg2=sCtx.createLinearGradient(-rw,0,rw,0);
+      rg2.addColorStop(0,'rgba(220,195,130,0)'); rg2.addColorStop(.18,'rgba(220,195,130,.9)');
+      rg2.addColorStop(.48,'rgba(200,175,110,.55)'); rg2.addColorStop(.52,'rgba(200,175,110,.55)');
+      rg2.addColorStop(.82,'rgba(220,195,130,.9)'); rg2.addColorStop(1,'rgba(220,195,130,0)');
+      sCtx.beginPath(); sCtx.ellipse(0,0,rw,rh,0,0,Math.PI);
+      sCtx.fillStyle=rg2; sCtx.fill(); sCtx.globalAlpha=1; sCtx.restore();
+    }
+    // Label
+    const lSz=Math.min(11,Math.max(6,eR*1.1));
+    sCtx.textAlign='center'; sCtx.fillStyle='rgba(180,220,255,.85)';
+    sCtx.font=`bold ${lSz}px 'Space Grotesk',sans-serif`;
+    sCtx.fillText(p.name,x,base+lSz+4);
+    x+=pr+GAP;
+  }
+
+  // Header + close hint
+  sCtx.textAlign='center';
+  sCtx.fillStyle='rgba(160,210,255,.5)';
+  sCtx.font=`bold 11px 'Space Grotesk',sans-serif`;
+  sCtx.fillText('TRUE SIZE COMPARISON',W/2,20);
+  sCtx.fillStyle='rgba(100,160,255,.3)';
+  sCtx.font=`9px 'Space Grotesk',sans-serif`;
+  sCtx.fillText('tap anywhere to close',W/2,H-14);
+}
+
+function openScaleView(){
+  document.getElementById('scaleView').style.display='block';
+  drawScaleView();
+}
+function closeScaleView(){
+  document.getElementById('scaleView').style.display='none';
+}
 
 tick();
 </script>
