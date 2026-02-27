@@ -1430,42 +1430,58 @@ function drawScaleView(){
     const pr=Math.max(1.5,eR*p.ratio);
     const cy=base-pr; // bottom-aligned to baseline
     x+=pr;
-    // Saturn rings — back half
+
     if(p.rings){
-      const rw=pr*2.6,rh=pr*.44;
-      sCtx.save(); sCtx.translate(x,cy); sCtx.globalAlpha=.8;
+      // Saturn: draw rings + planet in one clipped block to avoid neighbour bleed
+      const rw=pr*1.75, rh=pr*.10; // flatter/more face-on rings
+      const clipW=pr+GAP*0.55;     // prevents rings reaching next planet
+      sCtx.save();
+      sCtx.translate(x,cy);
+      sCtx.beginPath();
+      sCtx.rect(-clipW,-pr*1.25,clipW*2,pr*2.5+rh*4);
+      sCtx.clip();
+      // Back half of rings
+      sCtx.globalAlpha=.85;
       const rg=sCtx.createLinearGradient(-rw,0,rw,0);
       rg.addColorStop(0,'rgba(220,195,130,0)'); rg.addColorStop(.18,'rgba(220,195,130,.9)');
       rg.addColorStop(.48,'rgba(200,175,110,.55)'); rg.addColorStop(.52,'rgba(200,175,110,.55)');
       rg.addColorStop(.82,'rgba(220,195,130,.9)'); rg.addColorStop(1,'rgba(220,195,130,0)');
       sCtx.beginPath(); sCtx.ellipse(0,0,rw,rh,0,Math.PI,Math.PI*2);
-      sCtx.fillStyle=rg; sCtx.fill(); sCtx.globalAlpha=1; sCtx.restore();
-    }
-    sph(x,cy,pr,p.c[0],p.c[1],p.c[2]);
-    // Jupiter bands
-    if(p.bands){
-      sCtx.save(); sCtx.beginPath(); sCtx.arc(x,cy,pr,0,Math.PI*2); sCtx.clip();
-      for(const b of [{o:-.3,w:.22,col:'rgba(180,130,60,.30)'},{o:0,w:.14,col:'rgba(200,155,75,.35)'},{o:.32,w:.18,col:'rgba(170,120,55,.28)'}]){
-        sCtx.fillStyle=b.col; sCtx.fillRect(x-pr,cy+pr*b.o-pr*b.w/2,pr*2,pr*b.w);
-      }
-      sCtx.restore();
-    }
-    // Saturn rings — front half
-    if(p.rings){
-      const rw=pr*2.6,rh=pr*.44;
-      sCtx.save(); sCtx.translate(x,cy); sCtx.globalAlpha=.8;
+      sCtx.fillStyle=rg; sCtx.fill(); sCtx.globalAlpha=1;
+      // Planet sphere (coords relative to translated origin)
+      sph(0,0,pr,p.c[0],p.c[1],p.c[2]);
+      // Front half of rings
+      sCtx.globalAlpha=.85;
       const rg2=sCtx.createLinearGradient(-rw,0,rw,0);
       rg2.addColorStop(0,'rgba(220,195,130,0)'); rg2.addColorStop(.18,'rgba(220,195,130,.9)');
       rg2.addColorStop(.48,'rgba(200,175,110,.55)'); rg2.addColorStop(.52,'rgba(200,175,110,.55)');
       rg2.addColorStop(.82,'rgba(220,195,130,.9)'); rg2.addColorStop(1,'rgba(220,195,130,0)');
       sCtx.beginPath(); sCtx.ellipse(0,0,rw,rh,0,0,Math.PI);
-      sCtx.fillStyle=rg2; sCtx.fill(); sCtx.globalAlpha=1; sCtx.restore();
+      sCtx.fillStyle=rg2; sCtx.fill(); sCtx.globalAlpha=1;
+      sCtx.restore();
+    } else {
+      sph(x,cy,pr,p.c[0],p.c[1],p.c[2]);
+      // Jupiter bands
+      if(p.bands){
+        sCtx.save(); sCtx.beginPath(); sCtx.arc(x,cy,pr,0,Math.PI*2); sCtx.clip();
+        for(const b of [{o:-.3,w:.22,col:'rgba(180,130,60,.30)'},{o:0,w:.14,col:'rgba(200,155,75,.35)'},{o:.32,w:.18,col:'rgba(170,120,55,.28)'}]){
+          sCtx.fillStyle=b.col; sCtx.fillRect(x-pr,cy+pr*b.o-pr*b.w/2,pr*2,pr*b.w);
+        }
+        sCtx.restore();
+      }
     }
-    // Label
-    const lSz=Math.min(11,Math.max(6,eR*1.1));
-    sCtx.textAlign='center'; sCtx.fillStyle='rgba(180,220,255,.85)';
+
+    // Label — angled 45° so names never overlap each other
+    const lSz=Math.min(11,Math.max(7,eR*1.1));
+    sCtx.save();
+    sCtx.translate(x, base+5);
+    sCtx.rotate(-Math.PI/4);
+    sCtx.textAlign='left';
+    sCtx.fillStyle='rgba(180,220,255,.85)';
     sCtx.font=`bold ${lSz}px 'Space Grotesk',sans-serif`;
-    sCtx.fillText(p.name,x,base+lSz+4);
+    sCtx.fillText(p.name, 3, 0);
+    sCtx.restore();
+
     x+=pr+GAP;
   }
 
