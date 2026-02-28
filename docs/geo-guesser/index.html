@@ -6,6 +6,7 @@
 <title>🌍 Geo Guesser — Galaxy Dashboard</title>
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
 :root {
   --beige: #f5ead6;
@@ -44,7 +45,7 @@ body {
   border-bottom: 3px solid var(--ink);
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 1100;
   gap: 0.5rem;
 }
 
@@ -312,55 +313,25 @@ body {
   flex: 1;
   position: relative;
   overflow: hidden;
-  background: #b8d9f0;
-  cursor: crosshair;
-  user-select: none;
   min-height: 320px;
 }
 
-.map-wrap svg {
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-
-/* SVG map styling */
-.map-wrap svg .country, .map-wrap svg .state {
-  fill: #e8f4e8;
-  stroke: #7aaa7a;
-  stroke-width: 0.5;
-  transition: fill 0.2s;
-}
-.map-wrap svg .country:hover, .map-wrap svg .state:hover {
-  fill: #d0ebd0;
-}
-.map-wrap svg .country.answer-country, .map-wrap svg .state.answer-state {
-  fill: #a8e6a8;
-  stroke: var(--green);
-  stroke-width: 1.5;
-}
-
-/* Guess marker */
-.guess-pin, .answer-pin {
-  position: absolute;
-  transform: translate(-50%, -100%);
-  pointer-events: none;
-  filter: drop-shadow(0 3px 6px rgba(0,0,0,0.3));
-  z-index: 10;
-  transition: opacity 0.3s;
-}
-.guess-pin svg path { fill: var(--red); }
-.answer-pin svg path { fill: var(--green); }
-
-.distance-line {
+/* Leaflet container fills the map-wrap */
+#mapContainer {
   position: absolute;
   inset: 0;
-  pointer-events: none;
-  z-index: 9;
-  overflow: visible;
+  z-index: 1;
 }
 
-/* Result overlay */
+/* Override Leaflet cursor for game feel */
+.leaflet-container {
+  cursor: crosshair !important;
+  font-family: 'Nunito', sans-serif;
+}
+.leaflet-grab { cursor: crosshair !important; }
+.leaflet-dragging .leaflet-container { cursor: grabbing !important; }
+
+/* Result overlay — must sit above Leaflet's layers (markers are z ~600) */
 .result-overlay {
   position: absolute;
   bottom: 0;
@@ -373,7 +344,7 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  z-index: 20;
+  z-index: 1000;
   flex-wrap: wrap;
 }
 .result-overlay.show { display: flex; }
@@ -435,6 +406,8 @@ body {
   background: var(--beige);
   border-bottom: 2px solid var(--beige-darker);
   flex-wrap: wrap;
+  position: relative;
+  z-index: 1050;
 }
 .hint-label {
   font-family: 'Fredoka One', cursive;
@@ -475,6 +448,8 @@ body {
   justify-content: center;
   background: var(--beige);
   border-bottom: 2px solid var(--beige-darker);
+  position: relative;
+  z-index: 1050;
 }
 .progress-dot {
   width: 12px;
@@ -618,7 +593,7 @@ body {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 999;
+  z-index: 9999;
 }
 
 /* Mobile tweaks */
@@ -706,46 +681,19 @@ body {
     </div>
   </div>
 
-  <!-- Map -->
-  <div class="map-wrap" id="mapWrap" onclick="handleMapClick(event)">
-    <!-- SVG injected by JS -->
-    <svg id="mapSvg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500" preserveAspectRatio="xMidYMid meet">
-      <rect width="1000" height="500" fill="#b8d9f0"/>
-    </svg>
+  <!-- Map: Leaflet fills this div; result overlay sits on top -->
+  <div class="map-wrap" id="mapWrap">
+    <div id="mapContainer"></div>
 
-    <!-- Distance line overlay -->
-    <svg class="distance-line" id="distanceSvg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none">
-      <line id="distanceLine" x1="0" y1="0" x2="0" y2="0" stroke="var(--red)" stroke-width="0.5"
-            stroke-dasharray="2,1.5" opacity="0" marker-end="url(#arrowEnd)"/>
-      <defs>
-        <marker id="arrowEnd" markerWidth="3" markerHeight="3" refX="2" refY="1.5" orient="auto">
-          <polygon points="0,0 3,1.5 0,3" fill="var(--red)"/>
-        </marker>
-      </defs>
-    </svg>
-
-    <!-- Pins rendered as positioned divs -->
-    <div id="guessPin" class="guess-pin" style="display:none">
-      <svg width="30" height="40" viewBox="0 0 30 40">
-        <path d="M15 0 C7 0 1 6 1 14 C1 24 15 40 15 40 C15 40 29 24 29 14 C29 6 23 0 15 0Z" fill="#e8453c" stroke="#3b2f1e" stroke-width="2"/>
-        <circle cx="15" cy="14" r="5" fill="white"/>
-      </svg>
-    </div>
-    <div id="answerPin" class="answer-pin" style="display:none">
-      <svg width="30" height="40" viewBox="0 0 30 40">
-        <path d="M15 0 C7 0 1 6 1 14 C1 24 15 40 15 40 C15 40 29 24 29 14 C29 6 23 0 15 0Z" fill="#5cbb6f" stroke="#3b2f1e" stroke-width="2"/>
-        <circle cx="15" cy="14" r="5" fill="white"/>
-      </svg>
-    </div>
-
-    <!-- Result overlay -->
+    <!-- Result overlay — outside mapContainer so Leaflet clicks don't reach it -->
     <div class="result-overlay" id="resultOverlay">
       <div class="result-info">
         <div class="result-name" id="resultName"></div>
         <div class="result-detail" id="resultDetail"></div>
       </div>
       <div class="result-score-badge" id="resultBadge"></div>
-      <button class="next-btn" id="nextBtn" onclick="nextQuestion()">Next →</button>
+      <!-- stopPropagation prevents the click from reaching the Leaflet map -->
+      <button class="next-btn" id="nextBtn" onclick="nextQuestion(event)">Next →</button>
     </div>
   </div>
 
@@ -769,193 +717,180 @@ body {
   </div>
 </div>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 // ═══════════════════════════════════════════
-// DATA SETS
+// DATA SETS  (all positions as real lat/lng)
 // ═══════════════════════════════════════════
 
-// US States — approximate centroid in SVG coords [x%, y%] for a standard US map (0-100)
 const US_STATES = [
-  { name:"Alabama",       x:71.5, y:67.5, region:"Southeast" },
-  { name:"Alaska",        x:14,   y:84,   region:"Far West" },
-  { name:"Arizona",       x:22,   y:63,   region:"Southwest" },
-  { name:"Arkansas",      x:63,   y:62,   region:"South Central" },
-  { name:"California",    x:8,    y:52,   region:"West Coast" },
-  { name:"Colorado",      x:33,   y:50,   region:"Mountain West" },
-  { name:"Connecticut",   x:87,   y:33,   region:"New England" },
-  { name:"Delaware",      x:84.5, y:38.5, region:"Mid-Atlantic" },
-  { name:"Florida",       x:75,   y:80,   region:"Southeast" },
-  { name:"Georgia",       x:73,   y:68,   region:"Southeast" },
-  { name:"Hawaii",        x:24,   y:90,   region:"Pacific" },
-  { name:"Idaho",         x:20,   y:28,   region:"Northwest" },
-  { name:"Illinois",      x:66,   y:45,   region:"Midwest" },
-  { name:"Indiana",       x:70,   y:43,   region:"Midwest" },
-  { name:"Iowa",          x:59,   y:38,   region:"Midwest" },
-  { name:"Kansas",        x:49,   y:52,   region:"Great Plains" },
-  { name:"Kentucky",      x:72,   y:51,   region:"Southeast" },
-  { name:"Louisiana",     x:62,   y:74,   region:"South" },
-  { name:"Maine",         x:91,   y:20,   region:"New England" },
-  { name:"Maryland",      x:83,   y:39,   region:"Mid-Atlantic" },
-  { name:"Massachusetts", x:89,   y:30,   region:"New England" },
-  { name:"Michigan",      x:70,   y:32,   region:"Great Lakes" },
-  { name:"Minnesota",     x:58,   y:25,   region:"Upper Midwest" },
-  { name:"Mississippi",   x:67,   y:68,   region:"South" },
-  { name:"Missouri",      x:61,   y:50,   region:"Midwest" },
-  { name:"Montana",       x:27,   y:20,   region:"Mountain West" },
-  { name:"Nebraska",      x:47,   y:43,   region:"Great Plains" },
-  { name:"Nevada",        x:15,   y:43,   region:"West" },
-  { name:"New Hampshire", x:89,   y:26,   region:"New England" },
-  { name:"New Jersey",    x:86,   y:37,   region:"Mid-Atlantic" },
-  { name:"New Mexico",    x:29,   y:62,   region:"Southwest" },
-  { name:"New York",      x:83,   y:30,   region:"Mid-Atlantic" },
-  { name:"North Carolina",x:79,   y:57,   region:"Southeast" },
-  { name:"North Dakota",  x:47,   y:22,   region:"Great Plains" },
-  { name:"Ohio",          x:74,   y:42,   region:"Midwest" },
-  { name:"Oklahoma",      x:49,   y:60,   region:"South Central" },
-  { name:"Oregon",        x:11,   y:31,   region:"Pacific Northwest" },
-  { name:"Pennsylvania",  x:81,   y:36,   region:"Mid-Atlantic" },
-  { name:"Rhode Island",  x:89,   y:32,   region:"New England" },
-  { name:"South Carolina",x:77,   y:62,   region:"Southeast" },
-  { name:"South Dakota",  x:46,   y:31,   region:"Great Plains" },
-  { name:"Tennessee",     x:70,   y:58,   region:"Southeast" },
-  { name:"Texas",         x:46,   y:70,   region:"South Central" },
-  { name:"Utah",          x:22,   y:46,   region:"Mountain West" },
-  { name:"Vermont",       x:87,   y:25,   region:"New England" },
-  { name:"Virginia",      x:81,   y:48,   region:"Mid-Atlantic" },
-  { name:"Washington",    x:13,   y:18,   region:"Pacific Northwest" },
-  { name:"West Virginia", x:78,   y:46,   region:"Mid-Atlantic" },
-  { name:"Wisconsin",     x:64,   y:30,   region:"Midwest" },
-  { name:"Wyoming",       x:30,   y:34,   region:"Mountain West" },
+  { name:"Alabama",        lat:32.8,  lng:-86.8,  region:"Southeast" },
+  { name:"Alaska",         lat:64.2,  lng:-153.0, region:"Far West" },
+  { name:"Arizona",        lat:34.3,  lng:-111.1, region:"Southwest" },
+  { name:"Arkansas",       lat:34.9,  lng:-92.4,  region:"South Central" },
+  { name:"California",     lat:36.8,  lng:-119.4, region:"West Coast" },
+  { name:"Colorado",       lat:39.0,  lng:-105.5, region:"Mountain West" },
+  { name:"Connecticut",    lat:41.6,  lng:-72.7,  region:"New England" },
+  { name:"Delaware",       lat:39.0,  lng:-75.5,  region:"Mid-Atlantic" },
+  { name:"Florida",        lat:27.8,  lng:-81.6,  region:"Southeast" },
+  { name:"Georgia",        lat:32.7,  lng:-83.2,  region:"Southeast" },
+  { name:"Hawaii",         lat:20.9,  lng:-157.0, region:"Pacific" },
+  { name:"Idaho",          lat:44.4,  lng:-114.6, region:"Northwest" },
+  { name:"Illinois",       lat:40.0,  lng:-89.2,  region:"Midwest" },
+  { name:"Indiana",        lat:39.8,  lng:-86.1,  region:"Midwest" },
+  { name:"Iowa",           lat:42.1,  lng:-93.5,  region:"Midwest" },
+  { name:"Kansas",         lat:38.5,  lng:-98.4,  region:"Great Plains" },
+  { name:"Kentucky",       lat:37.5,  lng:-85.3,  region:"Southeast" },
+  { name:"Louisiana",      lat:31.2,  lng:-91.8,  region:"South" },
+  { name:"Maine",          lat:45.4,  lng:-69.0,  region:"New England" },
+  { name:"Maryland",       lat:39.0,  lng:-76.8,  region:"Mid-Atlantic" },
+  { name:"Massachusetts",  lat:42.3,  lng:-71.8,  region:"New England" },
+  { name:"Michigan",       lat:44.2,  lng:-85.4,  region:"Great Lakes" },
+  { name:"Minnesota",      lat:46.4,  lng:-93.1,  region:"Upper Midwest" },
+  { name:"Mississippi",    lat:32.7,  lng:-89.7,  region:"South" },
+  { name:"Missouri",       lat:38.5,  lng:-92.5,  region:"Midwest" },
+  { name:"Montana",        lat:47.0,  lng:-109.6, region:"Mountain West" },
+  { name:"Nebraska",       lat:41.5,  lng:-99.9,  region:"Great Plains" },
+  { name:"Nevada",         lat:39.3,  lng:-116.6, region:"West" },
+  { name:"New Hampshire",  lat:43.7,  lng:-71.6,  region:"New England" },
+  { name:"New Jersey",     lat:40.1,  lng:-74.4,  region:"Mid-Atlantic" },
+  { name:"New Mexico",     lat:34.5,  lng:-106.0, region:"Southwest" },
+  { name:"New York",       lat:42.2,  lng:-74.8,  region:"Mid-Atlantic" },
+  { name:"North Carolina", lat:35.6,  lng:-79.8,  region:"Southeast" },
+  { name:"North Dakota",   lat:47.5,  lng:-100.5, region:"Great Plains" },
+  { name:"Ohio",           lat:40.4,  lng:-82.8,  region:"Midwest" },
+  { name:"Oklahoma",       lat:35.6,  lng:-96.9,  region:"South Central" },
+  { name:"Oregon",         lat:44.0,  lng:-120.5, region:"Pacific Northwest" },
+  { name:"Pennsylvania",   lat:40.9,  lng:-77.8,  region:"Mid-Atlantic" },
+  { name:"Rhode Island",   lat:41.7,  lng:-71.5,  region:"New England" },
+  { name:"South Carolina", lat:33.9,  lng:-80.9,  region:"Southeast" },
+  { name:"South Dakota",   lat:44.4,  lng:-100.2, region:"Great Plains" },
+  { name:"Tennessee",      lat:35.9,  lng:-86.4,  region:"Southeast" },
+  { name:"Texas",          lat:31.1,  lng:-97.6,  region:"South Central" },
+  { name:"Utah",           lat:39.3,  lng:-111.1, region:"Mountain West" },
+  { name:"Vermont",        lat:44.0,  lng:-72.7,  region:"New England" },
+  { name:"Virginia",       lat:37.9,  lng:-78.7,  region:"Mid-Atlantic" },
+  { name:"Washington",     lat:47.4,  lng:-120.5, region:"Pacific Northwest" },
+  { name:"West Virginia",  lat:38.7,  lng:-80.6,  region:"Mid-Atlantic" },
+  { name:"Wisconsin",      lat:44.3,  lng:-89.8,  region:"Midwest" },
+  { name:"Wyoming",        lat:43.0,  lng:-107.6, region:"Mountain West" },
 ];
 
-// US Cities — major cities with approximate positions on US map coords [x%, y%]
 const US_CITIES = [
-  { name:"New York City",    x:86,   y:34,   region:"Northeast", fact:"Most populous US city" },
-  { name:"Los Angeles",      x:10,   y:57,   region:"West Coast", fact:"2nd most populous city" },
-  { name:"Chicago",          x:67,   y:37,   region:"Midwest", fact:"The Windy City" },
-  { name:"Houston",          x:53,   y:73,   region:"South Texas", fact:"Space City" },
-  { name:"Phoenix",          x:22,   y:64,   region:"Southwest", fact:"Valley of the Sun" },
-  { name:"Philadelphia",     x:85,   y:37,   region:"Mid-Atlantic", fact:"City of Brotherly Love" },
-  { name:"San Antonio",      x:48,   y:75,   region:"South Texas", fact:"Near the Alamo" },
-  { name:"San Diego",        x:12,   y:62,   region:"West Coast", fact:"America's Finest City" },
-  { name:"Dallas",           x:52,   y:67,   region:"South Central", fact:"Big D" },
-  { name:"San Jose",         x:7,    y:47,   region:"West Coast", fact:"Silicon Valley hub" },
-  { name:"Austin",           x:50,   y:72,   region:"South Central", fact:"Keep Austin Weird!" },
-  { name:"Jacksonville",     x:76,   y:73,   region:"Southeast", fact:"Largest city by area" },
-  { name:"Fort Worth",       x:51,   y:66,   region:"South Central", fact:"Cowtown" },
-  { name:"Columbus",         x:74,   y:42,   region:"Midwest", fact:"Ohio capital" },
-  { name:"Charlotte",        x:78,   y:57,   region:"Southeast", fact:"Queen City" },
-  { name:"Indianapolis",     x:70,   y:44,   region:"Midwest", fact:"Indy 500!" },
-  { name:"San Francisco",    x:6,    y:46,   region:"West Coast", fact:"The Golden Gate city" },
-  { name:"Seattle",          x:12,   y:17,   region:"Pacific Northwest", fact:"Emerald City" },
-  { name:"Denver",           x:33,   y:48,   region:"Mountain West", fact:"Mile High City" },
-  { name:"Nashville",        x:70,   y:57,   region:"Southeast", fact:"Music City" },
-  { name:"Oklahoma City",    x:49,   y:60,   region:"South Central", fact:"OKC" },
-  { name:"El Paso",          x:33,   y:70,   region:"Southwest", fact:"Sun City" },
-  { name:"Boston",           x:90,   y:29,   region:"New England", fact:"Cradle of Liberty" },
-  { name:"Portland",         x:11,   y:25,   region:"Pacific Northwest", fact:"City of Roses" },
-  { name:"Las Vegas",        x:17,   y:51,   region:"Southwest", fact:"Entertainment capital" },
-  { name:"Memphis",          x:65,   y:60,   region:"Southeast", fact:"Home of the Blues" },
-  { name:"Atlanta",          x:72,   y:65,   region:"Southeast", fact:"The ATL" },
-  { name:"Miami",            x:77,   y:85,   region:"Southeast", fact:"Magic City" },
-  { name:"Minneapolis",      x:58,   y:25,   region:"Midwest", fact:"City of Lakes" },
-  { name:"New Orleans",      x:63,   y:75,   region:"South", fact:"The Big Easy" },
+  { name:"New York City",   lat:40.71, lng:-74.00,  region:"Northeast",        fact:"Most populous US city" },
+  { name:"Los Angeles",     lat:34.05, lng:-118.24, region:"West Coast",        fact:"2nd most populous city" },
+  { name:"Chicago",         lat:41.88, lng:-87.63,  region:"Midwest",           fact:"The Windy City" },
+  { name:"Houston",         lat:29.76, lng:-95.37,  region:"South Texas",       fact:"Space City" },
+  { name:"Phoenix",         lat:33.45, lng:-112.07, region:"Southwest",         fact:"Valley of the Sun" },
+  { name:"Philadelphia",    lat:39.95, lng:-75.17,  region:"Mid-Atlantic",      fact:"City of Brotherly Love" },
+  { name:"San Antonio",     lat:29.42, lng:-98.49,  region:"South Texas",       fact:"Near the Alamo" },
+  { name:"San Diego",       lat:32.72, lng:-117.16, region:"West Coast",        fact:"America's Finest City" },
+  { name:"Dallas",          lat:32.78, lng:-96.80,  region:"South Central",     fact:"Big D" },
+  { name:"San Jose",        lat:37.34, lng:-121.89, region:"West Coast",        fact:"Silicon Valley hub" },
+  { name:"Austin",          lat:30.27, lng:-97.74,  region:"South Central",     fact:"Keep Austin Weird!" },
+  { name:"Jacksonville",    lat:30.33, lng:-81.66,  region:"Southeast",         fact:"Largest city by area" },
+  { name:"Fort Worth",      lat:32.72, lng:-97.32,  region:"South Central",     fact:"Cowtown" },
+  { name:"Columbus",        lat:39.96, lng:-82.99,  region:"Midwest",           fact:"Ohio capital" },
+  { name:"Charlotte",       lat:35.23, lng:-80.84,  region:"Southeast",         fact:"Queen City" },
+  { name:"Indianapolis",    lat:39.77, lng:-86.16,  region:"Midwest",           fact:"Indy 500!" },
+  { name:"San Francisco",   lat:37.77, lng:-122.42, region:"West Coast",        fact:"The Golden Gate city" },
+  { name:"Seattle",         lat:47.61, lng:-122.33, region:"Pacific Northwest", fact:"Emerald City" },
+  { name:"Denver",          lat:39.74, lng:-104.98, region:"Mountain West",     fact:"Mile High City" },
+  { name:"Nashville",       lat:36.17, lng:-86.78,  region:"Southeast",         fact:"Music City" },
+  { name:"Oklahoma City",   lat:35.47, lng:-97.52,  region:"South Central",     fact:"OKC" },
+  { name:"El Paso",         lat:31.76, lng:-106.49, region:"Southwest",         fact:"Sun City" },
+  { name:"Boston",          lat:42.36, lng:-71.06,  region:"New England",       fact:"Cradle of Liberty" },
+  { name:"Portland",        lat:45.52, lng:-122.68, region:"Pacific Northwest", fact:"City of Roses" },
+  { name:"Las Vegas",       lat:36.17, lng:-115.14, region:"Southwest",         fact:"Entertainment capital" },
+  { name:"Memphis",         lat:35.15, lng:-90.05,  region:"Southeast",         fact:"Home of the Blues" },
+  { name:"Atlanta",         lat:33.75, lng:-84.39,  region:"Southeast",         fact:"The ATL" },
+  { name:"Miami",           lat:25.77, lng:-80.19,  region:"Southeast",         fact:"Magic City" },
+  { name:"Minneapolis",     lat:44.98, lng:-93.27,  region:"Midwest",           fact:"City of Lakes" },
+  { name:"New Orleans",     lat:29.95, lng:-90.07,  region:"South",             fact:"The Big Easy" },
 ];
 
-// World Countries — approximate lat/lng converted to SVG % position
-// Using equirectangular projection: x = (lng + 180) / 360 * 100, y = (90 - lat) / 180 * 100
-function lngLatToXY(lng, lat) {
-  return { x: (lng + 180) / 360 * 100, y: (90 - lat) / 180 * 100 };
-}
-
-const WORLD_COUNTRIES_RAW = [
-  { name:"Afghanistan",   lat:33,    lng:65,    continent:"Asia" },
-  { name:"Argentina",     lat:-34,   lng:-64,   continent:"South America" },
-  { name:"Australia",     lat:-25,   lng:133,   continent:"Oceania" },
-  { name:"Austria",       lat:47,    lng:14,    continent:"Europe" },
-  { name:"Bangladesh",    lat:24,    lng:90,    continent:"Asia" },
-  { name:"Belgium",       lat:50,    lng:4,     continent:"Europe" },
-  { name:"Bolivia",       lat:-17,   lng:-65,   continent:"South America" },
-  { name:"Brazil",        lat:-10,   lng:-55,   continent:"South America" },
-  { name:"Cambodia",      lat:13,    lng:105,   continent:"Asia" },
-  { name:"Canada",        lat:56,    lng:-96,   continent:"North America" },
-  { name:"Chile",         lat:-35,   lng:-71,   continent:"South America" },
-  { name:"China",         lat:35,    lng:105,   continent:"Asia" },
-  { name:"Colombia",      lat:4,     lng:-72,   continent:"South America" },
-  { name:"Cuba",          lat:22,    lng:-79,   continent:"Caribbean" },
-  { name:"Czech Republic",lat:50,    lng:15,    continent:"Europe" },
-  { name:"Denmark",       lat:56,    lng:10,    continent:"Europe" },
-  { name:"Ecuador",       lat:-2,    lng:-77,   continent:"South America" },
-  { name:"Egypt",         lat:26,    lng:30,    continent:"Africa" },
-  { name:"Ethiopia",      lat:9,     lng:40,    continent:"Africa" },
-  { name:"Finland",       lat:64,    lng:26,    continent:"Europe" },
-  { name:"France",        lat:46,    lng:2,     continent:"Europe" },
-  { name:"Germany",       lat:51,    lng:10,    continent:"Europe" },
-  { name:"Ghana",         lat:8,     lng:-2,    continent:"Africa" },
-  { name:"Greece",        lat:39,    lng:22,    continent:"Europe" },
-  { name:"Guatemala",     lat:15,    lng:-90,   continent:"Central America" },
-  { name:"Hungary",       lat:47,    lng:19,    continent:"Europe" },
-  { name:"India",         lat:20,    lng:77,    continent:"Asia" },
-  { name:"Indonesia",     lat:-5,    lng:120,   continent:"Asia" },
-  { name:"Iran",          lat:32,    lng:53,    continent:"Asia" },
-  { name:"Iraq",          lat:33,    lng:44,    continent:"Asia" },
-  { name:"Ireland",       lat:53,    lng:-8,    continent:"Europe" },
-  { name:"Israel",        lat:31,    lng:35,    continent:"Asia" },
-  { name:"Italy",         lat:42,    lng:12,    continent:"Europe" },
-  { name:"Japan",         lat:36,    lng:138,   continent:"Asia" },
-  { name:"Jordan",        lat:31,    lng:36,    continent:"Asia" },
-  { name:"Kazakhstan",    lat:48,    lng:68,    continent:"Asia" },
-  { name:"Kenya",         lat:1,     lng:38,    continent:"Africa" },
-  { name:"Madagascar",    lat:-20,   lng:47,    continent:"Africa" },
-  { name:"Malaysia",      lat:4,     lng:109,   continent:"Asia" },
-  { name:"Mexico",        lat:23,    lng:-102,  continent:"North America" },
-  { name:"Morocco",       lat:32,    lng:-5,    continent:"Africa" },
-  { name:"Mozambique",    lat:-18,   lng:35,    continent:"Africa" },
-  { name:"Myanmar",       lat:17,    lng:96,    continent:"Asia" },
-  { name:"Nepal",         lat:28,    lng:84,    continent:"Asia" },
-  { name:"Netherlands",   lat:52,    lng:5,     continent:"Europe" },
-  { name:"New Zealand",   lat:-41,   lng:174,   continent:"Oceania" },
-  { name:"Nigeria",       lat:10,    lng:8,     continent:"Africa" },
-  { name:"North Korea",   lat:40,    lng:127,   continent:"Asia" },
-  { name:"Norway",        lat:64,    lng:10,    continent:"Europe" },
-  { name:"Pakistan",      lat:30,    lng:69,    continent:"Asia" },
-  { name:"Peru",          lat:-10,   lng:-75,   continent:"South America" },
-  { name:"Philippines",   lat:13,    lng:122,   continent:"Asia" },
-  { name:"Poland",        lat:52,    lng:20,    continent:"Europe" },
-  { name:"Portugal",      lat:39,    lng:-8,    continent:"Europe" },
-  { name:"Romania",       lat:46,    lng:25,    continent:"Europe" },
-  { name:"Russia",        lat:60,    lng:100,   continent:"Europe/Asia" },
-  { name:"Saudi Arabia",  lat:24,    lng:45,    continent:"Asia" },
-  { name:"South Africa",  lat:-30,   lng:25,    continent:"Africa" },
-  { name:"South Korea",   lat:36,    lng:128,   continent:"Asia" },
-  { name:"Spain",         lat:40,    lng:-4,    continent:"Europe" },
-  { name:"Sri Lanka",     lat:8,     lng:81,    continent:"Asia" },
-  { name:"Sudan",         lat:15,    lng:30,    continent:"Africa" },
-  { name:"Sweden",        lat:60,    lng:15,    continent:"Europe" },
-  { name:"Switzerland",   lat:47,    lng:8,     continent:"Europe" },
-  { name:"Syria",         lat:35,    lng:38,    continent:"Asia" },
-  { name:"Taiwan",        lat:24,    lng:121,   continent:"Asia" },
-  { name:"Tanzania",      lat:-6,    lng:35,    continent:"Africa" },
-  { name:"Thailand",      lat:15,    lng:101,   continent:"Asia" },
-  { name:"Turkey",        lat:39,    lng:35,    continent:"Asia/Europe" },
-  { name:"Uganda",        lat:1,     lng:32,    continent:"Africa" },
-  { name:"Ukraine",       lat:49,    lng:32,    continent:"Europe" },
-  { name:"United Kingdom",lat:54,    lng:-2,    continent:"Europe" },
-  { name:"United States", lat:38,    lng:-97,   continent:"North America" },
-  { name:"Uruguay",       lat:-33,   lng:-56,   continent:"South America" },
-  { name:"Uzbekistan",    lat:41,    lng:64,    continent:"Asia" },
-  { name:"Venezuela",     lat:8,     lng:-66,   continent:"South America" },
-  { name:"Vietnam",       lat:16,    lng:107,   continent:"Asia" },
-  { name:"Yemen",         lat:15,    lng:48,    continent:"Asia" },
-  { name:"Zambia",        lat:-14,   lng:28,    continent:"Africa" },
-  { name:"Zimbabwe",      lat:-20,   lng:30,    continent:"Africa" },
+const WORLD_COUNTRIES = [
+  { name:"Afghanistan",    lat:33,   lng:65,    region:"Asia" },
+  { name:"Argentina",      lat:-34,  lng:-64,   region:"South America" },
+  { name:"Australia",      lat:-25,  lng:133,   region:"Oceania" },
+  { name:"Austria",        lat:47,   lng:14,    region:"Europe" },
+  { name:"Bangladesh",     lat:24,   lng:90,    region:"Asia" },
+  { name:"Belgium",        lat:50,   lng:4,     region:"Europe" },
+  { name:"Bolivia",        lat:-17,  lng:-65,   region:"South America" },
+  { name:"Brazil",         lat:-10,  lng:-55,   region:"South America" },
+  { name:"Cambodia",       lat:13,   lng:105,   region:"Asia" },
+  { name:"Canada",         lat:56,   lng:-96,   region:"North America" },
+  { name:"Chile",          lat:-35,  lng:-71,   region:"South America" },
+  { name:"China",          lat:35,   lng:105,   region:"Asia" },
+  { name:"Colombia",       lat:4,    lng:-72,   region:"South America" },
+  { name:"Cuba",           lat:22,   lng:-79,   region:"Caribbean" },
+  { name:"Czech Republic", lat:50,   lng:15,    region:"Europe" },
+  { name:"Denmark",        lat:56,   lng:10,    region:"Europe" },
+  { name:"Ecuador",        lat:-2,   lng:-77,   region:"South America" },
+  { name:"Egypt",          lat:26,   lng:30,    region:"Africa" },
+  { name:"Ethiopia",       lat:9,    lng:40,    region:"Africa" },
+  { name:"Finland",        lat:64,   lng:26,    region:"Europe" },
+  { name:"France",         lat:46,   lng:2,     region:"Europe" },
+  { name:"Germany",        lat:51,   lng:10,    region:"Europe" },
+  { name:"Ghana",          lat:8,    lng:-2,    region:"Africa" },
+  { name:"Greece",         lat:39,   lng:22,    region:"Europe" },
+  { name:"Guatemala",      lat:15,   lng:-90,   region:"Central America" },
+  { name:"Hungary",        lat:47,   lng:19,    region:"Europe" },
+  { name:"India",          lat:20,   lng:77,    region:"Asia" },
+  { name:"Indonesia",      lat:-5,   lng:120,   region:"Asia" },
+  { name:"Iran",           lat:32,   lng:53,    region:"Asia" },
+  { name:"Iraq",           lat:33,   lng:44,    region:"Asia" },
+  { name:"Ireland",        lat:53,   lng:-8,    region:"Europe" },
+  { name:"Israel",         lat:31,   lng:35,    region:"Asia" },
+  { name:"Italy",          lat:42,   lng:12,    region:"Europe" },
+  { name:"Japan",          lat:36,   lng:138,   region:"Asia" },
+  { name:"Jordan",         lat:31,   lng:36,    region:"Asia" },
+  { name:"Kazakhstan",     lat:48,   lng:68,    region:"Asia" },
+  { name:"Kenya",          lat:1,    lng:38,    region:"Africa" },
+  { name:"Madagascar",     lat:-20,  lng:47,    region:"Africa" },
+  { name:"Malaysia",       lat:4,    lng:109,   region:"Asia" },
+  { name:"Mexico",         lat:23,   lng:-102,  region:"North America" },
+  { name:"Morocco",        lat:32,   lng:-5,    region:"Africa" },
+  { name:"Mozambique",     lat:-18,  lng:35,    region:"Africa" },
+  { name:"Myanmar",        lat:17,   lng:96,    region:"Asia" },
+  { name:"Nepal",          lat:28,   lng:84,    region:"Asia" },
+  { name:"Netherlands",    lat:52,   lng:5,     region:"Europe" },
+  { name:"New Zealand",    lat:-41,  lng:174,   region:"Oceania" },
+  { name:"Nigeria",        lat:10,   lng:8,     region:"Africa" },
+  { name:"North Korea",    lat:40,   lng:127,   region:"Asia" },
+  { name:"Norway",         lat:64,   lng:10,    region:"Europe" },
+  { name:"Pakistan",       lat:30,   lng:69,    region:"Asia" },
+  { name:"Peru",           lat:-10,  lng:-75,   region:"South America" },
+  { name:"Philippines",    lat:13,   lng:122,   region:"Asia" },
+  { name:"Poland",         lat:52,   lng:20,    region:"Europe" },
+  { name:"Portugal",       lat:39,   lng:-8,    region:"Europe" },
+  { name:"Romania",        lat:46,   lng:25,    region:"Europe" },
+  { name:"Russia",         lat:60,   lng:100,   region:"Europe/Asia" },
+  { name:"Saudi Arabia",   lat:24,   lng:45,    region:"Asia" },
+  { name:"South Africa",   lat:-30,  lng:25,    region:"Africa" },
+  { name:"South Korea",    lat:36,   lng:128,   region:"Asia" },
+  { name:"Spain",          lat:40,   lng:-4,    region:"Europe" },
+  { name:"Sri Lanka",      lat:8,    lng:81,    region:"Asia" },
+  { name:"Sudan",          lat:15,   lng:30,    region:"Africa" },
+  { name:"Sweden",         lat:60,   lng:15,    region:"Europe" },
+  { name:"Switzerland",    lat:47,   lng:8,     region:"Europe" },
+  { name:"Syria",          lat:35,   lng:38,    region:"Asia" },
+  { name:"Taiwan",         lat:24,   lng:121,   region:"Asia" },
+  { name:"Tanzania",       lat:-6,   lng:35,    region:"Africa" },
+  { name:"Thailand",       lat:15,   lng:101,   region:"Asia" },
+  { name:"Turkey",         lat:39,   lng:35,    region:"Asia/Europe" },
+  { name:"Uganda",         lat:1,    lng:32,    region:"Africa" },
+  { name:"Ukraine",        lat:49,   lng:32,    region:"Europe" },
+  { name:"United Kingdom", lat:54,   lng:-2,    region:"Europe" },
+  { name:"United States",  lat:38,   lng:-97,   region:"North America" },
+  { name:"Uruguay",        lat:-33,  lng:-56,   region:"South America" },
+  { name:"Uzbekistan",     lat:41,   lng:64,    region:"Asia" },
+  { name:"Venezuela",      lat:8,    lng:-66,   region:"South America" },
+  { name:"Vietnam",        lat:16,   lng:107,   region:"Asia" },
+  { name:"Yemen",          lat:15,   lng:48,    region:"Asia" },
+  { name:"Zambia",         lat:-14,  lng:28,    region:"Africa" },
+  { name:"Zimbabwe",       lat:-20,  lng:30,    region:"Africa" },
 ];
-
-const WORLD_COUNTRIES = WORLD_COUNTRIES_RAW.map(c => ({
-  ...c,
-  ...lngLatToXY(c.lng, c.lat),
-  region: c.continent
-}));
 
 // ═══════════════════════════════════════════
 // GAME STATE
@@ -973,6 +908,35 @@ let timerSeconds = 0;
 let maxSeconds = 20;
 let guessLocked = false;
 let hintsUsed = [];
+
+// Leaflet map state
+let leafletMap = null;
+let guessMarker = null;
+let answerMarker = null;
+let distancePoly = null;
+
+// Custom pin icons
+const PIN_GUESS = L.divIcon({
+  className: '',
+  html: `<svg width="30" height="40" viewBox="0 0 30 40" style="display:block">
+    <path d="M15 0 C7 0 1 6 1 14 C1 24 15 40 15 40 C15 40 29 24 29 14 C29 6 23 0 15 0Z"
+          fill="#e8453c" stroke="#3b2f1e" stroke-width="2"/>
+    <circle cx="15" cy="14" r="5" fill="white"/>
+  </svg>`,
+  iconSize: [30, 40],
+  iconAnchor: [15, 40],
+});
+
+const PIN_ANSWER = L.divIcon({
+  className: '',
+  html: `<svg width="30" height="40" viewBox="0 0 30 40" style="display:block">
+    <path d="M15 0 C7 0 1 6 1 14 C1 24 15 40 15 40 C15 40 29 24 29 14 C29 6 23 0 15 0Z"
+          fill="#5cbb6f" stroke="#3b2f1e" stroke-width="2"/>
+    <circle cx="15" cy="14" r="5" fill="white"/>
+  </svg>`,
+  iconSize: [30, 40],
+  iconAnchor: [15, 40],
+});
 
 // ═══════════════════════════════════════════
 // UI HELPERS
@@ -1004,152 +968,69 @@ function showStart() {
 }
 
 // ═══════════════════════════════════════════
-// MAP RENDERING
+// MAP — Leaflet
 // ═══════════════════════════════════════════
+function initMap() {
+  // Remove previous map instance
+  if (leafletMap) {
+    leafletMap.remove();
+    leafletMap = null;
+    guessMarker = null;
+    answerMarker = null;
+    distancePoly = null;
+  }
 
-// Minimal world outline paths (simplified polygons for major land masses)
-// Using rough outline polygons — enough to give visual context
-const WORLD_SVG_PATHS = `
-<g id="landmasses">
-<!-- North America -->
-<path class="country" d="M 130,40 L 180,35 L 220,40 L 240,60 L 260,55 L 280,70 L 270,90 L 250,100 L 240,120 L 220,115 L 200,130 L 190,125 L 180,140 L 160,145 L 155,160 L 165,175 L 155,185 L 140,175 L 130,155 L 120,145 L 110,130 L 100,120 L 90,105 L 95,90 L 85,75 L 90,60 L 110,50 Z"/>
-<!-- South America -->
-<path class="country" d="M 225,175 L 250,170 L 270,180 L 280,200 L 285,225 L 278,250 L 265,280 L 255,300 L 240,310 L 225,295 L 215,270 L 210,245 L 215,220 L 210,200 Z"/>
-<!-- Europe -->
-<path class="country" d="M 455,30 L 490,28 L 510,35 L 520,45 L 510,55 L 520,60 L 515,70 L 500,68 L 490,75 L 475,72 L 465,60 L 455,55 L 450,45 Z"/>
-<!-- Africa -->
-<path class="country" d="M 465,115 L 500,110 L 520,120 L 530,140 L 525,170 L 530,195 L 520,220 L 505,240 L 490,250 L 475,245 L 460,225 L 450,200 L 448,175 L 455,150 L 458,130 Z"/>
-<!-- Asia (simplified) -->
-<path class="country" d="M 525,30 L 620,25 L 700,30 L 760,35 L 800,45 L 810,60 L 780,70 L 750,65 L 720,75 L 700,70 L 680,80 L 660,75 L 640,85 L 610,80 L 590,90 L 560,85 L 535,75 L 520,60 L 525,45 Z"/>
-<!-- Australia -->
-<path class="country" d="M 710,250 L 750,245 L 780,255 L 790,275 L 785,295 L 765,305 L 740,300 L 720,285 L 710,270 Z"/>
-<!-- Japan (small) -->
-<path class="country" d="M 778,75 L 788,70 L 795,78 L 790,88 L 780,90 L 774,83 Z"/>
-<!-- UK (small) -->
-<path class="country" d="M 451,38 L 457,35 L 462,40 L 460,48 L 453,50 L 449,44 Z"/>
-<!-- Indonesia (rough) -->
-<path class="country" d="M 665,190 L 700,185 L 730,188 L 740,198 L 720,205 L 690,200 L 665,198 Z"/>
-<!-- New Zealand (small) -->
-<path class="country" d="M 810,285 L 818,280 L 823,290 L 818,300 L 810,298 Z"/>
-<!-- Greenland -->
-<path class="country" d="M 340,10 L 390,8 L 410,18 L 400,35 L 375,40 L 350,35 L 335,22 Z"/>
-<!-- Scandinavia -->
-<path class="country" d="M 475,18 L 500,14 L 510,22 L 505,35 L 490,38 L 475,32 Z"/>
-<!-- Philippines (small) -->
-<path class="country" d="M 725,148 L 735,145 L 740,155 L 733,162 L 724,158 Z"/>
-<!-- Madagascar -->
-<path class="country" d="M 518,218 L 525,212 L 532,220 L 530,235 L 522,238 L 516,230 Z"/>
-</g>
-`;
+  leafletMap = L.map('mapContainer', {
+    zoomControl: true,
+    attributionControl: true,
+    minZoom: 2,
+  });
 
-// US map paths (simplified state outlines as a composite)
-const US_SVG = `
-<g id="usBg">
-  <!-- Main continental US outline -->
-  <path class="state" d="
-    M 80,55 L 160,50 L 200,52 L 240,48 L 280,50 L 330,48 L 380,52 L 420,50 L 460,52
-    L 500,50 L 540,52 L 580,48 L 620,52 L 660,50 L 700,52 L 740,50 L 780,55
-    L 800,60 L 810,75 L 800,90 L 810,105 L 795,120 L 780,130 L 770,145
-    L 760,160 L 750,175 L 730,185 L 710,195 L 700,205 L 680,215 L 660,220
-    L 640,218 L 620,220 L 600,215 L 575,220 L 555,215 L 535,220 L 510,225
-    L 490,218 L 460,222 L 440,218 L 420,225 L 395,220 L 370,215 L 340,210
-    L 310,215 L 285,210 L 260,205 L 235,200 L 210,195 L 185,185 L 160,175
-    L 140,160 L 125,148 L 110,135 L 95,120 L 85,105 L 80,90 L 82,75 Z
-  "/>
-  <!-- Florida peninsula -->
-  <path class="state" d="M 700,205 L 715,215 L 725,230 L 730,248 L 725,262 L 715,270 L 705,262 L 698,248 L 695,232 L 698,218 Z"/>
-  <!-- Texas -->
-  <path class="state" d="M 390,220 L 440,218 L 460,222 L 465,235 L 462,255 L 455,268 L 445,278 L 430,282 L 415,278 L 400,270 L 385,260 L 375,245 L 375,230 Z"/>
-  <!-- Alaska (small inset) -->
-  <path class="state" d="M 85,265 L 145,258 L 175,268 L 185,285 L 175,300 L 150,308 L 120,305 L 95,295 L 83,280 Z"/>
-  <!-- Hawaii (small inset) -->
-  <path class="state" d="M 210,280 L 225,276 L 238,282 L 242,295 L 232,302 L 218,300 L 208,292 Z"/>
+  // CartoDB Voyager tiles — no country/city labels so the challenge stays intact
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/attributions">CARTO</a>',
+    subdomains: 'abcd',
+    maxZoom: 19,
+  }).addTo(leafletMap);
 
-  <!-- State boundary lines (major ones) -->
-  <!-- Mississippi River rough line -->
-  <line x1="640" y1="52" x2="635" y2="220" stroke="#9aaa9a" stroke-width="0.8" opacity="0.7"/>
-  <!-- Appalachian suggestion -->
-  <line x1="740" y1="80" x2="715" y2="195" stroke="#9aaa9a" stroke-width="0.8" opacity="0.5"/>
-  <!-- Rockies suggestion -->
-  <line x1="310" y1="52" x2="305" y2="200" stroke="#9aaa9a" stroke-width="0.8" opacity="0.5"/>
-  <!-- East/West line -->
-  <line x1="80" y1="140" x2="800" y2="140" stroke="#9aaa9a" stroke-width="0.5" opacity="0.3"/>
+  setMapView();
 
-  <!-- Compass rose -->
-  <text x="870" y="85" font-size="11" fill="#5a7a5a" font-family="Fredoka One" opacity="0.7">N</text>
-  <text x="870" y="220" font-size="11" fill="#5a7a5a" font-family="Fredoka One" opacity="0.7">S</text>
-  <text x="830" y="155" font-size="11" fill="#5a7a5a" font-family="Fredoka One" opacity="0.7">W</text>
-  <text x="910" y="155" font-size="11" fill="#5a7a5a" font-family="Fredoka One" opacity="0.7">E</text>
-</g>
-`;
+  leafletMap.on('click', function (e) {
+    if (guessLocked) return;
+    placeGuess(e.latlng.lat, e.latlng.lng);
+  });
+}
 
-function renderMap() {
-  const svg = document.getElementById('mapSvg');
+function setMapView() {
+  if (!leafletMap) return;
   if (gameMode === 'world') {
-    svg.setAttribute('viewBox', '0 0 1000 500');
-    svg.innerHTML = `
-      <rect width="1000" height="500" fill="#b8d9f0"/>
-      ${WORLD_SVG_PATHS}
-      <!-- Equator line -->
-      <line x1="0" y1="250" x2="1000" y2="250" stroke="#7aaa9a" stroke-width="0.8" stroke-dasharray="8,6" opacity="0.5"/>
-      <!-- Grid lines -->
-      <line x1="500" y1="0" x2="500" y2="500" stroke="#9ababa" stroke-width="0.5" opacity="0.3"/>
-      <line x1="0" y1="167" x2="1000" y2="167" stroke="#9ababa" stroke-width="0.5" opacity="0.25"/>
-      <line x1="0" y1="333" x2="1000" y2="333" stroke="#9ababa" stroke-width="0.5" opacity="0.25"/>
-      <!-- Labels -->
-      <text x="490" y="492" font-size="8" fill="#5a8a9a" font-family="Fredoka One" opacity="0.7">Equator</text>
-      <text x="10" y="492" font-size="7" fill="#5a8a9a" font-family="Nunito" font-weight="700" opacity="0.6">© Geo Guesser</text>
-    `;
+    leafletMap.setView([20, 10], 2);
   } else {
-    // US map
-    svg.setAttribute('viewBox', '0 0 1000 360');
-    svg.innerHTML = `
-      <rect width="1000" height="360" fill="#b8d9f0"/>
-      ${US_SVG}
-      <text x="10" y="352" font-size="7" fill="#5a8a9a" font-family="Nunito" font-weight="700" opacity="0.6">© Geo Guesser</text>
-    `;
+    // Continental US + Alaska/Hawaii visible
+    leafletMap.fitBounds([[24, -125], [50, -66]]);
   }
 }
 
-// Convert data x%,y% to SVG pixel coords within the viewBox
-function dataToSvgCoords(xPct, yPct) {
-  if (gameMode === 'world') {
-    return { x: xPct * 10, y: yPct * 5 };
-  } else {
-    // US map viewBox 0 0 1000 360
-    // data coords use the same x/y pct scaled to the US map area
-    // Continental US roughly spans x:[80,810], y:[50,285] in our SVG
-    const svgX = 80 + (xPct / 100) * 730;
-    const svgY = 50 + (yPct / 100) * 235;
-    return { x: svgX, y: svgY };
-  }
+// ═══════════════════════════════════════════
+// SCORING  (real distances via haversine)
+// ═══════════════════════════════════════════
+function haversineKm(lat1, lng1, lat2, lng2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-// Convert a click on the map-wrap div to data x%,y%
-function clickToDataPct(event) {
-  const rect = event.currentTarget.getBoundingClientRect();
-  const xPct = ((event.clientX - rect.left) / rect.width) * 100;
-  const yPct = ((event.clientY - rect.top) / rect.height) * 100;
-  return { x: xPct, y: yPct };
-}
-
-// ═══════════════════════════════════════════
-// SCORING
-// ═══════════════════════════════════════════
-
-// Distance in "data pct" space — we use euclidean distance %
-// For world mode, 1% ≈ ~111km (lon) or ~200km (lat) scaled — approximate but good for fun
-// Max reasonable distance world: ~70 units pct. US map: ~60 units pct.
-
-function calcScore(dist) {
-  // dist is euclidean in pct space
-  // World scale: max dist ~80, full score threshold ~2
-  // US scale: max dist ~60, full score threshold ~3
-  const maxDist = (gameMode === 'world') ? 80 : 60;
-  const perfect = (gameMode === 'world') ? 2.5 : 3;
-  if (dist <= perfect) return 1000;
-  const raw = Math.max(0, 1 - (dist - perfect) / (maxDist - perfect));
-  return Math.round(raw * raw * 900); // quadratic dropoff, max 900 when not perfect
+function calcScore(distKm) {
+  // Within 50 km = perfect; score drops off quadratically
+  const maxDist = (gameMode === 'world') ? 10000 : 4000;
+  const perfect = 50;
+  if (distKm <= perfect) return 1000;
+  const raw = Math.max(0, 1 - (distKm - perfect) / (maxDist - perfect));
+  return Math.round(raw * raw * 900);
 }
 
 function scoreLabel(pts) {
@@ -1159,28 +1040,24 @@ function scoreLabel(pts) {
   return                 { label:'📍 Off',       cls:'poor' };
 }
 
-function distanceDisplay(dist) {
+function distanceDisplay(distKm) {
+  if (distKm < 5) return 'Spot on!';
   if (gameMode === 'world') {
-    const km = Math.round(dist * 110);
-    if (km < 5) return 'Spot on!';
-    if (km < 100) return `~${km} km away`;
-    return `~${Math.round(km/100)*100} km away`;
+    if (distKm < 100) return `~${Math.round(distKm)} km away`;
+    return `~${Math.round(distKm / 100) * 100} km away`;
   } else {
-    const mi = Math.round(dist * 35);
-    if (mi < 10) return 'Spot on!';
-    if (mi < 50) return `~${mi} miles away`;
-    return `~${Math.round(mi/50)*50} miles away`;
+    const mi = distKm * 0.621371;
+    if (mi < 20) return `~${Math.round(mi)} miles away`;
+    return `~${Math.round(mi / 50) * 50} miles away`;
   }
 }
 
 // ═══════════════════════════════════════════
 // GAME FLOW
 // ═══════════════════════════════════════════
-
 function startGame() {
   if (!gameMode) return;
 
-  // Build shuffled queue
   const pool = gameMode === 'states' ? US_STATES
              : gameMode === 'cities' ? US_CITIES
              : WORLD_COUNTRIES;
@@ -1191,11 +1068,15 @@ function startGame() {
   currentStreak = 0;
   roundResults = [];
 
-  renderMap();
   showScreen('gameScreen');
   buildProgressDots();
   updateStats();
-  loadQuestion();
+
+  // Defer map init one frame so the gameScreen div is visible and sized
+  requestAnimationFrame(() => {
+    initMap();
+    loadQuestion();
+  });
 }
 
 function buildProgressDots() {
@@ -1232,20 +1113,22 @@ function loadQuestion() {
   guessLocked = false;
   hintsUsed = [];
 
+  // Clear previous markers and line
+  if (guessMarker)  { leafletMap.removeLayer(guessMarker);  guessMarker  = null; }
+  if (answerMarker) { leafletMap.removeLayer(answerMarker); answerMarker = null; }
+  if (distancePoly) { leafletMap.removeLayer(distancePoly); distancePoly = null; }
+
   // Reset UI
-  document.getElementById('guessPin').style.display = 'none';
-  document.getElementById('answerPin').style.display = 'none';
   document.getElementById('resultOverlay').classList.remove('show');
   document.getElementById('hintText').textContent = '';
   document.getElementById('hintBtn1').classList.remove('used');
   document.getElementById('hintBtn2').classList.remove('used');
   document.getElementById('hintBtn1').disabled = false;
   document.getElementById('hintBtn2').disabled = false;
-
-  const distLine = document.getElementById('distanceLine');
-  distLine.setAttribute('opacity', '0');
-
   document.getElementById('targetName').textContent = currentTarget.name;
+
+  // Reset map to full view so every round starts fresh
+  setMapView();
 
   updateProgressDots();
   updateStats();
@@ -1274,89 +1157,88 @@ function startTimer() {
 }
 
 function timeUp() {
-  // Reveal answer with 0 score
+  guessLocked = true;
   revealAnswer(null, null);
 }
 
-function handleMapClick(event) {
-  if (guessLocked) return;
-
-  const pt = clickToDataPct(event);
-  placeGuess(pt.x, pt.y);
-}
-
-function placeGuess(xPct, yPct) {
+function placeGuess(lat, lng) {
   guessLocked = true;
   clearInterval(timerInterval);
 
-  // Show guess pin
-  const guessPin = document.getElementById('guessPin');
-  guessPin.style.left = xPct + '%';
-  guessPin.style.top = yPct + '%';
-  guessPin.style.display = 'block';
+  if (guessMarker) leafletMap.removeLayer(guessMarker);
+  guessMarker = L.marker([lat, lng], { icon: PIN_GUESS }).addTo(leafletMap);
 
-  revealAnswer(xPct, yPct);
+  revealAnswer(lat, lng);
 }
 
-function revealAnswer(guessX, guessY) {
+function revealAnswer(guessLat, guessLng) {
+  guessLocked = true;
   const target = currentTarget;
-  const answerPin = document.getElementById('answerPin');
 
-  // Show answer pin
-  answerPin.style.left = target.x + '%';
-  answerPin.style.top = target.y + '%';
-  answerPin.style.display = 'block';
+  // Place green answer pin
+  if (answerMarker) leafletMap.removeLayer(answerMarker);
+  answerMarker = L.marker([target.lat, target.lng], { icon: PIN_ANSWER }).addTo(leafletMap);
 
   let pts = 0;
-  let dist = 0;
+  let distKm = 0;
 
-  if (guessX !== null) {
-    dist = Math.hypot(guessX - target.x, guessY - target.y);
-    pts = calcScore(dist);
+  if (guessLat !== null) {
+    distKm = haversineKm(guessLat, guessLng, target.lat, target.lng);
+    pts = calcScore(distKm);
 
-    // Draw distance line
-    const line = document.getElementById('distanceLine');
-    line.setAttribute('x1', guessX);
-    line.setAttribute('y1', guessY);
-    line.setAttribute('x2', target.x);
-    line.setAttribute('y2', target.y);
-    line.setAttribute('opacity', '0.85');
-    line.setAttribute('stroke', pts >= 700 ? 'var(--green)' : 'var(--red)');
+    // Draw dashed line between guess and answer
+    const lineColor = pts >= 700 ? '#5cbb6f' : '#e8453c';
+    if (distancePoly) leafletMap.removeLayer(distancePoly);
+    distancePoly = L.polyline(
+      [[guessLat, guessLng], [target.lat, target.lng]],
+      { color: lineColor, weight: 2.5, dashArray: '8, 6', opacity: 0.9 }
+    ).addTo(leafletMap);
+
+    // Zoom to show both pins
+    const bounds = L.latLngBounds([[guessLat, guessLng], [target.lat, target.lng]]);
+    leafletMap.fitBounds(bounds, { padding: [70, 70], maxZoom: 8 });
+  } else {
+    // Time's up — pan to correct answer
+    leafletMap.setView([target.lat, target.lng], 4);
   }
 
-  // Streak
+  // Streak bonus
   if (pts >= 400) {
     currentStreak++;
-    if (currentStreak >= 3) pts = Math.round(pts * 1.1); // 10% streak bonus
+    if (currentStreak >= 3) pts = Math.round(pts * 1.1);
   } else {
     currentStreak = 0;
   }
 
   totalScore += pts;
-  roundResults.push({ name: target.name, pts, dist, guessX, guessY });
+  roundResults.push({ name: target.name, pts, distKm, guessLat, guessLng });
   updateStats();
 
   // Result overlay
   const sl = scoreLabel(pts);
-  const overlay = document.getElementById('resultOverlay');
-  const badge = document.getElementById('resultBadge');
   document.getElementById('resultName').textContent = target.name;
 
-  if (guessX === null) {
-    document.getElementById('resultDetail').textContent = `⏱️ Time's up! It was ${target.region || target.continent || ''}`;
+  if (guessLat === null) {
+    document.getElementById('resultDetail').textContent =
+      `⏱️ Time's up! It was in ${target.region}`;
   } else {
-    document.getElementById('resultDetail').textContent = `${distanceDisplay(dist)} · ${target.region || target.continent || ''}${currentStreak >= 3 ? ' 🔥 Streak bonus!' : ''}`;
+    document.getElementById('resultDetail').textContent =
+      `${distanceDisplay(distKm)} · ${target.region}${currentStreak >= 3 ? ' 🔥 Streak bonus!' : ''}`;
   }
 
+  const badge = document.getElementById('resultBadge');
   badge.textContent = `${sl.label} ${pts > 0 ? pts.toLocaleString() + ' pts' : ''}`;
   badge.className = `result-score-badge ${sl.cls}`;
-  overlay.classList.add('show');
+  document.getElementById('resultOverlay').classList.add('show');
 
-  const nextBtn = document.getElementById('nextBtn');
-  nextBtn.textContent = currentRound < totalRounds - 1 ? 'Next →' : 'See Results!';
+  document.getElementById('nextBtn').textContent =
+    currentRound < totalRounds - 1 ? 'Next →' : 'See Results!';
 }
 
-function nextQuestion() {
+function nextQuestion(event) {
+  // Stop the click from reaching the Leaflet map underneath the overlay
+  if (event) event.stopPropagation();
+
   currentRound++;
   if (currentRound >= totalRounds) {
     showEndScreen();
@@ -1379,7 +1261,7 @@ function useHint(n) {
   const t = currentTarget;
   let hint = '';
   if (n === 1) {
-    hint = `📍 Region: ${t.region || t.continent || 'Unknown'}`;
+    hint = `📍 Region: ${t.region}`;
   } else if (n === 2) {
     hint = `🔤 Starts with: "${t.name[0]}"`;
     if (t.fact) hint += ` · ${t.fact}`;
@@ -1399,7 +1281,7 @@ function showEndScreen() {
   const pct = totalScore / maxPts;
 
   let trophy = '🏆', title = 'Great Explorer!';
-  if (pct >= 0.9)       { trophy = '🥇'; title = 'Geography Master!'; }
+  if      (pct >= 0.9)  { trophy = '🥇'; title = 'Geography Master!'; }
   else if (pct >= 0.75) { trophy = '🏆'; title = 'Great Explorer!'; }
   else if (pct >= 0.5)  { trophy = '🥈'; title = 'Getting There!'; }
   else if (pct >= 0.25) { trophy = '🥉'; title = 'Keep Exploring!'; }
@@ -1410,16 +1292,14 @@ function showEndScreen() {
   document.getElementById('endFinalScore').textContent = totalScore.toLocaleString() + ' pts';
 
   const rankLabels = [
-    { min: 0.9, label: '🌟 World-class navigator' },
+    { min: 0.9,  label: '🌟 World-class navigator' },
     { min: 0.75, label: '✈️ Seasoned traveler' },
-    { min: 0.5, label: '🧭 Curious explorer' },
+    { min: 0.5,  label: '🧭 Curious explorer' },
     { min: 0.25, label: '🗺️ Rookie cartographer' },
-    { min: 0, label: '📚 Keep studying!' },
+    { min: 0,    label: '📚 Keep studying!' },
   ];
-  const rank = rankLabels.find(r => pct >= r.min);
-  document.getElementById('endRank').textContent = rank.label;
+  document.getElementById('endRank').textContent = rankLabels.find(r => pct >= r.min).label;
 
-  // Build breakdown
   const rows = document.getElementById('breakdownRows');
   rows.innerHTML = '';
   roundResults.forEach((r, i) => {
@@ -1428,8 +1308,8 @@ function showEndScreen() {
     row.className = 'breakdown-row';
     row.style.animationDelay = (i * 0.07) + 's';
     row.innerHTML = `
-      <span class="breakdown-name">${i+1}. ${r.name}</span>
-      <span class="breakdown-dist">${r.guessX !== null ? distanceDisplay(r.dist) : "Time's up"}</span>
+      <span class="breakdown-name">${i + 1}. ${r.name}</span>
+      <span class="breakdown-dist">${r.guessLat !== null ? distanceDisplay(r.distKm) : "Time's up"}</span>
       <span class="breakdown-pts pts-${sl.cls}">${r.pts.toLocaleString()}</span>
     `;
     rows.appendChild(row);
@@ -1462,8 +1342,8 @@ function launchConfetti() {
 
   let frame = 0;
   function draw() {
-    if (frame > 200) { ctx.clearRect(0,0,canvas.width,canvas.height); return; }
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+    if (frame > 200) { ctx.clearRect(0, 0, canvas.width, canvas.height); return; }
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     pieces.forEach(p => {
       ctx.save();
       ctx.translate(p.x, p.y);
@@ -1471,9 +1351,9 @@ function launchConfetti() {
       ctx.fillStyle = p.color;
       ctx.globalAlpha = Math.max(0, 1 - frame / 180);
       if (p.shape === 'circle') {
-        ctx.beginPath(); ctx.arc(0,0,p.r,0,Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(0, 0, p.r, 0, Math.PI * 2); ctx.fill();
       } else {
-        ctx.fillRect(-p.r, -p.r/2, p.r*2, p.r);
+        ctx.fillRect(-p.r, -p.r / 2, p.r * 2, p.r);
       }
       ctx.restore();
       p.x += p.vx; p.y += p.vy; p.rot += p.rotV; p.vy += 0.05;
@@ -1494,20 +1374,6 @@ function shuffle(arr) {
   }
   return arr;
 }
-
-// Touch support for iPad map clicking
-document.addEventListener('DOMContentLoaded', () => {
-  const mapWrap = document.getElementById('mapWrap');
-  mapWrap.addEventListener('touchend', (e) => {
-    e.preventDefault();
-    if (guessLocked) return;
-    const touch = e.changedTouches[0];
-    const rect = mapWrap.getBoundingClientRect();
-    const xPct = ((touch.clientX - rect.left) / rect.width) * 100;
-    const yPct = ((touch.clientY - rect.top) / rect.height) * 100;
-    placeGuess(xPct, yPct);
-  }, { passive: false });
-});
 </script>
 </body>
 </html>
