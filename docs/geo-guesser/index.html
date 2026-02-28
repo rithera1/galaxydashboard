@@ -371,29 +371,45 @@ body {
 .next-btn:hover  { transform: translateY(-2px); box-shadow: 3px 3px 0 var(--ink), 0 0 14px rgba(74,144,217,0.5); }
 .next-btn:active { transform: scale(0.97); }
 
-/* Progress dots */
+/* Progress dots — inline in question bar */
 .progress-dots {
   display: flex;
   gap: 5px;
-  padding: 0.4rem 1rem;
-  justify-content: center;
-  background: var(--beige);
-  border-bottom: 2px solid var(--beige-darker);
-  position: relative;
-  z-index: 1050;
+  align-items: center;
+  flex-shrink: 0;
 }
 .progress-dot {
-  width: 11px; height: 11px;
+  width: 10px; height: 10px;
   border-radius: 50%;
   border: 2px solid var(--ink);
   background: var(--cream);
-  transition: background 0.3s, transform 0.2s;
+  transition: background 0.3s, transform 0.3s, box-shadow 0.3s;
 }
-.progress-dot.done    { background: var(--green); transform: scale(1.15); }
-.progress-dot.current { background: var(--yellow); transform: scale(1.2); animation: pulse 1s ease infinite; }
-@keyframes pulse {
-  0%,100% { box-shadow: 0 0 0 0 rgba(247,201,72,0.5); }
-  50%      { box-shadow: 0 0 0 5px rgba(247,201,72,0); }
+/* Score-based colors */
+.progress-dot.dot-perfect {
+  background: var(--green);
+  border-color: var(--green);
+  transform: scale(1.25);
+  box-shadow: 0 0 8px 4px rgba(92,187,111,0.7), 0 0 16px 6px rgba(92,187,111,0.3);
+  animation: perfectPop 0.4s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes perfectPop {
+  from { transform: scale(0.5); box-shadow: none; }
+  to   { transform: scale(1.25); box-shadow: 0 0 8px 4px rgba(92,187,111,0.7); }
+}
+.progress-dot.dot-great { background: var(--green);  border-color: var(--green);  transform: scale(1.15); }
+.progress-dot.dot-ok    { background: var(--yellow); border-color: var(--yellow); transform: scale(1.1); }
+.progress-dot.dot-poor  { background: var(--red);    border-color: var(--red);    transform: scale(1.1); }
+/* Current round — blue pulse */
+.progress-dot.dot-current {
+  background: var(--blue);
+  border-color: var(--blue);
+  transform: scale(1.3);
+  animation: dotPulse 1s ease infinite;
+}
+@keyframes dotPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(74,144,217,0.7); }
+  50%       { box-shadow: 0 0 0 6px rgba(74,144,217,0); }
 }
 
 /* ── END SCREEN ── */
@@ -533,16 +549,14 @@ body {
     <div class="stat-chip streak-chip">🔥 <span id="statStreak">0</span></div>
   </div>
 
-  <!-- BAR 3: QUESTION + TIMER -->
+  <!-- BAR 3: QUESTION + PROGRESS DOTS + TIMER -->
   <div class="question-bar">
     <div class="question-text">Where is <span id="targetName">…</span>?</div>
+    <div class="progress-dots" id="progressDots"></div>
     <div class="timer-bar-wrap" title="Time remaining">
       <div class="timer-bar-fill" id="timerBar"></div>
     </div>
   </div>
-
-  <!-- Progress dots -->
-  <div class="progress-dots" id="progressDots"></div>
 
   <!-- Map -->
   <div class="map-wrap" id="mapWrap">
@@ -639,36 +653,36 @@ const US_STATES = [
 ];
 
 const US_CITIES = [
-  { name:"New York City",   lat:40.71, lng:-74.00,  region:"Northeast",        r:40, fact:"Most populous US city" },
-  { name:"Los Angeles",     lat:34.05, lng:-118.24, region:"West Coast",        r:40, fact:"2nd most populous city" },
-  { name:"Chicago",         lat:41.88, lng:-87.63,  region:"Midwest",           r:40, fact:"The Windy City" },
-  { name:"Houston",         lat:29.76, lng:-95.37,  region:"South Texas",       r:40, fact:"Space City" },
-  { name:"Phoenix",         lat:33.45, lng:-112.07, region:"Southwest",         r:40, fact:"Valley of the Sun" },
-  { name:"Philadelphia",    lat:39.95, lng:-75.17,  region:"Mid-Atlantic",      r:40, fact:"City of Brotherly Love" },
-  { name:"San Antonio",     lat:29.42, lng:-98.49,  region:"South Texas",       r:40, fact:"Near the Alamo" },
-  { name:"San Diego",       lat:32.72, lng:-117.16, region:"West Coast",        r:40, fact:"America's Finest City" },
-  { name:"Dallas",          lat:32.78, lng:-96.80,  region:"South Central",     r:40, fact:"Big D" },
-  { name:"San Jose",        lat:37.34, lng:-121.89, region:"West Coast",        r:40, fact:"Silicon Valley hub" },
-  { name:"Austin",          lat:30.27, lng:-97.74,  region:"South Central",     r:40, fact:"Keep Austin Weird!" },
-  { name:"Jacksonville",    lat:30.33, lng:-81.66,  region:"Southeast",         r:40, fact:"Largest city by area" },
-  { name:"Fort Worth",      lat:32.72, lng:-97.32,  region:"South Central",     r:40, fact:"Cowtown" },
-  { name:"Columbus",        lat:39.96, lng:-82.99,  region:"Midwest",           r:40, fact:"Ohio capital" },
-  { name:"Charlotte",       lat:35.23, lng:-80.84,  region:"Southeast",         r:40, fact:"Queen City" },
-  { name:"Indianapolis",    lat:39.77, lng:-86.16,  region:"Midwest",           r:40, fact:"Indy 500!" },
-  { name:"San Francisco",   lat:37.77, lng:-122.42, region:"West Coast",        r:40, fact:"The Golden Gate city" },
-  { name:"Seattle",         lat:47.61, lng:-122.33, region:"Pacific Northwest", r:40, fact:"Emerald City" },
-  { name:"Denver",          lat:39.74, lng:-104.98, region:"Mountain West",     r:40, fact:"Mile High City" },
-  { name:"Nashville",       lat:36.17, lng:-86.78,  region:"Southeast",         r:40, fact:"Music City" },
-  { name:"Oklahoma City",   lat:35.47, lng:-97.52,  region:"South Central",     r:40, fact:"OKC" },
-  { name:"El Paso",         lat:31.76, lng:-106.49, region:"Southwest",         r:40, fact:"Sun City" },
-  { name:"Boston",          lat:42.36, lng:-71.06,  region:"New England",       r:40, fact:"Cradle of Liberty" },
-  { name:"Portland",        lat:45.52, lng:-122.68, region:"Pacific Northwest", r:40, fact:"City of Roses" },
-  { name:"Las Vegas",       lat:36.17, lng:-115.14, region:"Southwest",         r:40, fact:"Entertainment capital" },
-  { name:"Memphis",         lat:35.15, lng:-90.05,  region:"Southeast",         r:40, fact:"Home of the Blues" },
-  { name:"Atlanta",         lat:33.75, lng:-84.39,  region:"Southeast",         r:40, fact:"The ATL" },
-  { name:"Miami",           lat:25.77, lng:-80.19,  region:"Southeast",         r:40, fact:"Magic City" },
-  { name:"Minneapolis",     lat:44.98, lng:-93.27,  region:"Midwest",           r:40, fact:"City of Lakes" },
-  { name:"New Orleans",     lat:29.95, lng:-90.07,  region:"South",             r:40, fact:"The Big Easy" },
+  { name:"New York City, NY",   lat:40.71, lng:-74.00,  region:"Northeast",        r:40, fact:"Most populous US city" },
+  { name:"Los Angeles, CA",     lat:34.05, lng:-118.24, region:"West Coast",        r:40, fact:"2nd most populous city" },
+  { name:"Chicago, IL",         lat:41.88, lng:-87.63,  region:"Midwest",           r:40, fact:"The Windy City" },
+  { name:"Houston, TX",         lat:29.76, lng:-95.37,  region:"South Texas",       r:40, fact:"Space City" },
+  { name:"Phoenix, AZ",         lat:33.45, lng:-112.07, region:"Southwest",         r:40, fact:"Valley of the Sun" },
+  { name:"Philadelphia, PA",    lat:39.95, lng:-75.17,  region:"Mid-Atlantic",      r:40, fact:"City of Brotherly Love" },
+  { name:"San Antonio, TX",     lat:29.42, lng:-98.49,  region:"South Texas",       r:40, fact:"Near the Alamo" },
+  { name:"San Diego, CA",       lat:32.72, lng:-117.16, region:"West Coast",        r:40, fact:"America's Finest City" },
+  { name:"Dallas, TX",          lat:32.78, lng:-96.80,  region:"South Central",     r:40, fact:"Big D" },
+  { name:"San Jose, CA",        lat:37.34, lng:-121.89, region:"West Coast",        r:40, fact:"Silicon Valley hub" },
+  { name:"Austin, TX",          lat:30.27, lng:-97.74,  region:"South Central",     r:40, fact:"Keep Austin Weird!" },
+  { name:"Jacksonville, FL",    lat:30.33, lng:-81.66,  region:"Southeast",         r:40, fact:"Largest city by area" },
+  { name:"Fort Worth, TX",      lat:32.72, lng:-97.32,  region:"South Central",     r:40, fact:"Cowtown" },
+  { name:"Columbus, OH",        lat:39.96, lng:-82.99,  region:"Midwest",           r:40, fact:"Ohio capital" },
+  { name:"Charlotte, NC",       lat:35.23, lng:-80.84,  region:"Southeast",         r:40, fact:"Queen City" },
+  { name:"Indianapolis, IN",    lat:39.77, lng:-86.16,  region:"Midwest",           r:40, fact:"Indy 500!" },
+  { name:"San Francisco, CA",   lat:37.77, lng:-122.42, region:"West Coast",        r:40, fact:"The Golden Gate city" },
+  { name:"Seattle, WA",         lat:47.61, lng:-122.33, region:"Pacific Northwest", r:40, fact:"Emerald City" },
+  { name:"Denver, CO",          lat:39.74, lng:-104.98, region:"Mountain West",     r:40, fact:"Mile High City" },
+  { name:"Nashville, TN",       lat:36.17, lng:-86.78,  region:"Southeast",         r:40, fact:"Music City" },
+  { name:"Oklahoma City, OK",   lat:35.47, lng:-97.52,  region:"South Central",     r:40, fact:"OKC" },
+  { name:"El Paso, TX",         lat:31.76, lng:-106.49, region:"Southwest",         r:40, fact:"Sun City" },
+  { name:"Boston, MA",          lat:42.36, lng:-71.06,  region:"New England",       r:40, fact:"Cradle of Liberty" },
+  { name:"Portland, OR",        lat:45.52, lng:-122.68, region:"Pacific Northwest", r:40, fact:"City of Roses" },
+  { name:"Las Vegas, NV",       lat:36.17, lng:-115.14, region:"Southwest",         r:40, fact:"Entertainment capital" },
+  { name:"Memphis, TN",         lat:35.15, lng:-90.05,  region:"Southeast",         r:40, fact:"Home of the Blues" },
+  { name:"Atlanta, GA",         lat:33.75, lng:-84.39,  region:"Southeast",         r:40, fact:"The ATL" },
+  { name:"Miami, FL",           lat:25.77, lng:-80.19,  region:"Southeast",         r:40, fact:"Magic City" },
+  { name:"Minneapolis, MN",     lat:44.98, lng:-93.27,  region:"Midwest",           r:40, fact:"City of Lakes" },
+  { name:"New Orleans, LA",     lat:29.95, lng:-90.07,  region:"South",             r:40, fact:"The Big Easy" },
 ];
 
 const WORLD_COUNTRIES = [
@@ -927,7 +941,7 @@ function buildProgressDots() {
   el.innerHTML = '';
   for (let i = 0; i < totalRounds; i++) {
     const d = document.createElement('div');
-    d.className = 'progress-dot' + (i === 0 ? ' current' : '');
+    d.className = 'progress-dot' + (i === 0 ? ' dot-current' : '');
     d.id = `dot-${i}`;
     el.appendChild(d);
   }
@@ -938,8 +952,15 @@ function updateProgressDots() {
     const d = document.getElementById(`dot-${i}`);
     if (!d) continue;
     d.className = 'progress-dot';
-    if (i < currentRound)      d.classList.add('done');
-    else if (i === currentRound) d.classList.add('current');
+    if (i < currentRound) {
+      const r = roundResults[i];
+      if      (r && r.pts >= 1000) d.classList.add('dot-perfect');
+      else if (r && r.pts >= 700)  d.classList.add('dot-great');
+      else if (r && r.pts >= 400)  d.classList.add('dot-ok');
+      else                         d.classList.add('dot-poor');
+    } else if (i === currentRound) {
+      d.classList.add('dot-current');
+    }
   }
 }
 
