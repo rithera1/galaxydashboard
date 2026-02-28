@@ -16,7 +16,7 @@
   body{
     font-family:'Nunito',sans-serif; background:var(--bg);
     min-height:100vh; display:flex; flex-direction:column; align-items:center;
-    padding:20px 16px 48px;
+    padding:70px 16px 48px;
     background-image:radial-gradient(circle at 15% 15%,#ffe08a44 0%,transparent 50%),
                      radial-gradient(circle at 85% 85%,#c7f4c244 0%,transparent 50%);
   }
@@ -212,9 +212,18 @@
     .card,.results,.add-form{padding:20px 14px;}
     .admin-tabs{flex-direction:column;}
   }
+/* ── SITE NAV ── */
+.site-nav{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;align-items:center;gap:.6rem;padding:.65rem 1.2rem;background:#FFF8E7;border-bottom:3px solid var(--orange);height:52px;}
+.site-nav-back{font-family:'Fredoka One',cursive;font-size:.9rem;color:#333;text-decoration:none;background:white;border:2.5px solid var(--orange);border-radius:12px;padding:.25rem .75rem;transition:background .15s;}
+.site-nav-back:hover{background:#ffe0c8;}
+.site-nav-title{font-family:'Fredoka One',cursive;font-size:1.15rem;color:var(--orange);}
 </style>
 </head>
 <body>
+<nav class="site-nav">
+  <a href="../" class="site-nav-back">← Home</a>
+  <span class="site-nav-title">🐝 Bee Studio</span>
+</nav>
 
 <!-- LOADING -->
 <div class="loading-overlay" id="loadingOverlay">
