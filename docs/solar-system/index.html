@@ -77,13 +77,16 @@ body{font-family:'Space Grotesk',sans-serif;touch-action:none;user-select:none;}
   backdrop-filter:blur(20px);
 }
 #factSheet.open{transform:translateY(0);}
+#factSheet.peeking{transform:translateY(calc(100% - 56px));}
 .sheet-handle{
   width:40px;height:4px;border-radius:99px;
   background:rgba(100,180,255,.25);margin:8px auto 0;
+  cursor:pointer;
 }
 .sheet-header{
   display:flex;align-items:center;gap:14px;
   padding:4px 16px 4px;border-bottom:1px solid rgba(100,180,255,.1);
+  cursor:pointer;
 }
 .sheet-icon{font-size:1.3rem;line-height:1;}
 .sheet-titles{flex:1;}
@@ -1172,7 +1175,6 @@ function animateView(tx,ty,tz,cb){
 // FACT SHEET
 // ═══════════════════════════════════════════
 let currentFacts=[], currentFactIdx=0;
-let touchStartY=0;
 
 function showFacts(obj){
   // Guard: ensure facts array exists
@@ -1187,7 +1189,7 @@ function showFacts(obj){
   document.getElementById('sheetType').textContent=obj.type||'Moon';
 
   buildFactCards();
-  document.getElementById('factSheet').classList.add('open');
+  openFactSheet();
 }
 
 function buildFactCards(){
@@ -1199,7 +1201,10 @@ function buildFactCards(){
     const card=document.createElement('div');
     card.className='fact-card';
     card.innerHTML=`<div class="fact-label">${label}</div><div class="fact-text">${text}</div>`;
-    card.onclick=()=>nextFact();
+    card.addEventListener('click',e=>{
+      const r=card.getBoundingClientRect();
+      if(e.clientX < r.left+r.width/2) prevFact(); else nextFact();
+    });
     track.appendChild(card);
   });
   track.style.transform=`translateX(0)`;
@@ -1220,6 +1225,11 @@ function nextFact(){
   goToFact((currentFactIdx+1)%currentFacts.length);
 }
 
+function prevFact(){
+  if(!currentFacts.length) return;
+  goToFact((currentFactIdx-1+currentFacts.length)%currentFacts.length);
+}
+
 function goToFact(i){
   if(!currentFacts.length) return;
   currentFactIdx=i;
@@ -1227,17 +1237,47 @@ function goToFact(i){
   document.querySelectorAll('.fact-dot').forEach((d,j)=>d.classList.toggle('active',j===i));
 }
 
+function openFactSheet(){
+  const s=document.getElementById('factSheet');
+  s.classList.remove('peeking'); s.classList.add('open');
+}
+function peekFactSheet(){
+  const s=document.getElementById('factSheet');
+  s.classList.remove('open'); s.classList.add('peeking');
+}
 function closeFactSheet(){
-  document.getElementById('factSheet').classList.remove('open');
+  const s=document.getElementById('factSheet');
+  s.classList.remove('open','peeking');
 }
 window.closeFactSheet=closeFactSheet;
 window.zoomOut=zoomOut;
 
-// Swipe down to close
+// Header & handle click: toggle between open and peeking
+function toggleFactSheet(){
+  const s=document.getElementById('factSheet');
+  if(s.classList.contains('open')) peekFactSheet(); else openFactSheet();
+}
+document.querySelector('.sheet-handle').addEventListener('click',toggleFactSheet);
+document.querySelector('.sheet-header').addEventListener('click',e=>{
+  if(e.target.closest('button')) return; // don't intercept the ✕ close button
+  toggleFactSheet();
+});
+
+// Sheet gestures: swipe left/right = prev/next, swipe down = peek, swipe up = re-open
 const sheet=document.getElementById('factSheet');
-sheet.addEventListener('touchstart',e=>{touchStartY=e.touches[0].clientY;},{passive:true});
+let sheetSwipeStart={x:0,y:0};
+sheet.addEventListener('touchstart',e=>{
+  sheetSwipeStart={x:e.touches[0].clientX,y:e.touches[0].clientY};
+},{passive:true});
 sheet.addEventListener('touchend',e=>{
-  if(e.changedTouches[0].clientY-touchStartY>60) closeFactSheet();
+  const dx=e.changedTouches[0].clientX-sheetSwipeStart.x;
+  const dy=e.changedTouches[0].clientY-sheetSwipeStart.y;
+  const absDx=Math.abs(dx), absDy=Math.abs(dy);
+  if(absDy>50 && absDy>absDx){
+    if(dy>0) peekFactSheet(); else openFactSheet();
+  } else if(absDx>40 && absDx>absDy*1.5){
+    if(dx<0) nextFact(); else prevFact();
+  }
 },{passive:true});
 
 // ═══════════════════════════════════════════
