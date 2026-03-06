@@ -1019,11 +1019,10 @@ function renderMinimap(){
   });
 
   // Viewport rect
-  const vx=W/2-view.x*view.zoom, vy=H/2-view.y*view.zoom;
   const vw=W/view.zoom, vh=H/view.zoom;
   mmCtx.strokeStyle='rgba(100,200,255,.5)'; mmCtx.lineWidth=1; mmCtx.setLineDash([]);
   mmCtx.strokeRect(
-    cx+(-view.x-vw/2)*scale, cy+(-view.y-vh/2)*scale,
+    cx+(view.x-vw/2)*scale, cy+(view.y-vh/2)*scale,
     vw*scale, vh*scale
   );
 }
@@ -1245,7 +1244,7 @@ sheet.addEventListener('touchend',e=>{
 // POINTER EVENTS
 // ═══════════════════════════════════════════
 let pointer={down:false,x:0,y:0,moved:false};
-let lastPinchDist=0;
+let lastPinchDist=0, lastPinchMid=null, pinching=false;
 
 canvas.addEventListener('pointerdown',e=>{
   pointer.down=true; pointer.x=e.clientX; pointer.y=e.clientY; pointer.moved=false;
@@ -1254,7 +1253,7 @@ canvas.addEventListener('pointerdown',e=>{
 });
 
 canvas.addEventListener('pointermove',e=>{
-  if(!pointer.down) return;
+  if(!pointer.down || pinching) return;
   const dx=e.clientX-pointer.x, dy=e.clientY-pointer.y;
   if(Math.abs(dx)>4||Math.abs(dy)>4) pointer.moved=true;
   if(pointer.moved && !animating){
@@ -1307,25 +1306,32 @@ canvas.addEventListener('wheel',e=>{
 
 // Pinch to zoom
 let touches=[];
-canvas.addEventListener('touchstart',e=>{touches=[...e.touches];},{passive:true});
+canvas.addEventListener('touchstart',e=>{
+  touches=[...e.touches];
+  if(e.touches.length===2){ pinching=true; lastPinchDist=0; lastPinchMid=null; }
+},{passive:true});
 canvas.addEventListener('touchmove',e=>{
   if(e.touches.length===2){
     e.preventDefault();
     const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
-    if(lastPinchDist){
+    const mx=(e.touches[0].clientX+e.touches[1].clientX)/2;
+    const my=(e.touches[0].clientY+e.touches[1].clientY)/2;
+    if(lastPinchDist && lastPinchMid){
       const factor=d/lastPinchDist;
-      const cx=(e.touches[0].clientX+e.touches[1].clientX)/2;
-      const cy=(e.touches[0].clientY+e.touches[1].clientY)/2;
-      const wx=view.x+(cx-W/2)/view.zoom;
-      const wy=view.y+(cy-H/2)/view.zoom;
+      // Anchor to previous midpoint, then reposition so current midpoint shows that world point.
+      // This handles both zoom and finger-drift pan in one step with no bounce.
+      const wx=view.x+(lastPinchMid.x-W/2)/view.zoom;
+      const wy=view.y+(lastPinchMid.y-H/2)/view.zoom;
       view.zoom=Math.max(0.15,Math.min(12,view.zoom*factor));
-      view.x=wx-(cx-W/2)/view.zoom;
-      view.y=wy-(cy-H/2)/view.zoom;
+      view.x=wx-(mx-W/2)/view.zoom;
+      view.y=wy-(my-H/2)/view.zoom;
     }
-    lastPinchDist=d;
+    lastPinchDist=d; lastPinchMid={x:mx,y:my};
   }
 },{passive:false});
-canvas.addEventListener('touchend',()=>{lastPinchDist=0;},{passive:true});
+canvas.addEventListener('touchend',e=>{
+  if(e.touches.length<2){ lastPinchDist=0; lastPinchMid=null; pinching=false; }
+},{passive:true});
 
 // ═══════════════════════════════════════════
 // MAIN LOOP
