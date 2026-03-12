@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>💬 Parts of Speech Blaster</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --beige: #f5ead6;
+    --beige-dark: #ecdcc0;
+    --beige-darker: #e0c99a;
+    --cream: #fdf6e8;
+    --ink: #3b2f1e;
+    --ink-light: #7a5c3a;
+    --red: #e8453c;
+    --orange: #f5832a;
+    --c-noun: #4a90d9;
+    --c-noun-bg: #dbeeff;
+    --c-verb: #f5832a;
+    --c-verb-bg: #fdecd4;
+    --c-adj: #9b6fda;
+    --c-adj-bg: #ede0ff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--beige);
+    font-family: 'Nunito', sans-serif;
+    min-height: 100vh;
+    color: var(--ink);
+    overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+
+  /* NAV */
+  .site-nav {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.7rem 1.25rem;
+    background: var(--cream);
+    border-bottom: 3px solid var(--ink);
+    position: sticky;
+    top: 0;
+    z-index: 200;
+  }
+  .site-nav-back {
+    font-family: 'Fredoka One', cursive;
+    font-size: 0.95rem;
+    color: var(--ink);
+    text-decoration: none;
+    background: var(--beige);
+    border: 2.5px solid var(--ink);
+    border-radius: 10px;
+    padding: 0.28rem 0.75rem;
+    transition: transform 0.15s, background 0.15s;
+  }
+  .site-nav-back:hover { background: var(--beige-dark); transform: scale(1.05); }
+  .site-nav-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.15rem;
+  }
+
+  /* SCREENS */
+  .screen { display: none; }
+  .screen.active { display: flex; flex-direction: column; }
+
+  /* =====================
+     HOME SCREEN
+  ===================== */
+  #homeScreen {
+    max-width: 580px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 3rem;
+    align-items: center;
+    text-align: center;
+  }
+  .home-icon {
+    font-size: 5rem;
+    display: inline-block;
+    animation: iconBob 2.5s ease-in-out infinite;
+    filter: drop-shadow(0 6px 14px rgba(0,0,0,0.15));
+    margin-bottom: 0.5rem;
+  }
+  @keyframes iconBob {
+    0%,100% { transform: translateY(0) rotate(-5deg); }
+    50%      { transform: translateY(-12px) rotate(5deg); }
+  }
+  .home-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(2rem, 7vw, 3rem);
+    color: var(--ink);
+    text-shadow: 3px 3px 0 var(--beige-darker);
+    line-height: 1.1;
+    margin-bottom: 0.6rem;
+  }
+  .home-sub {
+    color: var(--ink-light);
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+  }
+
+  .diff-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    width: 100%;
+    max-width: 320px;
+    margin-bottom: 2rem;
+  }
+  .diff-btn {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.15rem;
+    padding: 0.85rem 1.5rem;
+    border: 3px solid var(--ink);
+    border-radius: 16px;
+    box-shadow: 4px 4px 0 var(--ink);
+    cursor: pointer;
+    transition: transform 0.18s cubic-bezier(.34,1.56,.64,1), box-shadow 0.15s;
+    text-align: left;
+  }
+  .diff-btn:hover { transform: translateY(-3px); box-shadow: 4px 7px 0 var(--ink); }
+  .diff-btn:active { transform: translateY(0); box-shadow: 2px 2px 0 var(--ink); }
+  .diff-easy   { background: #ddf5e3; color: #1e7a35; }
+  .diff-medium { background: var(--c-verb-bg); color: #904010; }
+  .diff-hard   { background: #fde8e7; color: #b02020; }
+
+  .how-to-box {
+    background: var(--cream);
+    border: 3px solid var(--ink);
+    border-radius: 18px;
+    box-shadow: 4px 4px 0 var(--ink);
+    padding: 1.25rem 1.5rem;
+    text-align: left;
+    width: 100%;
+    max-width: 420px;
+  }
+  .how-to-box h3 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.15rem;
+    margin-bottom: 0.6rem;
+  }
+  .how-to-box p {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--ink-light);
+    line-height: 1.55;
+  }
+  .pos-pills {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.75rem;
+  }
+  .pos-pill {
+    font-family: 'Fredoka One', cursive;
+    font-size: 0.8rem;
+    padding: 0.25rem 0.7rem;
+    border-radius: 20px;
+    border: 2px solid var(--ink);
+  }
+
+  /* =====================
+     GAME SCREEN
+  ===================== */
+  #gameScreen { flex: 1; position: relative; }
+
+  .game-hud {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 1.2rem;
+    background: var(--cream);
+    border-bottom: 2.5px solid var(--beige-darker);
+    position: relative;
+    z-index: 10;
+  }
+  .hud-lives { font-size: 1.4rem; letter-spacing: 0.1em; min-width: 80px; }
+  .hud-score {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.5rem;
+    color: var(--ink);
+  }
+  .hud-round {
+    font-family: 'Fredoka One', cursive;
+    font-size: 0.95rem;
+    color: var(--ink-light);
+    min-width: 80px;
+    text-align: right;
+  }
+
+  .target-banner {
+    text-align: center;
+    padding: 0.55rem 1rem;
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(1.1rem, 4vw, 1.4rem);
+    color: var(--ink);
+    background: var(--beige);
+    border-bottom: 2.5px solid var(--beige-darker);
+    transition: background 0.3s;
+  }
+  .target-banner .target-word {
+    padding: 0.1rem 0.6rem;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 1.1em;
+  }
+
+  .game-area-wrap {
+    position: relative;
+    overflow: hidden;
+    background: var(--cream);
+    border-bottom: 2.5px solid var(--beige-darker);
+    flex: 1;
+    min-height: 280px;
+    max-height: 420px;
+  }
+
+  /* WORD BUBBLES */
+  .word-bubble {
+    position: absolute;
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(1rem, 3.5vw, 1.3rem);
+    padding: 0.45em 1em;
+    border-radius: 50px;
+    border: 3px solid var(--ink);
+    box-shadow: 3px 3px 0 var(--ink);
+    cursor: pointer;
+    white-space: nowrap;
+    animation: word-drift linear forwards;
+    will-change: left;
+    touch-action: none;
+  }
+  .word-bubble.noun { background: var(--c-noun-bg); color: #1e5a99; }
+  .word-bubble.verb { background: var(--c-verb-bg); color: #904010; }
+  .word-bubble.adjective { background: var(--c-adj-bg); color: #5c2ea8; }
+
+  .word-bubble.correct {
+    animation: pop-correct 0.4s cubic-bezier(.34,1.56,.64,1) forwards !important;
+  }
+  .word-bubble.wrong {
+    animation: shake-wrong 0.4s ease forwards !important;
+  }
+
+  @keyframes word-drift {
+    from { left: calc(100% + 10px); }
+    to   { left: -240px; }
+  }
+  @keyframes pop-correct {
+    0%   { transform: scale(1); opacity: 1; }
+    50%  { transform: scale(1.4); opacity: 0.8; }
+    100% { transform: scale(0); opacity: 0; }
+  }
+  @keyframes shake-wrong {
+    0%,100% { transform: translateX(0) scale(1); }
+    20%,60% { transform: translateX(-8px) scale(0.95); }
+    40%,80% { transform: translateX(8px) scale(0.95); }
+  }
+
+  /* Progress */
+  .progress-wrap {
+    padding: 0.5rem 1.2rem;
+    background: var(--beige);
+  }
+  .progress-label {
+    font-family: 'Fredoka One', cursive;
+    font-size: 0.8rem;
+    color: var(--ink-light);
+    margin-bottom: 0.3rem;
+  }
+  .progress-track {
+    background: var(--beige-dark);
+    border-radius: 6px;
+    height: 10px;
+    overflow: hidden;
+    border: 2px solid var(--beige-darker);
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 4px;
+    background: #5cbb6f;
+    transition: width 0.3s ease;
+    min-width: 0;
+  }
+
+  /* OVERLAY (round announcement / game over) */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    background: rgba(59,47,30,0.6);
+    z-index: 150;
+    animation: fadeIn 0.2s ease both;
+  }
+  .overlay.hidden { display: none; }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  .overlay-card {
+    background: var(--cream);
+    border: 3px solid var(--ink);
+    border-radius: 24px;
+    box-shadow: 6px 6px 0 var(--ink);
+    padding: 2rem 2.5rem;
+    text-align: center;
+    animation: slideUp 0.3s cubic-bezier(.34,1.56,.64,1) both;
+    max-width: 360px;
+    width: 90%;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(30px) scale(0.9); opacity: 0; }
+    to   { transform: translateY(0) scale(1); opacity: 1; }
+  }
+  .overlay-icon { font-size: 3.5rem; margin-bottom: 0.5rem; display: block; }
+  .overlay-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2rem;
+    color: var(--ink);
+    margin-bottom: 0.3rem;
+  }
+  .overlay-sub {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.2rem;
+    margin-bottom: 1.2rem;
+  }
+  .overlay-countdown {
+    font-family: 'Fredoka One', cursive;
+    font-size: 3rem;
+    color: var(--red);
+    margin-top: 0.5rem;
+  }
+
+  /* =====================
+     RESULTS SCREEN
+  ===================== */
+  #resultsScreen {
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 3rem;
+    align-items: center;
+    text-align: center;
+  }
+  .result-icon { font-size: 5rem; margin-bottom: 0.5rem; display: block; }
+  .result-grade {
+    font-family: 'Fredoka One', cursive;
+    font-size: 5rem;
+    line-height: 1;
+    margin-bottom: 0.3rem;
+  }
+  .result-score {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2rem;
+    color: var(--ink);
+    margin-bottom: 1.5rem;
+  }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    width: 100%;
+    max-width: 360px;
+    margin-bottom: 2rem;
+  }
+  .stat-card {
+    background: var(--cream);
+    border: 3px solid var(--ink);
+    border-radius: 14px;
+    padding: 0.85rem;
+    box-shadow: 3px 3px 0 var(--ink);
+  }
+  .stat-val {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2rem;
+    line-height: 1;
+  }
+  .stat-lbl {
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: var(--ink-light);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-top: 0.2rem;
+  }
+  .play-again-btn {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.25rem;
+    padding: 0.8rem 2.5rem;
+    background: #5cbb6f;
+    color: #fff;
+    border: 3px solid var(--ink);
+    border-radius: 14px;
+    box-shadow: 4px 4px 0 var(--ink);
+    cursor: pointer;
+    transition: transform 0.18s cubic-bezier(.34,1.56,.64,1), box-shadow 0.15s;
+  }
+  .play-again-btn:hover { transform: translateY(-3px); box-shadow: 4px 7px 0 var(--ink); }
+
+  /* BURST PARTICLES */
+  .burst-p {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 20;
+    transition: transform 0.45s ease-out, opacity 0.45s ease-out;
+  }
+
+  /* MISS FLASH */
+  .miss-flash {
+    position: absolute;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.2rem;
+    color: var(--red);
+    pointer-events: none;
+    z-index: 20;
+    animation: miss-float 0.8s ease forwards;
+  }
+  @keyframes miss-float {
+    from { opacity: 1; transform: translateY(0); }
+    to   { opacity: 0; transform: translateY(-40px); }
+  }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <a href="../" class="site-nav-back">← Home</a>
+  <span class="site-nav-title">💬 Parts of Speech Blaster</span>
+</nav>
+
+<!-- HOME SCREEN -->
+<div class="screen active" id="homeScreen">
+  <div class="home-icon">💬</div>
+  <h1 class="home-title">Parts of Speech<br>Blaster!</h1>
+  <p class="home-sub">Words are flying past — tap the right ones before they escape!</p>
+
+  <div class="diff-grid">
+    <button class="diff-btn diff-easy"   onclick="startGame('easy')">⭐ Easy — Two types, slow speed</button>
+    <button class="diff-btn diff-medium" onclick="startGame('medium')">⭐⭐ Medium — All three types</button>
+    <button class="diff-btn diff-hard"   onclick="startGame('hard')">⭐⭐⭐ Hard — Fast &amp; furious!</button>
+  </div>
+
+  <div class="how-to-box">
+    <h3>🎮 How to Play</h3>
+    <p>A target type appears at the top — <strong>only tap those words</strong> as they float by! Tapping the wrong type costs a life ❤️.</p>
+    <div class="pos-pills">
+      <span class="pos-pill" style="background:var(--c-noun-bg);color:#1e5a99">🔵 Nouns — people, places, things</span>
+      <span class="pos-pill" style="background:var(--c-verb-bg);color:#904010">🟠 Verbs — actions &amp; doing words</span>
+      <span class="pos-pill" style="background:var(--c-adj-bg);color:#5c2ea8">🟣 Adjectives — describing words</span>
+    </div>
+  </div>
+</div>
+
+<!-- GAME SCREEN -->
+<div class="screen" id="gameScreen">
+  <div class="game-hud">
+    <div class="hud-lives" id="livesDisplay">❤️❤️❤️</div>
+    <div class="hud-score" id="scoreDisplay">0</div>
+    <div class="hud-round" id="roundDisplay">Round 1/5</div>
+  </div>
+
+  <div class="target-banner" id="targetBanner">
+    TAP ALL THE <span class="target-word" id="targetWordSpan">NOUNS</span>! 🎯
+  </div>
+
+  <div class="game-area-wrap" id="gameArea"></div>
+
+  <div class="progress-wrap">
+    <div class="progress-label" id="progressLabel">Progress: 0 / 8</div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill" style="width:0%"></div>
+    </div>
+  </div>
+</div>
+
+<!-- RESULTS SCREEN -->
+<div class="screen" id="resultsScreen">
+  <span class="result-icon" id="resultIcon">🏆</span>
+  <div class="result-grade" id="resultGrade">A</div>
+  <div class="result-score" id="resultScore">Score: 0</div>
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-val" id="statCorrect" style="color:#5cbb6f">0</div>
+      <div class="stat-lbl">Correct Taps</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" id="statWrong" style="color:var(--red)">0</div>
+      <div class="stat-lbl">Wrong Taps</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" id="statRounds">5</div>
+      <div class="stat-lbl">Rounds Played</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" id="statBonus" style="color:#9b6fda">0</div>
+      <div class="stat-lbl">Bonus Points</div>
+    </div>
+  </div>
+  <button class="play-again-btn" id="playAgainBtn">🎮 Play Again</button>
+</div>
+
+<!-- OVERLAY (announcements) -->
+<div class="overlay hidden" id="overlay">
+  <div class="overlay-card">
+    <span class="overlay-icon" id="overlayIcon">🎯</span>
+    <div class="overlay-title" id="overlayTitle">Round 1</div>
+    <div class="overlay-sub" id="overlaySub">TAP THE NOUNS!</div>
+    <div class="overlay-countdown" id="overlayCountdown">3</div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   WORD BANK
+============================================================ */
+const WORDS = {
+  noun: ['cat','dog','house','tree','school','book','car','bird','river',
+         'mountain','city','table','phone','apple','star','door','planet',
+         'rocket','castle','dragon','sword','flower','ocean','forest','cloud',
+         'fire','hero','dream','music','storm','thunder','treasure','robot',
+         'bridge','island','rainbow','monster','wizard','ship','cave'],
+  verb: ['run','jump','swim','fly','eat','sleep','read','write','sing','dance',
+         'play','laugh','think','talk','walk','climb','drive','cook','draw',
+         'throw','catch','build','explore','discover','chase','spin','blast',
+         'zoom','crash','bounce','float','glow','hide','lift','push','pull',
+         'break','shine','grow','fall'],
+  adjective: ['big','small','red','blue','happy','sad','fast','slow','tall',
+              'short','hot','cold','bright','dark','loud','quiet','soft','hard',
+              'funny','brave','clever','wild','ancient','magical','tiny','glowing',
+              'mysterious','powerful','silly','gentle','fierce','golden','silver',
+              'frozen','burning','fluffy','shiny','mighty','sweet','sharp']
+};
+
+const POS_CONFIG = {
+  noun:      { label: 'NOUNS',      color: 'var(--c-noun)',  bg: 'var(--c-noun-bg)',  bannerBg: '#dbeeff' },
+  verb:      { label: 'VERBS',      color: 'var(--c-verb)',  bg: 'var(--c-verb-bg)',  bannerBg: '#fdecd4' },
+  adjective: { label: 'ADJECTIVES', color: 'var(--c-adj)',   bg: 'var(--c-adj-bg)',   bannerBg: '#ede0ff' }
+};
+
+/* ============================================================
+   DIFFICULTY CONFIG
+============================================================ */
+const DIFF_CONFIG = {
+  easy:   {
+    crossTime: [5.5, 7.0], spawnDelay: 2600, targetGoal: 8,
+    targets: ['noun','verb','noun','verb','noun'],
+    activeTypes: ['noun','verb'],
+    targetRatio: 0.5  // 50% target words
+  },
+  medium: {
+    crossTime: [3.8, 5.2], spawnDelay: 2000, targetGoal: 8,
+    targets: ['noun','verb','adjective','noun','verb'],
+    activeTypes: ['noun','verb','adjective'],
+    targetRatio: 0.4
+  },
+  hard:   {
+    crossTime: [2.5, 3.8], spawnDelay: 1500, targetGoal: 10,
+    targets: ['adjective','noun','verb','adjective','noun'],
+    activeTypes: ['noun','verb','adjective'],
+    targetRatio: 0.38
+  }
+};
+
+/* ============================================================
+   GAME STATE
+============================================================ */
+let state = {};
+let spawnTimer = null;
+
+function resetState(diff) {
+  const cfg = DIFF_CONFIG[diff];
+  return {
+    diff, cfg,
+    lives: 3,
+    score: 0,
+    round: 0,
+    currentTarget: '',
+    targetGoal: cfg.targetGoal,
+    targetSeen: 0,
+    correctTaps: 0,
+    wrongTaps: 0,
+    bonusPoints: 0,
+    wrongThisRound: 0,
+    phase: 'idle'
+  };
+}
+
+/* ============================================================
+   UI HELPERS
+============================================================ */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function updateHUD() {
+  const hearts = ['❤️','❤️','❤️'].slice(0, state.lives).join('') + '🖤'.repeat(3 - state.lives);
+  document.getElementById('livesDisplay').textContent = hearts;
+  document.getElementById('scoreDisplay').textContent = state.score;
+  document.getElementById('roundDisplay').textContent = `Round ${state.round}/5`;
+}
+
+function updateProgress() {
+  const pct = Math.min(100, (state.targetSeen / state.targetGoal) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent =
+    `Progress: ${Math.min(state.targetSeen, state.targetGoal)} / ${state.targetGoal}`;
+}
+
+function setTargetBanner(pos) {
+  const cfg = POS_CONFIG[pos];
+  const span = document.getElementById('targetWordSpan');
+  span.textContent = cfg.label;
+  span.style.background = cfg.color;
+  span.style.color = '#fff';
+  document.getElementById('targetBanner').style.background = cfg.bannerBg;
+}
+
+/* ============================================================
+   OVERLAY / COUNTDOWN
+============================================================ */
+function showOverlay(icon, title, sub, countdownFrom, onDone) {
+  const overlay = document.getElementById('overlay');
+  overlay.classList.remove('hidden');
+  document.getElementById('overlayIcon').textContent = icon;
+  document.getElementById('overlayTitle').textContent = title;
+  document.getElementById('overlaySub').textContent = sub;
+
+  let count = countdownFrom;
+  document.getElementById('overlayCountdown').textContent = count;
+
+  const tick = setInterval(() => {
+    count--;
+    if (count <= 0) {
+      clearInterval(tick);
+      overlay.classList.add('hidden');
+      onDone();
+    } else {
+      document.getElementById('overlayCountdown').textContent = count;
+    }
+  }, 900);
+}
+
+/* ============================================================
+   START / ROUND MANAGEMENT
+============================================================ */
+function startGame(diff) {
+  state = resetState(diff);
+  showScreen('gameScreen');
+  nextRound();
+}
+
+function nextRound() {
+  clearSpawner();
+  clearWords();
+
+  state.round++;
+  if (state.round > 5) {
+    showResults();
+    return;
+  }
+
+  state.currentTarget = state.cfg.targets[state.round - 1];
+  state.targetSeen = 0;
+  state.wrongThisRound = 0;
+  state.phase = 'announcing';
+
+  updateHUD();
+  updateProgress();
+  setTargetBanner(state.currentTarget);
+
+  const posLabel = POS_CONFIG[state.currentTarget].label;
+  showOverlay('🎯', `Round ${state.round}`, `TAP THE ${posLabel}!`, 3, beginSpawning);
+}
+
+function beginSpawning() {
+  state.phase = 'playing';
+  scheduleNextSpawn();
+}
+
+function scheduleNextSpawn() {
+  if (state.phase !== 'playing') return;
+  const delay = state.cfg.spawnDelay * (0.8 + Math.random() * 0.4);
+  spawnTimer = setTimeout(() => {
+    spawnWord();
+    scheduleNextSpawn();
+  }, delay);
+}
+
+function clearSpawner() {
+  clearTimeout(spawnTimer);
+  spawnTimer = null;
+}
+
+function clearWords() {
+  const area = document.getElementById('gameArea');
+  area.querySelectorAll('.word-bubble').forEach(w => w.remove());
+}
+
+/* ============================================================
+   WORD SPAWNING
+============================================================ */
+function pickWordType() {
+  const r = Math.random();
+  if (r < state.cfg.targetRatio) return state.currentTarget;
+  // Pick a random non-target from active types
+  const others = state.cfg.activeTypes.filter(t => t !== state.currentTarget);
+  return others[Math.floor(Math.random() * others.length)];
+}
+
+function spawnWord() {
+  if (state.phase !== 'playing') return;
+
+  const area = document.getElementById('gameArea');
+  const areaH = area.offsetHeight;
+  if (areaH < 40) return;
+
+  const type = pickWordType();
+  const wordList = WORDS[type];
+  const text = wordList[Math.floor(Math.random() * wordList.length)];
+
+  const [minT, maxT] = state.cfg.crossTime;
+  const duration = minT + Math.random() * (maxT - minT);
+
+  const minY = 8, maxY = areaH - 55;
+  const top = Math.floor(Math.random() * (maxY - minY) + minY);
+
+  const bubble = document.createElement('div');
+  bubble.className = `word-bubble ${type}`;
+  bubble.textContent = text;
+  bubble.dataset.type = type;
+  bubble.dataset.tapped = 'false';
+  bubble.style.top = top + 'px';
+  bubble.style.animationDuration = duration + 's';
+  area.appendChild(bubble);
+
+  // Count target words spawned
+  if (type === state.currentTarget) {
+    state.targetSeen++;
+    updateProgress();
+    if (state.targetSeen >= state.targetGoal) {
+      state.phase = 'roundEnding';
+      clearSpawner();
+      // Let remaining words finish, then end round after delay
+      setTimeout(finishRound, duration * 1000 + 600);
+    }
+  }
+
+  // Tap handler
+  bubble.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    if (bubble.dataset.tapped === 'true') return;
+    bubble.dataset.tapped = 'true';
+    handleTap(bubble, e);
+  }, { once: true });
+
+  // Animationend — word exited
+  bubble.addEventListener('animationend', () => {
+    bubble.remove();
+  });
+}
+
+/* ============================================================
+   TAP HANDLING
+============================================================ */
+function handleTap(bubble, e) {
+  const area = document.getElementById('gameArea');
+  const isTarget = bubble.dataset.type === state.currentTarget;
+
+  // Get position for burst
+  const bRect = bubble.getBoundingClientRect();
+  const aRect = area.getBoundingClientRect();
+  const cx = bRect.left + bRect.width / 2 - aRect.left;
+  const cy = bRect.top  + bRect.height / 2 - aRect.top;
+
+  // Freeze the word in place
+  const currentLeft = bRect.left - aRect.left;
+  bubble.style.animationPlayState = 'paused';
+  bubble.style.animation = 'none';
+  bubble.style.left = currentLeft + 'px';
+
+  if (isTarget) {
+    // CORRECT
+    state.score += 10;
+    state.correctTaps++;
+    bubble.classList.add('correct');
+    createBurst(cx, cy, 'var(--c-noun)', ['#5cbb6f','#f7c948','#4a90d9','#9b6fda']);
+    showFloatingText('+10', cx, cy, '#5cbb6f');
+    setTimeout(() => bubble.remove(), 400);
+  } else {
+    // WRONG
+    state.wrongTaps++;
+    state.wrongThisRound++;
+    loseLife();
+    bubble.classList.add('wrong');
+    showFloatingText('✗', cx, cy, '#e8453c');
+    setTimeout(() => bubble.remove(), 450);
+  }
+
+  updateHUD();
+}
+
+function loseLife() {
+  state.lives = Math.max(0, state.lives - 1);
+  if (state.lives === 0) {
+    state.phase = 'over';
+    clearSpawner();
+    setTimeout(showResults, 800);
+  }
+}
+
+/* ============================================================
+   ROUND END
+============================================================ */
+function finishRound() {
+  if (state.phase === 'over') return;
+  // Bonus for clean round
+  if (state.wrongThisRound === 0) {
+    state.bonusPoints += 25;
+    state.score += 25;
+  }
+
+  clearWords();
+
+  if (state.round >= 5 || state.lives <= 0) {
+    showResults();
+  } else {
+    const posLabel = POS_CONFIG[state.currentTarget].label;
+    const clean = state.wrongThisRound === 0 ? '⭐ Perfect Round! +25 bonus!' : '';
+    showOverlay('✅', `Round ${state.round} Done!`, clean || `Score: ${state.score}`, 2, nextRound);
+  }
+}
+
+/* ============================================================
+   RESULTS
+============================================================ */
+function showResults() {
+  clearSpawner();
+  clearWords();
+  showScreen('resultsScreen');
+
+  const maxScore = state.cfg.targetGoal * 5 * 10 + 125; // 5 rounds * 10pts + 5 bonuses
+  const pct = state.score / maxScore;
+  let grade, icon;
+  if (pct >= 0.9)      { grade = 'A+'; icon = '🏆'; }
+  else if (pct >= 0.75) { grade = 'A';  icon = '🌟'; }
+  else if (pct >= 0.6)  { grade = 'B',  icon = '😊'; }
+  else if (pct >= 0.45) { grade = 'C',  icon = '👍'; }
+  else                  { grade = 'D',  icon = '💪'; }
+
+  let gradeColor = pct >= 0.75 ? '#5cbb6f' : pct >= 0.45 ? '#f5832a' : '#e8453c';
+
+  document.getElementById('resultIcon').textContent  = icon;
+  document.getElementById('resultGrade').textContent = grade;
+  document.getElementById('resultGrade').style.color = gradeColor;
+  document.getElementById('resultScore').textContent = `Final Score: ${state.score}`;
+  document.getElementById('statCorrect').textContent = state.correctTaps;
+  document.getElementById('statWrong').textContent   = state.wrongTaps;
+  document.getElementById('statRounds').textContent  = state.round;
+  document.getElementById('statBonus').textContent   = state.bonusPoints;
+}
+
+document.getElementById('playAgainBtn').addEventListener('click', () => {
+  showScreen('homeScreen');
+});
+
+/* ============================================================
+   VISUAL EFFECTS
+============================================================ */
+function createBurst(cx, cy, _baseColor, colors) {
+  const area = document.getElementById('gameArea');
+  const count = 10;
+  for (let i = 0; i < count; i++) {
+    const p = document.createElement('div');
+    p.className = 'burst-p';
+    const col = colors[i % colors.length];
+    p.style.background = col;
+    p.style.left = cx + 'px';
+    p.style.top  = cy + 'px';
+    p.style.transform = 'translate(-50%,-50%) scale(1)';
+    p.style.opacity = '1';
+    area.appendChild(p);
+
+    const angle = (i / count) * Math.PI * 2;
+    const dist  = 40 + Math.random() * 30;
+    const dx    = Math.cos(angle) * dist;
+    const dy    = Math.sin(angle) * dist;
+
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      p.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(0)`;
+      p.style.opacity = '0';
+    }));
+    setTimeout(() => p.remove(), 500);
+  }
+}
+
+function showFloatingText(text, cx, cy, color) {
+  const area = document.getElementById('gameArea');
+  const el = document.createElement('div');
+  el.className = 'miss-flash';
+  el.textContent = text;
+  el.style.left = (cx - 15) + 'px';
+  el.style.top  = (cy - 10) + 'px';
+  el.style.color = color;
+  area.appendChild(el);
+  setTimeout(() => el.remove(), 850);
+}
+</script>
+</body>
+</html>

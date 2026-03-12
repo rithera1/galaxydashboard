@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>⚖️ Planet Weight Calculator</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --beige: #f5ead6;
+    --beige-dark: #ecdcc0;
+    --beige-darker: #e0c99a;
+    --cream: #fdf6e8;
+    --ink: #3b2f1e;
+    --ink-light: #7a5c3a;
+    --accent: #4a90d9;
+    --accent-dark: #1e5a99;
+    --accent-glow: rgba(74,144,217,0.35);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--beige);
+    font-family: 'Nunito', sans-serif;
+    min-height: 100vh;
+    color: var(--ink);
+    overflow-x: hidden;
+  }
+
+  /* NAV */
+  .site-nav {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.7rem 1.25rem;
+    background: var(--cream);
+    border-bottom: 3px solid var(--ink);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .site-nav-back {
+    font-family: 'Fredoka One', cursive;
+    font-size: 0.95rem;
+    color: var(--ink);
+    text-decoration: none;
+    background: var(--beige);
+    border: 2.5px solid var(--ink);
+    border-radius: 10px;
+    padding: 0.28rem 0.75rem;
+    transition: transform 0.15s ease, background 0.15s ease;
+  }
+  .site-nav-back:hover { background: var(--beige-dark); transform: scale(1.05); }
+  .site-nav-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.15rem;
+    color: var(--ink);
+  }
+
+  /* STARS (background) */
+  .stars-layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .star {
+    position: absolute;
+    border-radius: 50%;
+    background: var(--ink);
+    opacity: 0.1;
+    animation: twinkle 3s ease-in-out infinite;
+  }
+  @keyframes twinkle {
+    0%,100% { opacity: 0.06; transform: scale(1); }
+    50%      { opacity: 0.18; transform: scale(1.4); }
+  }
+
+  /* PAGE */
+  .page {
+    position: relative;
+    z-index: 1;
+    max-width: 840px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+  }
+
+  /* INTRO */
+  .intro {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  .intro-icon {
+    font-size: 4.5rem;
+    display: inline-block;
+    animation: planetBob 3s ease-in-out infinite;
+    filter: drop-shadow(0 6px 14px rgba(0,0,0,0.15));
+  }
+  @keyframes planetBob {
+    0%,100% { transform: translateY(0) rotate(-5deg); }
+    50%      { transform: translateY(-14px) rotate(5deg); }
+  }
+  .intro h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(2rem, 6vw, 3rem);
+    color: var(--ink);
+    text-shadow: 3px 3px 0 var(--beige-darker);
+    margin-top: 0.4rem;
+    line-height: 1.15;
+  }
+  .intro p {
+    color: var(--ink-light);
+    font-size: 1rem;
+    font-weight: 700;
+    margin-top: 0.4rem;
+  }
+
+  /* INPUT CARD */
+  .input-card {
+    background: var(--cream);
+    border: 3px solid var(--ink);
+    border-radius: 22px;
+    box-shadow: 5px 5px 0 var(--ink);
+    padding: 1.75rem 1.5rem;
+    max-width: 400px;
+    margin: 0 auto 2.5rem;
+    text-align: center;
+  }
+  .input-label {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.05rem;
+    color: var(--ink-light);
+    margin-bottom: 0.75rem;
+  }
+  .input-row {
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+  }
+  .weight-field {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2rem;
+    width: 140px;
+    padding: 0.5rem 0.75rem;
+    border: 3px solid var(--ink);
+    border-radius: 14px;
+    background: var(--beige);
+    color: var(--ink);
+    text-align: center;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    -moz-appearance: textfield;
+  }
+  .weight-field::-webkit-inner-spin-button,
+  .weight-field::-webkit-outer-spin-button { -webkit-appearance: none; }
+  .weight-field:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+  .weight-field.error {
+    border-color: #e8453c;
+    animation: shake 0.4s ease;
+  }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20%,60%  { transform: translateX(-6px); }
+    40%,80%  { transform: translateX(6px); }
+  }
+  .weight-field::placeholder { color: var(--beige-darker); }
+
+  .unit-toggle {
+    display: flex;
+    border: 3px solid var(--ink);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .unit-btn {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1rem;
+    padding: 0.45rem 0.85rem;
+    border: none;
+    background: var(--beige);
+    color: var(--ink-light);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .unit-btn.active { background: var(--ink); color: #fff; }
+
+  .calc-btn {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.25rem;
+    padding: 0.7rem 1.5rem;
+    background: var(--accent);
+    color: #fff;
+    border: 3px solid var(--ink);
+    border-radius: 14px;
+    box-shadow: 4px 4px 0 var(--ink);
+    cursor: pointer;
+    transition: transform 0.18s cubic-bezier(.34,1.56,.64,1), box-shadow 0.15s;
+    width: 100%;
+  }
+  .calc-btn:hover { transform: translateY(-3px); box-shadow: 4px 7px 0 var(--ink); }
+  .calc-btn:active { transform: translateY(1px); box-shadow: 2px 2px 0 var(--ink); }
+
+  /* RESULTS */
+  .results-section { animation: fadeUp 0.35s ease both; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .results-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(1.2rem, 3.5vw, 1.6rem);
+    text-align: center;
+    margin-bottom: 1.5rem;
+    color: var(--ink);
+    line-height: 1.3;
+  }
+
+  /* PLANET GRID */
+  .planet-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+    gap: 1rem;
+  }
+  .planet-card {
+    background: var(--cream);
+    border: 3px solid var(--ink);
+    border-radius: 18px;
+    padding: 1.2rem 0.9rem 1rem;
+    text-align: center;
+    box-shadow: 4px 4px 0 var(--ink);
+    animation: cardPop 0.45s cubic-bezier(.34,1.56,.64,1) both;
+    transition: transform 0.2s cubic-bezier(.34,1.56,.64,1);
+    cursor: default;
+  }
+  .planet-card:hover { transform: translateY(-4px) scale(1.02); }
+  @keyframes cardPop {
+    from { opacity: 0; transform: scale(0.75); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+  /* Staggered delays */
+  .planet-card:nth-child(1)  { animation-delay: 0.04s; }
+  .planet-card:nth-child(2)  { animation-delay: 0.08s; }
+  .planet-card:nth-child(3)  { animation-delay: 0.12s; }
+  .planet-card:nth-child(4)  { animation-delay: 0.16s; }
+  .planet-card:nth-child(5)  { animation-delay: 0.20s; }
+  .planet-card:nth-child(6)  { animation-delay: 0.24s; }
+  .planet-card:nth-child(7)  { animation-delay: 0.28s; }
+  .planet-card:nth-child(8)  { animation-delay: 0.32s; }
+  .planet-card:nth-child(9)  { animation-delay: 0.36s; }
+  .planet-card:nth-child(10) { animation-delay: 0.40s; }
+  .planet-card:nth-child(11) { animation-delay: 0.44s; }
+
+  .planet-card.is-earth {
+    border-color: var(--accent);
+    box-shadow: 4px 4px 0 var(--accent);
+    background: #f0f7ff;
+  }
+
+  /* 3D planet sphere */
+  .planet-sphere {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    margin: 0 auto 0.75rem;
+    border: 2.5px solid rgba(0,0,0,0.2);
+    box-shadow:
+      inset -10px -10px 20px rgba(0,0,0,0.3),
+      inset 4px 4px 10px rgba(255,255,255,0.4),
+      3px 4px 12px rgba(0,0,0,0.2);
+    position: relative;
+    overflow: visible;
+  }
+
+  /* Saturn rings */
+  .planet-card.has-ring .planet-sphere::before {
+    content: '';
+    position: absolute;
+    width: 148%;
+    height: 28%;
+    top: 36%;
+    left: -24%;
+    border-radius: 50%;
+    border: 4px solid rgba(180,140,60,0.55);
+    transform: rotate(-18deg);
+    pointer-events: none;
+    z-index: -1;
+  }
+  .planet-card.has-ring-uranus .planet-sphere::before {
+    content: '';
+    position: absolute;
+    width: 148%;
+    height: 28%;
+    top: 36%;
+    left: -24%;
+    border-radius: 50%;
+    border: 3px solid rgba(100,200,210,0.45);
+    transform: rotate(-8deg);
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  .planet-name {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.05rem;
+    color: var(--ink);
+    margin-bottom: 0.2rem;
+  }
+  .planet-weight-num {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.65rem;
+    line-height: 1.1;
+    margin-bottom: 0.05rem;
+  }
+  .planet-weight-unit {
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: var(--ink-light);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.55rem;
+  }
+  .gravity-bar-wrap {
+    background: var(--beige-dark);
+    border-radius: 6px;
+    height: 7px;
+    overflow: hidden;
+    margin-bottom: 0.65rem;
+    border: 1.5px solid var(--beige-darker);
+  }
+  .gravity-bar-fill {
+    height: 100%;
+    border-radius: 6px;
+    transition: width 0.7s ease 0.3s;
+    min-width: 3px;
+  }
+  .planet-fact {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--ink-light);
+    line-height: 1.45;
+  }
+
+  @media (max-width: 500px) {
+    .planet-grid { grid-template-columns: repeat(2, 1fr); }
+    .planet-card { padding: 1rem 0.65rem 0.85rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="stars-layer" id="starsLayer"></div>
+
+<nav class="site-nav">
+  <a href="../" class="site-nav-back">← Home</a>
+  <span class="site-nav-title">⚖️ Planet Weight Calculator</span>
+</nav>
+
+<div class="page">
+
+  <div class="intro">
+    <div class="intro-icon">🪐</div>
+    <h1>How much would<br>you weigh?</h1>
+    <p>Enter your weight and explore every world in the solar system!</p>
+  </div>
+
+  <div class="input-card">
+    <div class="input-label">Your weight on Earth</div>
+    <div class="input-row">
+      <input type="number" id="weightInput" class="weight-field" placeholder="70"
+             min="1" max="9999" step="any" inputmode="decimal">
+      <div class="unit-toggle">
+        <button class="unit-btn active" id="lbsBtn">lbs</button>
+        <button class="unit-btn" id="kgBtn">kg</button>
+      </div>
+    </div>
+    <button class="calc-btn" id="calcBtn">🚀 Launch Calculator!</button>
+  </div>
+
+  <div class="results-section" id="resultsSection" style="display:none">
+    <h2 class="results-title" id="resultsTitle"></h2>
+    <div class="planet-grid" id="planetGrid"></div>
+  </div>
+
+</div>
+
+<script>
+const BODIES = [
+  {
+    id: 'mercury', name: 'Mercury', gravity: 0.38,
+    gradient: 'radial-gradient(circle at 35% 30%, #d8d8d8, #888)',
+    barColor: '#aaa',
+    fact: 'A day on Mercury lasts 59 Earth days!'
+  },
+  {
+    id: 'venus', name: 'Venus', gravity: 0.91,
+    gradient: 'radial-gradient(circle at 35% 30%, #f0d890, #c09020)',
+    barColor: '#d4a820',
+    fact: 'Venus is hotter than Mercury — it has a thick toxic atmosphere!'
+  },
+  {
+    id: 'earth', name: 'Earth', gravity: 1.00,
+    gradient: 'radial-gradient(circle at 35% 30%, #6ab4f0, #1a5a99)',
+    barColor: '#4a90d9',
+    isEarth: true,
+    fact: 'This is your normal weight — home sweet home! 🏠'
+  },
+  {
+    id: 'moon', name: 'Moon', gravity: 0.166,
+    gradient: 'radial-gradient(circle at 35% 30%, #e8e8e8, #999)',
+    barColor: '#bbb',
+    fact: 'Astronauts can jump 6× higher on the Moon!'
+  },
+  {
+    id: 'mars', name: 'Mars', gravity: 0.38,
+    gradient: 'radial-gradient(circle at 35% 30%, #f08060, #a03010)',
+    barColor: '#d9603c',
+    fact: 'Mars has Olympus Mons — the tallest volcano in the solar system!'
+  },
+  {
+    id: 'jupiter', name: 'Jupiter', gravity: 2.34,
+    gradient: 'radial-gradient(circle at 35% 30%, #e8c090, #a06030)',
+    barColor: '#c8936c',
+    fact: "Jupiter's Great Red Spot is a storm bigger than Earth!"
+  },
+  {
+    id: 'saturn', name: 'Saturn', gravity: 0.92,
+    gradient: 'radial-gradient(circle at 35% 30%, #f0e8a0, #b0a040)',
+    barColor: '#d4b830',
+    hasRing: true,
+    fact: "Saturn's rings are made mostly of ice and rock!"
+  },
+  {
+    id: 'uranus', name: 'Uranus', gravity: 0.89,
+    gradient: 'radial-gradient(circle at 35% 30%, #b0f0f0, #4090a0)',
+    barColor: '#60c8d0',
+    hasRingUranus: true,
+    fact: 'Uranus spins on its side — it literally rolls around the Sun!'
+  },
+  {
+    id: 'neptune', name: 'Neptune', gravity: 1.12,
+    gradient: 'radial-gradient(circle at 35% 30%, #6080f0, #2030b0)',
+    barColor: '#4060d9',
+    fact: 'Neptune has the fastest winds in the solar system — 2,100 km/h!'
+  },
+  {
+    id: 'pluto', name: 'Pluto', gravity: 0.063,
+    gradient: 'radial-gradient(circle at 35% 30%, #d8c0a8, #907050)',
+    barColor: '#b09070',
+    fact: 'Pluto has a heart-shaped glacier called Tombaugh Regio!'
+  },
+  {
+    id: 'sun', name: 'Sun ☀️', gravity: 27.9,
+    gradient: 'radial-gradient(circle at 35% 30%, #fff090, #f07000)',
+    barColor: '#f7c030',
+    fact: 'The Sun contains 99.8% of all the mass in our solar system!'
+  }
+];
+
+let unitIsLbs = true;
+
+const weightInput = document.getElementById('weightInput');
+const lbsBtn     = document.getElementById('lbsBtn');
+const kgBtn      = document.getElementById('kgBtn');
+const calcBtn    = document.getElementById('calcBtn');
+const resultsSection = document.getElementById('resultsSection');
+const resultsTitle   = document.getElementById('resultsTitle');
+const planetGrid     = document.getElementById('planetGrid');
+
+lbsBtn.addEventListener('click', () => {
+  if (unitIsLbs) return;
+  const v = parseFloat(weightInput.value);
+  if (!isNaN(v)) weightInput.value = (v * 2.20462).toFixed(1);
+  unitIsLbs = true;
+  lbsBtn.classList.add('active');
+  kgBtn.classList.remove('active');
+});
+kgBtn.addEventListener('click', () => {
+  if (!unitIsLbs) return;
+  const v = parseFloat(weightInput.value);
+  if (!isNaN(v)) weightInput.value = (v / 2.20462).toFixed(1);
+  unitIsLbs = false;
+  kgBtn.classList.add('active');
+  lbsBtn.classList.remove('active');
+});
+
+calcBtn.addEventListener('click', calculate);
+weightInput.addEventListener('keydown', e => { if (e.key === 'Enter') calculate(); });
+
+// Log scale for bar (so Sun doesn't dwarf everything)
+const LOG_MAX = Math.log(27.9 * 10 + 1); // Sun's gravity
+function gravityToBar(g) {
+  return Math.min(100, Math.log(g * 10 + 1) / LOG_MAX * 100);
+}
+
+function calculate() {
+  const val = parseFloat(weightInput.value);
+  if (isNaN(val) || val <= 0) {
+    weightInput.classList.add('error');
+    setTimeout(() => weightInput.classList.remove('error'), 600);
+    weightInput.focus();
+    return;
+  }
+
+  const weightKg = unitIsLbs ? val / 2.20462 : val;
+  const unitLabel = unitIsLbs ? 'lbs' : 'kg';
+  const displayVal = val % 1 === 0 ? val : val.toFixed(1);
+
+  resultsTitle.textContent = `🌌 You weigh ${displayVal} ${unitLabel} on Earth — here's every other world!`;
+
+  planetGrid.innerHTML = '';
+
+  BODIES.forEach(body => {
+    const weightOnBody = weightKg * body.gravity;
+    const displayWeight = unitIsLbs ? weightOnBody * 2.20462 : weightOnBody;
+    const barPct = gravityToBar(body.gravity);
+
+    let cardClass = 'planet-card';
+    if (body.isEarth)      cardClass += ' is-earth';
+    if (body.hasRing)      cardClass += ' has-ring';
+    if (body.hasRingUranus) cardClass += ' has-ring-uranus';
+
+    const weightStr = displayWeight < 10
+      ? displayWeight.toFixed(2)
+      : displayWeight < 100
+        ? displayWeight.toFixed(1)
+        : Math.round(displayWeight).toLocaleString();
+
+    const card = document.createElement('div');
+    card.className = cardClass;
+    card.innerHTML = `
+      <div class="planet-sphere" style="background:${body.gradient}"></div>
+      <div class="planet-name">${body.name}</div>
+      <div class="planet-weight-num" style="color:${body.barColor}">${weightStr}</div>
+      <div class="planet-weight-unit">${unitLabel}</div>
+      <div class="gravity-bar-wrap">
+        <div class="gravity-bar-fill" style="width:${barPct}%;background:${body.barColor}"></div>
+      </div>
+      <div class="planet-fact">${body.fact}</div>
+    `;
+    planetGrid.appendChild(card);
+  });
+
+  resultsSection.style.display = '';
+  // Re-trigger animation
+  resultsSection.style.animation = 'none';
+  void resultsSection.offsetWidth;
+  resultsSection.style.animation = '';
+
+  setTimeout(() => resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+}
+
+// Background stars
+const starsLayer = document.getElementById('starsLayer');
+for (let i = 0; i < 45; i++) {
+  const s = document.createElement('div');
+  s.className = 'star';
+  const size = [3,4,5][Math.floor(Math.random()*3)];
+  s.style.width  = size + 'px';
+  s.style.height = size + 'px';
+  s.style.left   = Math.random() * 100 + '%';
+  s.style.top    = Math.random() * 100 + '%';
+  s.style.animationDelay    = (Math.random() * 4).toFixed(2) + 's';
+  s.style.animationDuration = (2.5 + Math.random() * 3).toFixed(2) + 's';
+  starsLayer.appendChild(s);
+}
+</script>
+</body>
+</html>
