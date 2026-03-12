@@ -8,19 +8,19 @@
 <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&family=Orbitron:wght@700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #08081e;
-    --bg2: #12123a;
-    --gold: #f7c948;
-    --gold-dim: rgba(247,201,72,0.35);
-    --purple: #8b6fff;
-    --purple-dim: rgba(139,111,255,0.25);
-    --teal: #4adaff;
-    --text: #e8e8ff;
-    --text-muted: #7a7aaa;
-    --card-bg: rgba(255,255,255,0.06);
-    --card-border: rgba(160,140,255,0.3);
-    --correct: #5cff88;
-    --wrong: #ff5566;
+    --bg:     #160c02;
+    --bg2:    #231405;
+    --amber:  #e8a020;
+    --amber2: #f7c948;
+    --brown:  rgba(80,45,12,0.92);
+    --parch:  #f0d890;
+    --text:   #f5e2b0;
+    --muted:  #b89060;
+    --correct:#4cdd68;
+    --wrong:  #ff5544;
+    --slot-bg: rgba(45,26,8,0.9);
+    --slot-bd: rgba(200,155,55,0.5);
+    --glow:   rgba(232,160,32,0.45);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body {
@@ -29,65 +29,90 @@
     overflow: hidden; -webkit-tap-highlight-color: transparent; user-select: none;
   }
 
-  /* NAV */
+  /* ── NAV ── */
   .site-nav {
     display: flex; align-items: center; gap: 1rem;
     padding: 0.6rem 1.25rem; height: 48px;
-    background: rgba(18,18,58,0.97);
-    border-bottom: 2px solid rgba(139,111,255,0.3);
+    background: rgba(22,12,2,0.97);
+    border-bottom: 2px solid rgba(200,155,55,0.35);
     position: relative; z-index: 200;
-    backdrop-filter: blur(10px);
   }
   .site-nav-back {
     font-family: 'Fredoka One', cursive; font-size: 0.9rem;
     color: var(--text); text-decoration: none;
-    background: var(--purple-dim); border: 2px solid var(--purple);
+    background: rgba(232,160,32,0.15); border: 2px solid rgba(232,160,32,0.5);
     border-radius: 10px; padding: 0.2rem 0.7rem; transition: background 0.15s;
   }
-  .site-nav-back:hover { background: rgba(139,111,255,0.45); }
-  .site-nav-title { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--text); }
+  .site-nav-back:hover { background: rgba(232,160,32,0.3); }
+  .site-nav-title { font-family: 'Fredoka One', cursive; font-size: 1.1rem; }
 
-  /* SCREENS */
+  /* ── SCREENS ── */
   .screen { display: none; position: absolute; inset: 0; }
   .screen.active { display: flex; flex-direction: column; }
 
-  /* ===== MODE SCREEN ===== */
+  /* ══════════════════════════════════════
+     MODE SCREEN
+  ══════════════════════════════════════ */
   #modeScreen {
     top: 48px; align-items: center; justify-content: center;
     padding: 1.5rem 1.25rem 2.5rem; overflow-y: auto; text-align: center;
-    background: radial-gradient(ellipse at 50% 0%, #1c1060 0%, #08081e 70%);
+    background: radial-gradient(ellipse at 50% 10%, #3a2008 0%, #160c02 65%);
   }
-  .mode-stars { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+  .float-layer { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+  .float-item {
+    position: absolute; font-size: 1.6rem;
+    animation: floatUp var(--dur, 9s) linear var(--delay, 0s) infinite;
+    opacity: 0; pointer-events: none;
+  }
+  @keyframes floatUp {
+    0%   { transform: translateY(110vh) rotate(0deg);   opacity: 0; }
+    8%   { opacity: 0.45; }
+    90%  { opacity: 0.4; }
+    100% { transform: translateY(-80px) rotate(20deg);  opacity: 0; }
+  }
   .mode-content { position: relative; z-index: 1; max-width: 500px; width: 100%; }
   .mode-icon {
-    font-size: 5rem; display: block; margin-bottom: 0.4rem;
-    animation: iconBob 2.8s ease-in-out infinite;
-    filter: drop-shadow(0 0 20px rgba(247,201,72,0.7));
+    font-size: 5.5rem; display: block; margin-bottom: 0.4rem;
+    animation: iconBob 3s ease-in-out infinite;
+    filter: drop-shadow(0 0 22px rgba(232,160,32,0.8));
   }
-  @keyframes iconBob { 0%,100%{ transform:translateY(0) rotate(-4deg) } 50%{ transform:translateY(-14px) rotate(4deg) } }
+  @keyframes iconBob { 0%,100%{ transform:translateY(0) rotate(-5deg) } 50%{ transform:translateY(-14px) rotate(5deg) } }
   .mode-title {
-    font-family: 'Fredoka One', cursive; font-size: clamp(2rem, 7vw, 3rem);
-    text-shadow: 0 0 30px rgba(247,201,72,0.5); margin-bottom: 0.5rem; line-height: 1.1;
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(2rem, 7vw, 3rem);
+    text-shadow: 0 0 28px rgba(232,160,32,0.6);
+    margin-bottom: 0.4rem; line-height: 1.1;
   }
-  .mode-sub { color: var(--text-muted); font-size: 1rem; font-weight: 700; margin-bottom: 2rem; }
-  .mode-grid { display: grid; grid-template-columns: 1fr; gap: 0.85rem; max-width: 380px; margin: 0 auto; }
+  .mode-sub { color: var(--muted); font-size: 1rem; font-weight: 700; margin-bottom: 2rem; }
+  .mode-grid { display: flex; flex-direction: column; gap: 0.85rem; max-width: 380px; margin: 0 auto 1.5rem; }
   .mode-btn {
-    font-family: 'Fredoka One', cursive; font-size: 1.2rem;
-    padding: 1.1rem 1.5rem; border-radius: 18px; border: 2.5px solid currentColor;
-    cursor: pointer; text-align: left; display: flex; align-items: center; gap: 0.75rem;
+    font-family: 'Fredoka One', cursive; font-size: 1.15rem;
+    padding: 1rem 1.4rem; border-radius: 18px; cursor: pointer;
+    text-align: left; display: flex; align-items: center; gap: 0.75rem;
+    border: 2.5px solid currentColor;
     transition: transform 0.18s cubic-bezier(.34,1.56,.64,1), box-shadow 0.15s;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
   }
-  .mode-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(0,0,0,0.5); }
-  .mode-us    { background: rgba(220,60,60,0.18);  color: #ff9999; border-color: #e8453c; }
-  .mode-world { background: rgba(74,218,255,0.12); color: #90e8ff; border-color: var(--teal); }
-  .mode-sci   { background: rgba(139,111,255,0.18); color: #c8b0ff; border-color: var(--purple); }
+  .mode-btn:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 8px 30px rgba(0,0,0,0.6); }
+  .mode-us    { background: rgba(180,55,40,0.2);  color: #ffaaaa; border-color: #d05040; }
+  .mode-world { background: rgba(40,140,70,0.2);  color: #a0ffb8; border-color: #40bb60; }
+  .mode-sci   { background: rgba(80,120,220,0.2); color: #b0c8ff; border-color: #6090e0; }
   .mode-btn-icon { font-size: 2rem; }
-  .mode-btn-text { display: flex; flex-direction: column; }
-  .mode-btn-name { font-size: 1.2rem; }
-  .mode-btn-desc { font-size: 0.72rem; font-weight: 700; opacity: 0.75; margin-top: 0.1rem; }
+  .mode-btn-text  { display: flex; flex-direction: column; }
+  .mode-btn-name  { font-size: 1.15rem; }
+  .mode-btn-desc  { font-size: 0.72rem; font-weight: 700; opacity: 0.75; margin-top: 0.1rem; }
+  .how-box {
+    background: rgba(255,255,255,0.05);
+    border: 2px solid rgba(200,155,55,0.3);
+    border-radius: 16px; padding: 0.9rem 1.1rem; text-align: left;
+    max-width: 380px; margin: 0 auto;
+  }
+  .how-box h3 { font-family: 'Fredoka One', cursive; font-size: 1rem; color: var(--amber2); margin-bottom: 0.5rem; }
+  .how-box p  { font-size: 0.82rem; font-weight: 700; color: var(--muted); line-height: 1.55; }
 
-  /* ===== GAME SCREEN ===== */
+  /* ══════════════════════════════════════
+     GAME SCREEN
+  ══════════════════════════════════════ */
   #gameScreen {
     top: 48px; flex-direction: column;
     background: var(--bg);
@@ -95,218 +120,246 @@
   .game-header {
     display: flex; align-items: center; justify-content: space-between;
     padding: 0.45rem 0.85rem; gap: 0.5rem; flex-shrink: 0;
-    background: rgba(18,18,58,0.85); border-bottom: 1px solid rgba(139,111,255,0.2);
+    background: rgba(22,12,2,0.9);
+    border-bottom: 2px solid rgba(200,155,55,0.25);
     flex-wrap: wrap;
   }
-  .game-round-title { font-family: 'Fredoka One', cursive; font-size: clamp(0.85rem, 3vw, 1.2rem); }
-  .game-score-badge {
-    font-family: 'Orbitron', monospace; font-size: 0.9rem; font-weight: 700;
-    color: var(--gold); text-shadow: 0 0 10px rgba(247,201,72,0.5);
-  }
-  .game-tip {
-    font-size: 0.75rem; font-weight: 700; color: var(--text-muted); font-style: italic;
-    flex-basis: 100%;
-  }
+  .game-round-title { font-family: 'Fredoka One', cursive; font-size: clamp(0.85rem,3vw,1.2rem); }
+  .game-score-badge { font-family: 'Orbitron', monospace; font-size: 0.9rem; font-weight: 700; color: var(--amber2); text-shadow: 0 0 10px rgba(247,201,72,0.5); }
+  .game-progress { font-size: 0.75rem; font-weight: 700; color: var(--muted); flex-basis: 100%; }
 
-  /* TIMELINE SECTION */
-  .tl-section { flex: 1; min-height: 0; position: relative; }
-  #tlViewport {
-    width: 100%; height: 100%; position: relative; overflow: hidden;
-    cursor: grab; background: linear-gradient(180deg, #09091f 0%, #0e0e32 100%);
-  }
-  #tlViewport.panning { cursor: grabbing; }
-  #tlInner {
-    position: absolute; top: 0; height: 100%;
-    pointer-events: none; /* individual children handle events */
-  }
-
-  /* Timeline axis line */
-  .tl-axis {
-    position: absolute; left: 0; right: 0;
-    height: 3px; border-radius: 2px;
-    background: linear-gradient(90deg, transparent, var(--gold) 5%, var(--gold) 95%, transparent);
-    box-shadow: 0 0 12px rgba(247,201,72,0.6), 0 0 30px rgba(247,201,72,0.25);
-    pointer-events: none;
-  }
-
-  /* Year tick marks */
-  .tl-tick {
-    position: absolute; pointer-events: none;
-    display: flex; flex-direction: column; align-items: center;
-  }
-  .tl-tick-line {
-    width: 2px; border-radius: 1px;
-    background: rgba(247,201,72,0.55);
-  }
-  .tl-tick-line.major { background: rgba(247,201,72,0.85); width: 2px; }
-  .tl-tick-label {
-    font-family: 'Orbitron', monospace; font-size: 0.62rem; font-weight: 700;
-    color: rgba(247,201,72,0.75); margin-top: 3px; white-space: nowrap;
-  }
-  .tl-tick-label.major { color: var(--gold); font-size: 0.72rem; }
-
-  /* Placed event markers */
-  .tl-marker {
-    position: absolute; display: flex; flex-direction: column; align-items: center;
-    cursor: pointer; pointer-events: all;
-    transition: transform 0.2s cubic-bezier(.34,1.56,.64,1);
-  }
-  .tl-marker:hover { transform: translateY(-3px); }
-  .tl-marker.above { flex-direction: column-reverse; }
-  .tl-marker-stem { width: 2px; height: 28px; background: rgba(200,190,255,0.6); flex-shrink: 0; }
-  .tl-marker.above .tl-marker-stem { }
-  .tl-marker-dot {
-    width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0;
-    border: 2.5px solid var(--purple);
-    background: var(--bg2); box-shadow: 0 0 10px rgba(139,111,255,0.7);
-  }
-  .tl-marker.correct-marker .tl-marker-dot { border-color: var(--correct); box-shadow: 0 0 12px rgba(92,255,136,0.8); background: rgba(92,255,136,0.2); }
-  .tl-marker.wrong-marker   .tl-marker-dot { border-color: var(--wrong);   box-shadow: 0 0 12px rgba(255,85,102,0.8); background: rgba(255,85,102,0.1); }
-
-  .tl-marker-card {
-    width: clamp(88px, 14vw, 118px);
-    background: rgba(20,18,60,0.92);
-    border: 2px solid rgba(160,140,255,0.45);
-    border-radius: 10px; overflow: hidden;
-    box-shadow: 0 4px 18px rgba(0,0,0,0.5);
-    transition: border-color 0.3s;
-  }
-  .tl-marker.correct-marker .tl-marker-card { border-color: var(--correct); }
-  .tl-marker.wrong-marker   .tl-marker-card { border-color: var(--wrong); }
-  .tl-marker-img-wrap {
-    width: 100%; height: 54px; overflow: hidden;
-    background: rgba(139,111,255,0.15);
-    display: flex; align-items: center; justify-content: center;
-    position: relative; font-size: 1.6rem;
-  }
-  .tl-marker-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: none; }
-  .tl-marker-body { padding: 0.3rem 0.35rem 0.3rem; }
-  .tl-marker-title { font-family: 'Fredoka One', cursive; font-size: 0.68rem; line-height: 1.2; color: var(--text); }
-  .tl-marker-year-guess { font-family: 'Orbitron', monospace; font-size: 0.62rem; font-weight: 700; color: var(--gold); margin-top: 0.2rem; }
-  .tl-marker-score-row { margin-top: 0.2rem; font-size: 0.6rem; font-weight: 800; line-height: 1.2; }
-  .tl-marker-remove-hint { font-size: 0.58rem; color: var(--text-muted); margin-top: 0.15rem; opacity: 0.7; }
-
-  /* Correct year ghost marker (shown after check) */
-  .tl-correct-marker {
-    position: absolute; display: flex; flex-direction: column; align-items: center;
-    pointer-events: none;
-  }
-  .tl-correct-line { width: 1.5px; height: 16px; background: var(--correct); opacity: 0.7; }
-  .tl-correct-dot {
-    width: 10px; height: 10px; border-radius: 50%;
-    background: var(--correct); box-shadow: 0 0 10px rgba(92,255,136,0.9);
-  }
-  .tl-correct-label {
-    font-family: 'Orbitron', monospace; font-size: 0.6rem; font-weight: 700;
-    color: var(--correct); background: rgba(0,20,0,0.85);
-    border: 1px solid var(--correct); border-radius: 4px; padding: 0.1rem 0.35rem;
-    margin-top: 3px; white-space: nowrap;
-  }
-
-  /* Year tooltip (follows cursor during drag) */
-  #yearTooltip {
-    position: absolute; top: 8px; pointer-events: none; z-index: 50;
-    font-family: 'Orbitron', monospace; font-size: 0.9rem; font-weight: 700;
-    color: var(--gold); background: rgba(18,18,58,0.95);
-    border: 2px solid var(--gold); border-radius: 10px;
-    padding: 0.25rem 0.65rem;
-    box-shadow: 0 0 14px rgba(247,201,72,0.5);
-    transform: translateX(-50%);
-    transition: left 0.03s;
-  }
-  #yearTooltip.hidden { display: none; }
-
-  /* Pan hint arrows */
-  .tl-pan-hint {
-    position: absolute; top: 50%; transform: translateY(-50%);
-    font-size: 1.4rem; color: rgba(247,201,72,0.5);
-    pointer-events: none; z-index: 10;
-    animation: hintPulse 2s ease-in-out infinite;
-  }
-  @keyframes hintPulse { 0%,100%{ opacity:0.3 } 50%{ opacity:0.8 } }
-  .tl-pan-hint.left  { left: 8px; }
-  .tl-pan-hint.right { right: 8px; }
-
-  /* ROUND RESULT BAR */
-  .round-result-bar {
-    flex-shrink: 0; background: rgba(18,18,58,0.95);
-    border-top: 2px solid rgba(139,111,255,0.3);
-    padding: 0.5rem 0.85rem; display: none;
-    align-items: center; gap: 0.75rem; flex-wrap: wrap;
-  }
-  .round-result-bar.visible { display: flex; }
-  .rr-icon { font-size: 1.8rem; }
-  .rr-text { font-family: 'Fredoka One', cursive; font-size: 1rem; flex: 1; }
-  .rr-pts  { font-family: 'Orbitron', monospace; font-size: 1rem; font-weight: 700; color: var(--gold); }
-
-  /* CARDS TRAY */
-  .cards-tray-section {
-    flex-shrink: 0; background: rgba(12,12,40,0.97);
-    border-top: 2px solid rgba(139,111,255,0.25);
-    padding: 0.5rem 0.75rem 0.5rem;
-  }
-  .tray-label { font-family: 'Fredoka One', cursive; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem; }
-  .cards-tray {
-    display: flex; gap: 0.55rem; overflow-x: auto; padding-bottom: 4px;
-    scrollbar-width: thin; scrollbar-color: rgba(139,111,255,0.4) transparent;
-  }
-  .cards-tray::-webkit-scrollbar { height: 4px; }
-  .cards-tray::-webkit-scrollbar-track { background: transparent; }
-  .cards-tray::-webkit-scrollbar-thumb { background: rgba(139,111,255,0.4); border-radius: 2px; }
-
-  /* EVENT CARDS in tray */
-  .event-card {
+  /* ── TIMELINE AREA ── */
+  .tl-section {
     flex-shrink: 0;
-    width: clamp(100px, 16vw, 128px);
-    background: rgba(25,20,65,0.95);
-    border: 2px solid rgba(160,140,255,0.4);
-    border-radius: 12px; overflow: hidden;
-    cursor: grab; touch-action: none;
-    transition: opacity 0.2s, border-color 0.2s, transform 0.15s cubic-bezier(.34,1.56,.64,1);
+    padding: 0.85rem 0.6rem 0.5rem;
+    background: linear-gradient(180deg, #1e1004 0%, #160c02 100%);
     position: relative;
   }
-  .event-card:hover:not(.placed) { transform: translateY(-3px); border-color: var(--purple); }
-  .event-card.placed { opacity: 0.45; cursor: default; }
-  .event-card.dragging { opacity: 0.3; }
+  /* Decorative rope line behind slots */
+  .tl-rope {
+    position: absolute;
+    left: 0.6rem; right: 0.6rem;
+    height: 4px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, transparent, var(--amber) 8%, var(--amber) 92%, transparent);
+    box-shadow: 0 0 12px rgba(232,160,32,0.55);
+    pointer-events: none;
+    z-index: 0;
+  }
+  /* Slots row */
+  .tl-slots {
+    display: flex; gap: 0.55rem;
+    overflow-x: auto; padding-bottom: 4px;
+    position: relative; z-index: 1;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(200,155,55,0.4) transparent;
+  }
+  .tl-slots::-webkit-scrollbar { height: 4px; }
+  .tl-slots::-webkit-scrollbar-thumb { background: rgba(200,155,55,0.4); border-radius: 2px; }
+
+  /* ── INDIVIDUAL SLOT ── */
+  .tl-slot {
+    flex-shrink: 0;
+    width: clamp(100px, 17vw, 140px);
+    display: flex; flex-direction: column; align-items: center;
+    animation: slotPop 0.4s cubic-bezier(.34,1.56,.64,1) both;
+  }
+  @keyframes slotPop { from{ opacity:0; transform:translateY(20px) scale(0.85) } to{ opacity:1; transform:translateY(0) scale(1) } }
+  .tl-slot:nth-child(1){ animation-delay:.05s }
+  .tl-slot:nth-child(2){ animation-delay:.10s }
+  .tl-slot:nth-child(3){ animation-delay:.15s }
+  .tl-slot:nth-child(4){ animation-delay:.20s }
+  .tl-slot:nth-child(5){ animation-delay:.25s }
+
+  .slot-year-label {
+    font-family: 'Orbitron', monospace; font-size: 0.8rem; font-weight: 700;
+    color: var(--amber2); text-shadow: 0 0 8px rgba(247,201,72,0.6);
+    margin-bottom: 0.4rem;
+  }
+  .slot-dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--amber); box-shadow: 0 0 10px var(--glow);
+    margin-bottom: 0.4rem; flex-shrink: 0;
+    border: 2px solid rgba(255,255,255,0.3);
+  }
+  .slot-drop-zone {
+    width: 100%; min-height: 90px;
+    background: var(--slot-bg);
+    border: 2px dashed var(--slot-bd);
+    border-radius: 14px; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    position: relative;
+  }
+  .slot-empty-hint {
+    font-size: 0.72rem; font-weight: 700; color: var(--muted);
+    text-align: center; padding: 0.5rem;
+    display: flex; flex-direction: column; align-items: center; gap: 0.25rem;
+  }
+  .slot-empty-hint .hint-arrow {
+    font-size: 1.3rem; animation: hintBounce 1.4s ease-in-out infinite;
+  }
+  @keyframes hintBounce { 0%,100%{ transform:translateY(0) } 50%{ transform:translateY(5px) } }
+
+  /* Drag-over state */
+  .tl-slot.drag-over .slot-drop-zone {
+    border-color: var(--amber2); border-style: solid;
+    background: rgba(232,160,32,0.15);
+    box-shadow: 0 0 18px rgba(232,160,32,0.5);
+  }
+  .tl-slot.drag-over .slot-dot {
+    box-shadow: 0 0 20px rgba(247,201,72,0.9);
+    transform: scale(1.3);
+    transition: transform 0.15s;
+  }
+
+  /* Placed card inside slot */
+  .slot-placed-card {
+    width: 100%; padding: 0.5rem 0.45rem 0.4rem;
+    display: flex; flex-direction: column; align-items: center; gap: 0.2rem;
+    cursor: pointer;
+    animation: cardDropIn 0.3s cubic-bezier(.34,1.56,.64,1) both;
+  }
+  @keyframes cardDropIn { from{ opacity:0; transform:scale(0.7) } to{ opacity:1; transform:scale(1) } }
+  .spc-emoji { font-size: 1.8rem; line-height: 1; }
+  .spc-img { width: 100%; height: 52px; object-fit: cover; border-radius: 6px; }
+  .spc-title { font-family: 'Fredoka One', cursive; font-size: 0.68rem; color: var(--text); text-align: center; line-height: 1.2; }
+  .spc-remove { font-size: 0.55rem; color: var(--muted); margin-top: 0.1rem; }
+
+  /* Checked states */
+  .tl-slot.correct-slot .slot-drop-zone {
+    border-color: var(--correct); border-style: solid;
+    background: rgba(76,221,104,0.12);
+    box-shadow: 0 0 20px rgba(76,221,104,0.4);
+    animation: correctPulse 0.5s ease;
+  }
+  @keyframes correctPulse {
+    0%{ transform:scale(1) } 30%{ transform:scale(1.08) } 60%{ transform:scale(0.97) } 100%{ transform:scale(1) }
+  }
+  .tl-slot.wrong-slot .slot-drop-zone {
+    border-color: var(--wrong); border-style: solid;
+    background: rgba(255,85,68,0.1);
+    animation: wrongShake 0.45s ease;
+  }
+  @keyframes wrongShake {
+    0%,100%{ transform:translateX(0) } 20%,60%{ transform:translateX(-5px) } 40%,80%{ transform:translateX(5px) }
+  }
+  .tl-slot.correct-slot .slot-dot { background: var(--correct); box-shadow: 0 0 14px rgba(76,221,104,0.9); }
+  .tl-slot.wrong-slot   .slot-dot { background: var(--wrong);   box-shadow: 0 0 14px rgba(255,85,68,0.9); }
+  .tl-slot.correct-reveal .slot-year-label { color: var(--correct); text-shadow: 0 0 10px rgba(76,221,104,0.8); }
+
+  /* Score badge on slot after check */
+  .slot-score-badge {
+    font-family: 'Orbitron', monospace; font-size: 0.68rem; font-weight: 700;
+    padding: 0.1rem 0.4rem; border-radius: 6px; margin-top: 0.3rem;
+    border: 1.5px solid currentColor;
+  }
+  .slot-score-badge.s100 { color: var(--correct); background: rgba(76,221,104,0.12); }
+  .slot-score-badge.s40  { color: var(--amber2);  background: rgba(247,201,72,0.12); }
+  .slot-score-badge.s0   { color: var(--wrong);   background: rgba(255,85,68,0.1); }
+
+  /* Correct-reveal annotation (shows what year was correct) */
+  .correct-year-hint {
+    font-size: 0.6rem; font-weight: 800; color: var(--correct);
+    background: rgba(76,221,104,0.12); border: 1.5px solid rgba(76,221,104,0.5);
+    border-radius: 6px; padding: 0.1rem 0.35rem; margin-top: 0.2rem;
+    white-space: nowrap;
+  }
+
+  /* ── RESULT BAR ── */
+  .result-bar {
+    flex-shrink: 0;
+    background: rgba(22,12,2,0.97);
+    border-top: 2px solid rgba(200,155,55,0.3);
+    padding: 0.5rem 0.85rem;
+    display: none; align-items: center; gap: 0.75rem; flex-wrap: wrap;
+  }
+  .result-bar.visible {
+    display: flex;
+    animation: slideUp 0.35s cubic-bezier(.34,1.56,.64,1) both;
+  }
+  @keyframes slideUp { from{ transform:translateY(30px); opacity:0 } to{ transform:translateY(0); opacity:1 } }
+  .rr-icon { font-size: 1.9rem; animation: rrBounce 0.5s cubic-bezier(.34,1.56,.64,1) both; }
+  @keyframes rrBounce { from{ transform:scale(0) } to{ transform:scale(1) } }
+  .rr-text { font-family: 'Fredoka One', cursive; font-size: 1rem; flex: 1; }
+  .rr-pts  { font-family: 'Orbitron', monospace; font-size: 1rem; font-weight: 700; color: var(--amber2); }
+
+  /* ── CARDS TRAY ── */
+  .cards-tray-section {
+    flex: 1; min-height: 0;
+    background: rgba(18,10,2,0.97);
+    border-top: 2px solid rgba(200,155,55,0.2);
+    padding: 0.5rem 0.75rem 0.4rem;
+    overflow: hidden; display: flex; flex-direction: column;
+  }
+  .tray-label { font-family: 'Fredoka One', cursive; font-size: 0.8rem; color: var(--muted); margin-bottom: 0.4rem; flex-shrink: 0; }
+  .cards-tray {
+    display: flex; gap: 0.55rem;
+    overflow-x: auto; padding-bottom: 4px; flex: 1; align-items: flex-start;
+    scrollbar-width: thin; scrollbar-color: rgba(200,155,55,0.4) transparent;
+  }
+  .cards-tray::-webkit-scrollbar { height: 4px; }
+  .cards-tray::-webkit-scrollbar-thumb { background: rgba(200,155,55,0.4); border-radius: 2px; }
+
+  .event-card {
+    flex-shrink: 0;
+    width: clamp(100px, 16vw, 130px);
+    background: var(--brown);
+    border: 2px solid rgba(200,155,55,0.45);
+    border-radius: 12px; overflow: hidden;
+    cursor: grab; touch-action: none;
+    transition: opacity 0.2s, transform 0.15s cubic-bezier(.34,1.56,.64,1), border-color 0.2s;
+    animation: cardBounceIn 0.4s cubic-bezier(.34,1.56,.64,1) both;
+  }
+  @keyframes cardBounceIn { from{ opacity:0; transform:translateY(24px) scale(0.8) } to{ opacity:1; transform:translateY(0) scale(1) } }
+  .event-card:nth-child(1){ animation-delay:.04s }
+  .event-card:nth-child(2){ animation-delay:.09s }
+  .event-card:nth-child(3){ animation-delay:.14s }
+  .event-card:nth-child(4){ animation-delay:.19s }
+  .event-card:nth-child(5){ animation-delay:.24s }
+  .event-card:hover:not(.placed):not(.dragging) { transform: translateY(-4px); border-color: var(--amber); }
+  .event-card.placed   { opacity: 0.4; cursor: default; }
+  .event-card.dragging { opacity: 0.25; }
 
   .card-img-wrap {
-    width: 100%; height: 78px; overflow: hidden;
-    background: rgba(139,111,255,0.12);
+    width: 100%; height: 72px; overflow: hidden;
+    background: rgba(200,155,55,0.1);
     display: flex; align-items: center; justify-content: center;
     position: relative; font-size: 2rem;
-    border-bottom: 1.5px solid rgba(160,140,255,0.2);
   }
   .card-wiki-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: none; }
   .img-skeleton {
     position: absolute; inset: 0;
-    background: linear-gradient(90deg, rgba(139,111,255,0.1) 25%, rgba(139,111,255,0.2) 50%, rgba(139,111,255,0.1) 75%);
+    background: linear-gradient(90deg, rgba(200,155,55,0.08) 25%, rgba(200,155,55,0.18) 50%, rgba(200,155,55,0.08) 75%);
     background-size: 200% 100%; animation: shimmer 1.5s infinite;
   }
   @keyframes shimmer { 0%{ background-position:200% 0 } 100%{ background-position:-200% 0 } }
   .placed-badge {
-    position: absolute; inset: 0; background: rgba(10,10,40,0.7);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.5rem; display: none;
+    position: absolute; inset: 0; background: rgba(10,6,0,0.7);
+    display: none; align-items: center; justify-content: center; font-size: 1.6rem;
   }
   .event-card.placed .placed-badge { display: flex; }
-
   .card-body { padding: 0.4rem 0.45rem; }
-  .card-title { font-family: 'Fredoka One', cursive; font-size: 0.73rem; color: var(--text); line-height: 1.2; margin-bottom: 0.2rem; }
-  .card-desc  { font-size: 0.62rem; font-weight: 700; color: var(--text-muted); line-height: 1.3;
-    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-
-  /* DRAG GHOST */
-  .drag-ghost {
-    position: fixed; pointer-events: none; z-index: 500;
-    opacity: 0.92; transform: rotate(4deg) scale(1.06); cursor: grabbing;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.7), 0 0 20px rgba(139,111,255,0.4);
+  .card-title { font-family: 'Fredoka One', cursive; font-size: 0.72rem; color: var(--text); line-height: 1.2; margin-bottom: 0.18rem; }
+  .card-desc  {
+    font-size: 0.6rem; font-weight: 700; color: var(--muted); line-height: 1.3;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
   }
 
-  /* ACTION ROW */
+  /* ── DRAG GHOST ── */
+  .drag-ghost {
+    position: fixed; pointer-events: none; z-index: 500;
+    opacity: 0.93; transform: rotate(5deg) scale(1.08); cursor: grabbing;
+    box-shadow: 0 10px 35px rgba(0,0,0,0.75), 0 0 22px rgba(232,160,32,0.4);
+    border-radius: 12px; overflow: hidden;
+  }
+
+  /* ── ACTION ROW ── */
   .action-row {
     flex-shrink: 0; display: flex; gap: 0.65rem; justify-content: center;
     padding: 0.5rem 0.75rem;
-    background: rgba(12,12,40,0.97); border-top: 1px solid rgba(139,111,255,0.15);
+    background: rgba(18,10,2,0.97);
+    border-top: 1px solid rgba(200,155,55,0.15);
   }
   .check-btn, .continue-btn, .play-again-btn {
     font-family: 'Fredoka One', cursive; font-size: 1.1rem;
@@ -314,30 +367,39 @@
     border: 2.5px solid currentColor;
     transition: transform 0.18s cubic-bezier(.34,1.56,.64,1), box-shadow 0.15s;
   }
-  .check-btn { background: rgba(139,111,255,0.2); color: #c8b0ff; border-color: var(--purple); }
-  .check-btn:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(139,111,255,0.4); }
-  .check-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-  .continue-btn { background: rgba(92,255,136,0.18); color: #90ffb8; border-color: var(--correct); display: none; }
-  .continue-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(92,255,136,0.3); }
-  .play-again-btn { background: rgba(247,201,72,0.18); color: #ffe890; border-color: var(--gold); }
+  .check-btn { background: rgba(232,160,32,0.18); color: var(--parch); border-color: var(--amber); }
+  .check-btn:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(232,160,32,0.4); }
+  .check-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .continue-btn { background: rgba(76,221,104,0.18); color: #90ffb8; border-color: var(--correct); display: none; }
+  .continue-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(76,221,104,0.3); }
+  .play-again-btn { background: rgba(247,201,72,0.18); color: #ffe890; border-color: var(--amber2); }
   .play-again-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(247,201,72,0.3); }
 
-  /* ===== RESULTS SCREEN ===== */
+  /* ══════════════════════════════════════
+     RESULTS SCREEN
+  ══════════════════════════════════════ */
   #resultsScreen {
     top: 48px; align-items: center; justify-content: center;
     padding: 1.5rem 1.25rem 2.5rem; overflow-y: auto; text-align: center;
-    background: radial-gradient(ellipse at 50% 0%, #1c1060 0%, #08081e 70%);
+    background: radial-gradient(ellipse at 50% 10%, #3a2008 0%, #160c02 65%);
   }
-  .res-icon  { font-size: 5rem; display: block; margin-bottom: 0.3rem; }
+  .res-icon  { font-size: 5rem; display: block; margin-bottom: 0.3rem;
+               animation: resIconPop 0.5s cubic-bezier(.34,1.56,.64,1) both; }
+  @keyframes resIconPop { from{ transform:scale(0) rotate(-20deg) } to{ transform:scale(1) rotate(0deg) } }
   .res-grade { font-family: 'Fredoka One', cursive; font-size: 5rem; line-height: 1; margin-bottom: 0.3rem; text-shadow: 0 0 25px currentColor; }
-  .res-score { font-family: 'Orbitron', monospace; font-size: 1.5rem; font-weight: 700; color: var(--gold); text-shadow: 0 0 12px rgba(247,201,72,0.6); margin-bottom: 1.5rem; }
+  .res-label { font-family: 'Fredoka One', cursive; font-size: 1.4rem; color: var(--muted); margin-bottom: 0.3rem; }
+  .res-score { font-family: 'Orbitron', monospace; font-size: 1.5rem; font-weight: 700; color: var(--amber2); text-shadow: 0 0 12px rgba(247,201,72,0.6); margin-bottom: 1.5rem; }
   .res-breakdown { width: 100%; max-width: 400px; margin: 0 auto 2rem; display: flex; flex-direction: column; gap: 0.55rem; }
-  .res-row { display: flex; align-items: center; justify-content: space-between; background: var(--card-bg); border: 1.5px solid var(--card-border); border-radius: 12px; padding: 0.55rem 0.85rem; }
+  .res-row {
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(255,255,255,0.05);
+    border: 1.5px solid rgba(200,155,55,0.3);
+    border-radius: 12px; padding: 0.55rem 0.85rem;
+    animation: fadeSlide 0.4s ease both;
+  }
+  @keyframes fadeSlide { from{ opacity:0; transform:translateX(-16px) } to{ opacity:1; transform:translateX(0) } }
   .res-row-label { font-weight: 800; font-size: 0.85rem; }
-  .res-row-pts { font-family: 'Orbitron', monospace; font-size: 1rem; font-weight: 700; color: var(--gold); }
-
-  @keyframes fadeIn { from{ opacity:0 } to{ opacity:1 } }
-  @keyframes cardPop { from{ opacity:0; transform:scale(0.8) translateY(15px) } to{ opacity:1; transform:scale(1) translateY(0) } }
+  .res-row-pts { font-family: 'Orbitron', monospace; font-size: 1rem; font-weight: 700; color: var(--amber2); }
 </style>
 </head>
 <body>
@@ -349,11 +411,11 @@
 
 <!-- MODE SCREEN -->
 <div class="screen active" id="modeScreen">
-  <div class="mode-stars" id="modeStars"></div>
+  <div class="float-layer" id="floatLayer"></div>
   <div class="mode-content">
-    <span class="mode-icon">⏳</span>
+    <span class="mode-icon">🗺️</span>
     <h1 class="mode-title">Timeline Jumper</h1>
-    <p class="mode-sub">🚀 Travel through time — drag each event to its year!</p>
+    <p class="mode-sub">🔑 Match each event to its year in history!</p>
     <div class="mode-grid">
       <button class="mode-btn mode-us" onclick="selectMode('us_history')">
         <span class="mode-btn-icon">🇺🇸</span>
@@ -377,6 +439,12 @@
         </div>
       </button>
     </div>
+    <div class="how-box">
+      <h3>🎮 How to Play</h3>
+      <p>5 events appear in the tray below. A timeline shows 5 years across the top.
+         <strong>Drag each event card to the year you think it happened!</strong>
+         Score 100 pts for exact match, 40 pts for being one slot off.</p>
+    </div>
   </div>
 </div>
 
@@ -385,82 +453,83 @@
   <div class="game-header">
     <div class="game-round-title" id="gameRoundTitle">Round 1</div>
     <div class="game-score-badge">⭐ <span id="scoreDisplay">0</span></div>
-    <div class="game-tip" id="gameTip">Pan the timeline ← → · Drag cards onto it · Click a placed card to remove it</div>
+    <div class="game-progress" id="gameProgress">Place 5 events on the timeline above</div>
   </div>
+
   <div class="tl-section">
-    <div id="tlViewport">
-      <div id="tlInner"></div>
-      <div id="yearTooltip" class="hidden">1492</div>
-      <div class="tl-pan-hint left" id="hintLeft">◀</div>
-      <div class="tl-pan-hint right" id="hintRight">▶</div>
-    </div>
+    <div class="tl-rope" id="tlRope"></div>
+    <div class="tl-slots" id="tlSlots"></div>
   </div>
-  <div class="round-result-bar" id="roundResultBar">
+
+  <div class="result-bar" id="resultBar">
     <span class="rr-icon" id="rrIcon">🎉</span>
     <span class="rr-text" id="rrText">Great job!</span>
     <span class="rr-pts"  id="rrPts">+400</span>
   </div>
+
   <div class="cards-tray-section">
-    <div class="tray-label" id="trayLabel">📦 Drag an event card onto the timeline</div>
+    <div class="tray-label" id="trayLabel">📜 Drag a card up to its matching year</div>
     <div class="cards-tray" id="cardsTray"></div>
   </div>
+
   <div class="action-row">
-    <button class="check-btn" id="checkBtn" disabled onclick="checkAnswers()">✓ Check Answers</button>
+    <button class="check-btn" id="checkBtn" disabled onclick="checkAnswers()">🔍 Check Answers</button>
     <button class="continue-btn" id="continueBtn" onclick="continueGame()">▶ Next Round</button>
   </div>
 </div>
 
 <!-- RESULTS SCREEN -->
 <div class="screen" id="resultsScreen">
-  <span class="res-icon" id="resIcon">🏆</span>
-  <div class="res-grade" id="resGrade" style="color:var(--gold)">A</div>
-  <div class="res-score" id="resScore">1500 / 1500</div>
+  <span class="res-icon"  id="resIcon">🏆</span>
+  <div class="res-grade"  id="resGrade" style="color:var(--amber2)">A</div>
+  <div class="res-label"  id="resLabel">Excellent!</div>
+  <div class="res-score"  id="resScore">1500 / 1500</div>
   <div class="res-breakdown" id="resBreakdown"></div>
-  <button class="play-again-btn" onclick="showScreen('modeScreen')">🎮 Play Again</button>
+  <button class="play-again-btn" onclick="showScreen('modeScreen')">🗺️ Play Again</button>
 </div>
 
 <script>
 /* ============================================================
-   GAME DATA  (5 rounds per mode, 5 events per round)
+   GAME DATA
 ============================================================ */
 const MODES = {
   us_history: {
     name:'US History', emoji:'🇺🇸',
     rounds:[
-      { title:'Colonial America', events:[
-        { id:'jamestown',    year:1607, title:'Jamestown Founded',          desc:'English settlers establish the first permanent English settlement in America.',       wiki:'Jamestown, Virginia',                                  emoji:'⛵' },
-        { id:'mayflower',    year:1620, title:'Mayflower Compact',          desc:'Pilgrims arrive and sign a self-governing agreement in Plymouth.',                     wiki:'Mayflower Compact',                                    emoji:'📜' },
-        { id:'declaration',  year:1776, title:'Declaration of Independence',desc:'Thirteen colonies declare independence from Britain.',                                 wiki:'United States Declaration of Independence',            emoji:'🦅' },
-        { id:'constitution', year:1788, title:'US Constitution Ratified',   desc:'The states ratify the Constitution, creating the framework of US government.',         wiki:'United States Constitution',                           emoji:'📋' },
-        { id:'louisiana',    year:1803, title:'Louisiana Purchase',         desc:"Jefferson doubles the nation's size by buying 828,000 sq miles from France.",          wiki:'Louisiana Purchase',                                   emoji:'🗺️' }
+      { title:'Colonial & Founding', events:[
+        { id:'jamestown',    year:1607, title:'Jamestown Founded',           desc:'English settlers establish the first permanent English settlement in America.',      wiki:'Jamestown, Virginia',                               emoji:'⛵' },
+        { id:'mayflower',    year:1620, title:'Mayflower Compact',           desc:'Pilgrims arrive and sign a self-governing agreement in Plymouth.',                    wiki:'Mayflower Compact',                                 emoji:'📜' },
+        { id:'declaration',  year:1776, title:'Declaration of Independence', desc:'Thirteen colonies declare independence from Britain.',                                wiki:'United States Declaration of Independence',         emoji:'🦅' },
+        { id:'constitution', year:1788, title:'US Constitution Ratified',    desc:'The states ratify the Constitution, the framework of US government.',                 wiki:'United States Constitution',                        emoji:'📋' },
+        { id:'louisiana',    year:1803, title:'Louisiana Purchase',          desc:"Jefferson doubles the nation's size by buying 828,000 sq miles from France.",         wiki:'Louisiana Purchase',                                emoji:'🗺️' }
       ]},
       { title:'Civil War Era', events:[
-        { id:'trail',        year:1838, title:'Trail of Tears',             desc:'Forced relocation of Native Americans under Andrew Jackson.',                          wiki:'Trail of Tears',                                       emoji:'😢' },
-        { id:'civil_war',    year:1861, title:'Civil War Begins',           desc:'Confederate forces attack Fort Sumter, starting the Civil War.',                       wiki:'American Civil War',                                   emoji:'⚔️' },
-        { id:'emancipation', year:1863, title:'Emancipation Proclamation',  desc:'Lincoln declares enslaved people in Confederate states to be free.',                   wiki:'Emancipation Proclamation',                            emoji:'🕊️' },
-        { id:'railroad',     year:1869, title:'Transcontinental Railroad',  desc:'A railroad connecting East and West coasts is completed.',                             wiki:'First Transcontinental Railroad',                      emoji:'🚂' },
-        { id:'liberty',      year:1886, title:'Statue of Liberty Dedicated',desc:"France gifts the Statue of Liberty as a symbol of freedom.",                           wiki:'Statue of Liberty',                                    emoji:'🗽' }
+        { id:'trail',        year:1838, title:'Trail of Tears',              desc:'Forced relocation of Native Americans under Andrew Jackson.',                         wiki:'Trail of Tears',                                    emoji:'😢' },
+        { id:'civil_war',    year:1861, title:'Civil War Begins',            desc:'Confederate forces attack Fort Sumter, starting the Civil War.',                      wiki:'American Civil War',                                emoji:'⚔️' },
+        { id:'emancipation', year:1863, title:'Emancipation Proclamation',   desc:'Lincoln declares enslaved people in Confederate states to be free.',                  wiki:'Emancipation Proclamation',                         emoji:'🕊️' },
+        { id:'railroad',     year:1869, title:'Transcontinental Railroad',   desc:'A railroad connecting East and West coasts is completed.',                            wiki:'First Transcontinental Railroad',                   emoji:'🚂' },
+        { id:'liberty',      year:1886, title:'Statue of Liberty Dedicated', desc:"France gifts the Statue of Liberty as a symbol of freedom.",                          wiki:'Statue of Liberty',                                 emoji:'🗽' }
       ]},
       { title:'Modern America', events:[
-        { id:'wright',       year:1903, title:'Wright Brothers First Flight',desc:'Orville Wright makes the first powered airplane flight at Kitty Hawk, NC.',           wiki:'Wright Flyer',                                         emoji:'✈️' },
-        { id:'suffrage',     year:1920, title:"Women's Right to Vote",      desc:'The 19th Amendment grants women the right to vote.',                                   wiki:'Nineteenth Amendment to the United States Constitution',emoji:'🗳️' },
-        { id:'wwii',         year:1945, title:'World War II Ends',          desc:'Japan surrenders after atomic bombs, ending the deadliest war in history.',            wiki:'Victory over Japan Day',                               emoji:'✌️' },
-        { id:'civil_rights', year:1964, title:'Civil Rights Act Signed',    desc:'LBJ signs the Civil Rights Act, outlawing discrimination by race.',                    wiki:'Civil Rights Act of 1964',                             emoji:'✊' },
-        { id:'moon',         year:1969, title:'Moon Landing',               desc:"Neil Armstrong becomes the first human to walk on the Moon.",                          wiki:'Apollo 11',                                            emoji:'🌙' }
+        { id:'wright',       year:1903, title:'Wright Brothers First Flight', desc:'Orville Wright makes the first powered airplane flight at Kitty Hawk, NC.',          wiki:'Wright Flyer',                                      emoji:'✈️' },
+        { id:'suffrage',     year:1920, title:"Women's Right to Vote",       desc:'The 19th Amendment grants women the right to vote.',                                  wiki:'Nineteenth Amendment to the United States Constitution',emoji:'🗳️' },
+        { id:'wwii',         year:1945, title:'World War II Ends',           desc:'Japan surrenders after atomic bombs, ending the deadliest war in history.',           wiki:'Victory over Japan Day',                            emoji:'✌️' },
+        { id:'civil_rights', year:1964, title:'Civil Rights Act Signed',     desc:'LBJ signs the Civil Rights Act, outlawing discrimination by race.',                   wiki:'Civil Rights Act of 1964',                          emoji:'✊' },
+        { id:'moon',         year:1969, title:'Moon Landing',                desc:"Neil Armstrong becomes the first human to walk on the Moon.",                         wiki:'Apollo 11',                                         emoji:'🌙' }
       ]},
       { title:'Progressive Era', events:[
-        { id:'seneca_falls', year:1848, title:"Seneca Falls Convention",    desc:'First women\'s rights convention held in Seneca Falls, NY.',                           wiki:'Seneca Falls Convention',                              emoji:'👩' },
-        { id:'homestead',    year:1862, title:'Homestead Act',             desc:'Lincoln signs the Homestead Act, offering 160 acres to settlers.',                     wiki:'Homestead Act',                                        emoji:'🏡' },
-        { id:'wounded_knee', year:1890, title:'Wounded Knee Massacre',      desc:'US Army kills nearly 300 Lakota Sioux in South Dakota.',                               wiki:'Wounded Knee Massacre',                                emoji:'💔' },
-        { id:'fed_reserve',  year:1913, title:'Federal Reserve Created',    desc:'Congress creates the Federal Reserve to stabilize US banking.',                        wiki:'Federal Reserve',                                      emoji:'🏦' },
-        { id:'new_deal',     year:1933, title:'New Deal Begins',            desc:'FDR launches programs to rescue the nation from the Great Depression.',                wiki:'New Deal',                                             emoji:'💼' }
+        { id:'seneca_falls', year:1848, title:"Seneca Falls Convention",     desc:"First women's rights convention held in Seneca Falls, NY.",                           wiki:'Seneca Falls Convention',                           emoji:'👩' },
+        { id:'homestead',    year:1862, title:'Homestead Act',              desc:'Lincoln signs the Homestead Act, offering 160 acres to settlers.',                    wiki:'Homestead Act',                                     emoji:'🏡' },
+        { id:'wounded_knee', year:1890, title:'Wounded Knee Massacre',       desc:'US Army kills nearly 300 Lakota Sioux in South Dakota.',                              wiki:'Wounded Knee Massacre',                             emoji:'💔' },
+        { id:'fed_reserve',  year:1913, title:'Federal Reserve Created',     desc:'Congress creates the Federal Reserve to stabilize US banking.',                       wiki:'Federal Reserve',                                   emoji:'🏦' },
+        { id:'new_deal',     year:1933, title:'New Deal Begins',             desc:'FDR launches programs to rescue the nation from the Great Depression.',               wiki:'New Deal',                                          emoji:'💼' }
       ]},
       { title:'Space Age & Beyond', events:[
-        { id:'sputnik',      year:1957, title:'Sputnik Launched',           desc:'Soviet Union launches the first artificial satellite, starting the Space Race.',       wiki:'Sputnik 1',                                            emoji:'🛸' },
-        { id:'jfk',          year:1963, title:'JFK Assassinated',           desc:'President Kennedy is shot in Dallas, Texas.',                                           wiki:'Assassination of John F. Kennedy',                     emoji:'🕯️' },
-        { id:'cold_war_end', year:1991, title:'Cold War Ends',              desc:'Soviet Union dissolves, ending decades of Cold War tension.',                          wiki:'Dissolution of the Soviet Union',                      emoji:'🏳️' },
-        { id:'nine_eleven',  year:2001, title:'9/11 Attacks',               desc:'Terrorists attack the World Trade Center and Pentagon.',                                wiki:'September 11 attacks',                                 emoji:'🗽' },
-        { id:'obama',        year:2008, title:'First Black US President',   desc:'Barack Obama is elected the first African American President.',                        wiki:'Barack Obama',                                         emoji:'🇺🇸' }
+        { id:'sputnik',      year:1957, title:'Sputnik Launched',            desc:'Soviet Union launches the first artificial satellite, starting the Space Race.',      wiki:'Sputnik 1',                                         emoji:'🛸' },
+        { id:'jfk',          year:1963, title:'JFK Assassinated',            desc:'President Kennedy is shot in Dallas, Texas.',                                          wiki:'Assassination of John F. Kennedy',                  emoji:'🕯️' },
+        { id:'cold_war_end', year:1991, title:'Cold War Ends',               desc:'Soviet Union dissolves, ending decades of Cold War tension.',                         wiki:'Dissolution of the Soviet Union',                   emoji:'🏳️' },
+        { id:'nine_eleven',  year:2001, title:'9/11 Attacks',                desc:'Terrorists attack the World Trade Center and Pentagon.',                               wiki:'September 11 attacks',                              emoji:'🗽' },
+        { id:'obama',        year:2008, title:'First Black US President',    desc:'Barack Obama is elected the first African American President.',                       wiki:'Barack Obama',                                      emoji:'🇺🇸' }
       ]}
     ]
   },
@@ -469,39 +538,39 @@ const MODES = {
     name:'World History', emoji:'🌍',
     rounds:[
       { title:'Medieval World', events:[
-        { id:'crusades',     year:1096, title:'First Crusade Begins',       desc:'Pope Urban II calls on knights to recapture Jerusalem.',                               wiki:'First Crusade',                                        emoji:'⚔️' },
-        { id:'magna_carta',  year:1215, title:'Magna Carta Signed',         desc:'English barons force King John to limit royal power.',                                 wiki:'Magna Carta',                                          emoji:'📜' },
-        { id:'black_death',  year:1347, title:'Black Death Strikes Europe', desc:'The bubonic plague arrives, killing one-third of Europe\'s population.',               wiki:'Black Death',                                          emoji:'💀' },
-        { id:'gutenberg',    year:1455, title:'Gutenberg Bible Printed',    desc:'Gutenberg uses his press to produce the first mass-produced book.',                    wiki:'Gutenberg Bible',                                      emoji:'📖' },
-        { id:'columbus',     year:1492, title:'Columbus Reaches the Americas',desc:'Columbus lands in the Bahamas, beginning European contact with the Americas.',       wiki:'Christopher Columbus',                                 emoji:'⛵' }
+        { id:'crusades',     year:1096, title:'First Crusade Begins',        desc:'Pope Urban II calls on knights to recapture Jerusalem.',                              wiki:'First Crusade',                                     emoji:'⚔️' },
+        { id:'magna_carta',  year:1215, title:'Magna Carta Signed',          desc:'English barons force King John to limit royal power.',                                wiki:'Magna Carta',                                       emoji:'📜' },
+        { id:'black_death',  year:1347, title:'Black Death Strikes Europe',  desc:"The bubonic plague arrives, killing one-third of Europe's population.",              wiki:'Black Death',                                       emoji:'💀' },
+        { id:'gutenberg',    year:1455, title:'Gutenberg Bible Printed',     desc:'Gutenberg uses his press to produce the first mass-produced book.',                   wiki:'Gutenberg Bible',                                   emoji:'📖' },
+        { id:'columbus',     year:1492, title:'Columbus Reaches Americas',   desc:'Columbus lands in the Bahamas, beginning European contact with the Americas.',        wiki:'Christopher Columbus',                              emoji:'⛵' }
       ]},
       { title:'Age of Revolutions', events:[
-        { id:'galileo',      year:1609, title:"Galileo's Telescope",        desc:'Galileo discovers the moons of Jupiter, supporting heliocentrism.',                   wiki:'Galileo Galilei',                                      emoji:'🔭' },
-        { id:'newton_world', year:1687, title:"Newton's Principia",         desc:'Isaac Newton publishes laws of motion and gravity.',                                   wiki:'Philosophiæ Naturalis Principia Mathematica',          emoji:'🍎' },
-        { id:'french_rev',   year:1789, title:'French Revolution Begins',   desc:'The French people storm the Bastille, demanding liberty.',                             wiki:'French Revolution',                                    emoji:'🗼' },
-        { id:'napoleon',     year:1804, title:'Napoleon Crowned Emperor',   desc:'Napoleon Bonaparte crowns himself Emperor of France.',                                 wiki:'Napoleon',                                             emoji:'👑' },
-        { id:'steam',        year:1825, title:'First Steam Railway Opens',  desc:"Stephenson's locomotive pulls the first public steam railway in England.",             wiki:'Locomotion No. 1',                                     emoji:'🚂' }
+        { id:'galileo',      year:1609, title:"Galileo's Telescope",         desc:'Galileo discovers the moons of Jupiter, supporting heliocentrism.',                  wiki:'Galileo Galilei',                                   emoji:'🔭' },
+        { id:'newton_world', year:1687, title:"Newton's Principia",          desc:'Isaac Newton publishes laws of motion and gravity.',                                  wiki:'Philosophiæ Naturalis Principia Mathematica',       emoji:'🍎' },
+        { id:'french_rev',   year:1789, title:'French Revolution Begins',    desc:'The French people storm the Bastille, demanding liberty.',                            wiki:'French Revolution',                                 emoji:'🗼' },
+        { id:'napoleon',     year:1804, title:'Napoleon Crowned Emperor',    desc:'Napoleon Bonaparte crowns himself Emperor of France.',                                wiki:'Napoleon',                                          emoji:'👑' },
+        { id:'steam',        year:1825, title:'First Steam Railway Opens',   desc:"Stephenson's locomotive pulls the first public steam railway in England.",            wiki:'Locomotion No. 1',                                  emoji:'🚂' }
       ]},
       { title:'World at War', events:[
-        { id:'wwi',          year:1914, title:'World War I Begins',         desc:'Europe erupts in war after Archduke Franz Ferdinand is assassinated.',                 wiki:'World War I',                                          emoji:'💣' },
-        { id:'russian_rev',  year:1917, title:'Russian Revolution',         desc:'Tsar Nicholas II is overthrown; Bolsheviks seize power.',                              wiki:'Russian Revolution',                                   emoji:'🔴' },
-        { id:'wwii_world',   year:1945, title:'World War II Ends',          desc:'Nazi Germany surrenders; Japan surrenders ending the deadliest war.',                  wiki:'World War II',                                         emoji:'🕊️' },
-        { id:'berlin_wall',  year:1989, title:'Berlin Wall Falls',          desc:'The wall dividing East and West Germany is torn down.',                                wiki:'Fall of the Berlin Wall',                              emoji:'🧱' },
-        { id:'nine_eleven_w',year:2001, title:'September 11 Attacks',       desc:'Terrorists attack the World Trade Center, killing nearly 3,000 people.',              wiki:'September 11 attacks',                                 emoji:'🌆' }
+        { id:'wwi',          year:1914, title:'World War I Begins',          desc:'Europe erupts in war after Archduke Franz Ferdinand is assassinated.',                wiki:'World War I',                                       emoji:'💣' },
+        { id:'russian_rev',  year:1917, title:'Russian Revolution',          desc:'Tsar Nicholas II is overthrown; Bolsheviks seize power.',                             wiki:'Russian Revolution',                                emoji:'🔴' },
+        { id:'wwii_world',   year:1945, title:'World War II Ends',           desc:'Nazi Germany surrenders; Japan surrenders ending the deadliest war.',                 wiki:'World War II',                                      emoji:'🕊️' },
+        { id:'berlin_wall',  year:1989, title:'Berlin Wall Falls',           desc:'The wall dividing East and West Germany is torn down.',                               wiki:'Fall of the Berlin Wall',                           emoji:'🧱' },
+        { id:'nine_eleven_w',year:2001, title:'September 11 Attacks',        desc:'Terrorists attack the World Trade Center, killing nearly 3,000 people.',             wiki:'September 11 attacks',                              emoji:'🌆' }
       ]},
       { title:'Age of Empire', events:[
-        { id:'am_rev',       year:1776, title:'American Revolution',        desc:'Thirteen colonies declare independence, inspiring revolutions worldwide.',             wiki:'American Revolution',                                  emoji:'🦅' },
-        { id:'rev_1848',     year:1848, title:'Revolutions of 1848',        desc:'A wave of revolutions sweeps across Europe demanding democracy.',                      wiki:'Revolutions of 1848',                                  emoji:'✊' },
-        { id:'suez',         year:1869, title:'Suez Canal Opens',           desc:'The canal connecting the Mediterranean and Red Sea opens in Egypt.',                   wiki:'Suez Canal',                                           emoji:'🚢' },
-        { id:'boxer',        year:1900, title:'Boxer Rebellion',            desc:'Chinese Boxers rebel against foreign influence and missionaries.',                     wiki:'Boxer Rebellion',                                      emoji:'⚔️' },
-        { id:'titanic',      year:1912, title:'Titanic Sinks',              desc:'The RMS Titanic sinks on its maiden voyage, killing over 1,500 people.',              wiki:'Sinking of the RMS Titanic',                           emoji:'🚢' }
+        { id:'am_rev',       year:1776, title:'American Revolution',         desc:'Thirteen colonies declare independence, inspiring revolutions worldwide.',            wiki:'American Revolution',                               emoji:'🦅' },
+        { id:'rev_1848',     year:1848, title:'Revolutions of 1848',         desc:'A wave of revolutions sweeps across Europe demanding democracy.',                     wiki:'Revolutions of 1848',                               emoji:'✊' },
+        { id:'suez',         year:1869, title:'Suez Canal Opens',            desc:'The canal connecting the Mediterranean and Red Sea opens in Egypt.',                  wiki:'Suez Canal',                                        emoji:'🚢' },
+        { id:'boxer',        year:1900, title:'Boxer Rebellion',             desc:'Chinese Boxers rebel against foreign influence and missionaries.',                    wiki:'Boxer Rebellion',                                   emoji:'⚔️' },
+        { id:'titanic',      year:1912, title:'Titanic Sinks',               desc:'The RMS Titanic sinks on its maiden voyage, killing over 1,500 people.',             wiki:'Sinking of the RMS Titanic',                        emoji:'🚢' }
       ]},
       { title:'Post-War World', events:[
-        { id:'un_founded',   year:1945, title:'United Nations Founded',     desc:'The UN is established after WWII to promote international peace.',                    wiki:'United Nations',                                       emoji:'🌐' },
-        { id:'israel',       year:1948, title:'Israel Founded',             desc:'The modern state of Israel is established.',                                           wiki:'Israeli Declaration of Independence',                  emoji:'🌟' },
-        { id:'moon_world',   year:1969, title:'Humans Land on the Moon',    desc:'Apollo 11 lands — Neil Armstrong takes humanity\'s first steps on another world.',    wiki:'Apollo 11',                                            emoji:'🌙' },
-        { id:'ussr_fall',    year:1991, title:'Soviet Union Collapses',     desc:'The USSR dissolves into 15 independent nations, ending the Cold War.',                wiki:'Dissolution of the Soviet Union',                      emoji:'🏳️' },
-        { id:'covid',        year:2020, title:'COVID-19 Pandemic',          desc:'A global pandemic caused by SARS-CoV-2 affects billions worldwide.',                  wiki:'COVID-19 pandemic',                                    emoji:'🦠' }
+        { id:'un_founded',   year:1945, title:'United Nations Founded',      desc:'The UN is established after WWII to promote international peace.',                   wiki:'United Nations',                                    emoji:'🌐' },
+        { id:'israel',       year:1948, title:'Israel Founded',              desc:'The modern state of Israel is established.',                                          wiki:'Israeli Declaration of Independence',               emoji:'🌟' },
+        { id:'moon_world',   year:1969, title:'Humans Land on the Moon',     desc:"Apollo 11 lands — Neil Armstrong takes humanity's first steps on another world.",    wiki:'Apollo 11',                                         emoji:'🌙' },
+        { id:'ussr_fall',    year:1991, title:'Soviet Union Collapses',      desc:'The USSR dissolves into 15 independent nations, ending the Cold War.',               wiki:'Dissolution of the Soviet Union',                   emoji:'🏳️' },
+        { id:'covid',        year:2020, title:'COVID-19 Pandemic',           desc:'A global pandemic caused by SARS-CoV-2 affects billions worldwide.',                 wiki:'COVID-19 pandemic',                                 emoji:'🦠' }
       ]}
     ]
   },
@@ -510,39 +579,39 @@ const MODES = {
     name:'Science Discoveries', emoji:'🔬',
     rounds:[
       { title:'Scientific Revolution', events:[
-        { id:'copernicus',   year:1543, title:'Heliocentric Model',         desc:'Copernicus proposes that Earth orbits the Sun, not the other way around.',            wiki:'Nicolaus Copernicus',                                  emoji:'☀️' },
-        { id:'newton_sci',   year:1687, title:"Newton's Laws of Motion",   desc:'Newton publishes three laws explaining how all objects move and interact.',           wiki:"Newton's laws of motion",                              emoji:'🍎' },
-        { id:'linnaeus',     year:1735, title:'Classification of Life',     desc:'Linnaeus creates the scientific system for naming all living things.',                 wiki:'Carl Linnaeus',                                        emoji:'🌿' },
-        { id:'franklin',     year:1752, title:"Franklin's Kite Experiment",desc:'Franklin proves lightning is electrical and invents the lightning rod.',              wiki:'Kite experiment',                                      emoji:'⚡' },
-        { id:'vaccine',      year:1796, title:'First Vaccine Developed',    desc:'Jenner creates the first vaccine, protecting against deadly smallpox.',               wiki:'Smallpox vaccine',                                     emoji:'💉' }
+        { id:'copernicus',   year:1543, title:'Heliocentric Model',          desc:'Copernicus proposes that Earth orbits the Sun, not the other way around.',           wiki:'Nicolaus Copernicus',                               emoji:'☀️' },
+        { id:'newton_sci',   year:1687, title:"Newton's Laws of Motion",    desc:'Newton publishes three laws explaining how all objects move and interact.',          wiki:"Newton's laws of motion",                           emoji:'🍎' },
+        { id:'linnaeus',     year:1735, title:'Classification of Life',      desc:'Linnaeus creates the scientific system for naming all living things.',                wiki:'Carl Linnaeus',                                     emoji:'🌿' },
+        { id:'franklin',     year:1752, title:"Franklin's Kite Experiment", desc:'Franklin proves lightning is electrical and invents the lightning rod.',             wiki:'Kite experiment',                                   emoji:'⚡' },
+        { id:'vaccine',      year:1796, title:'First Vaccine Developed',     desc:'Jenner creates the first vaccine, protecting against deadly smallpox.',              wiki:'Smallpox vaccine',                                  emoji:'💉' }
       ]},
       { title:'Industrial Age of Discovery', events:[
-        { id:'photo',        year:1826, title:'First Photograph Taken',     desc:"Niépce creates the world's first surviving photograph.",                               wiki:'View from the Window at Le Gras',                      emoji:'📷' },
-        { id:'darwin',       year:1859, title:"Darwin's Origin of Species", desc:'Darwin publishes his theory of evolution by natural selection.',                      wiki:'On the Origin of Species',                             emoji:'🦎' },
-        { id:'mendel',       year:1866, title:"Mendel's Genetics Laws",    desc:'Mendel publishes inheritance experiments, founding modern genetics.',                  wiki:'Gregor Mendel',                                        emoji:'🫛' },
-        { id:'telephone',    year:1876, title:'Telephone Invented',         desc:'Alexander Graham Bell patents the first telephone.',                                   wiki:'Alexander Graham Bell',                                emoji:'📞' },
-        { id:'light_bulb',   year:1879, title:'Practical Light Bulb',       desc:"Edison invents a practical incandescent light bulb.",                                  wiki:'Incandescent light bulb',                              emoji:'💡' }
+        { id:'photo',        year:1826, title:'First Photograph Taken',      desc:"Niépce creates the world's first surviving photograph.",                              wiki:'View from the Window at Le Gras',                   emoji:'📷' },
+        { id:'darwin',       year:1859, title:"Darwin's Origin of Species",  desc:'Darwin publishes his theory of evolution by natural selection.',                     wiki:'On the Origin of Species',                          emoji:'🦎' },
+        { id:'mendel',       year:1866, title:"Mendel's Genetics Laws",     desc:'Mendel publishes inheritance experiments, founding modern genetics.',                 wiki:'Gregor Mendel',                                     emoji:'🫛' },
+        { id:'telephone',    year:1876, title:'Telephone Invented',          desc:'Alexander Graham Bell patents the first telephone.',                                  wiki:'Alexander Graham Bell',                             emoji:'📞' },
+        { id:'light_bulb',   year:1879, title:'Practical Light Bulb',        desc:"Edison invents a practical incandescent light bulb.",                                 wiki:'Incandescent light bulb',                           emoji:'💡' }
       ]},
       { title:'Modern Science', events:[
-        { id:'einstein',     year:1905, title:"Einstein's Special Relativity",desc:'Einstein publishes E=mc², changing our understanding of physics.',               wiki:'Albert Einstein',                                      emoji:'⚛️' },
-        { id:'penicillin',   year:1928, title:'Penicillin Discovered',      desc:"Fleming discovers penicillin, launching the age of antibiotics.",                    wiki:'Alexander Fleming',                                    emoji:'🔬' },
-        { id:'dna',          year:1953, title:'DNA Double Helix Discovered', desc:'Watson, Crick, Franklin & Wilkins discover the structure of DNA.',                   wiki:'DNA',                                                  emoji:'🧬' },
-        { id:'moon_sci',     year:1969, title:'Humans Land on the Moon',    desc:"Apollo 11 — Neil Armstrong and Buzz Aldrin become the first humans on the Moon.",    wiki:'Apollo 11',                                            emoji:'🌙' },
-        { id:'genome',       year:2003, title:'Human Genome Mapped',        desc:'The Human Genome Project completes mapping all human DNA.',                           wiki:'Human Genome Project',                                 emoji:'🧬' }
+        { id:'einstein',     year:1905, title:"Einstein's Special Relativity",desc:'Einstein publishes E=mc², changing our understanding of physics.',              wiki:'Albert Einstein',                                   emoji:'⚛️' },
+        { id:'penicillin',   year:1928, title:'Penicillin Discovered',       desc:"Fleming discovers penicillin, launching the age of antibiotics.",                   wiki:'Alexander Fleming',                                 emoji:'🔬' },
+        { id:'dna',          year:1953, title:'DNA Double Helix Discovered', desc:'Watson, Crick, Franklin & Wilkins discover the structure of DNA.',                  wiki:'DNA',                                               emoji:'🧬' },
+        { id:'moon_sci',     year:1969, title:'Humans Land on the Moon',     desc:"Apollo 11 — Neil Armstrong and Buzz Aldrin become the first humans on the Moon.",   wiki:'Apollo 11',                                         emoji:'🌙' },
+        { id:'genome',       year:2003, title:'Human Genome Mapped',         desc:'The Human Genome Project completes mapping all human DNA.',                          wiki:'Human Genome Project',                              emoji:'🧬' }
       ]},
       { title:'20th Century Breakthroughs', events:[
-        { id:'first_flight', year:1903, title:'First Powered Flight',       desc:'Orville and Wilbur Wright achieve the first controlled powered airplane flight.',     wiki:'Wright Flyer',                                         emoji:'✈️' },
-        { id:'gen_rel',      year:1915, title:'General Relativity',         desc:'Einstein publishes his general theory of relativity, describing gravity.',           wiki:'General relativity',                                   emoji:'⚛️' },
-        { id:'trinity',      year:1945, title:'First Atomic Bomb Test',     desc:'The Manhattan Project detonates the first nuclear bomb in New Mexico.',              wiki:'Trinity (nuclear test)',                               emoji:'☢️' },
-        { id:'gagarin',      year:1961, title:'First Human in Space',       desc:'Yuri Gagarin orbits Earth, becoming the first human in space.',                       wiki:'Vostok 1',                                             emoji:'🚀' },
-        { id:'dolly',        year:1997, title:'Dolly the Sheep Cloned',     desc:'Scientists clone Dolly, the first mammal cloned from an adult cell.',                wiki:'Dolly (sheep)',                                        emoji:'🐑' }
+        { id:'first_flight', year:1903, title:'First Powered Flight',        desc:'Orville and Wilbur Wright achieve the first controlled powered airplane flight.',    wiki:'Wright Flyer',                                      emoji:'✈️' },
+        { id:'gen_rel',      year:1915, title:'General Relativity',          desc:'Einstein publishes his general theory of relativity, describing gravity.',          wiki:'General relativity',                                emoji:'⚛️' },
+        { id:'trinity',      year:1945, title:'First Atomic Bomb Test',      desc:'The Manhattan Project detonates the first nuclear bomb in New Mexico.',             wiki:'Trinity (nuclear test)',                            emoji:'☢️' },
+        { id:'gagarin',      year:1961, title:'First Human in Space',        desc:'Yuri Gagarin orbits Earth, becoming the first human in space.',                      wiki:'Vostok 1',                                          emoji:'🚀' },
+        { id:'dolly',        year:1997, title:'Dolly the Sheep Cloned',      desc:'Scientists clone Dolly, the first mammal cloned from an adult cell.',               wiki:'Dolly (sheep)',                                     emoji:'🐑' }
       ]},
       { title:'Digital Age', events:[
-        { id:'arpanet',      year:1969, title:'ARPANET Created',            desc:'The US military creates ARPANET, the network that became the internet.',             wiki:'ARPANET',                                              emoji:'💻' },
-        { id:'www',          year:1990, title:'World Wide Web Invented',    desc:'Tim Berners-Lee invents the Web at CERN, revolutionizing information sharing.',      wiki:'History of the World Wide Web',                        emoji:'🌐' },
-        { id:'exoplanet',    year:1995, title:'First Exoplanet Confirmed',  desc:'Scientists confirm the first planet orbiting another star, 51 Pegasi b.',           wiki:'51 Pegasi b',                                          emoji:'🌟' },
-        { id:'higgs',        year:2012, title:'Higgs Boson Discovered',     desc:'CERN scientists confirm the Higgs boson, completing the Standard Model.',            wiki:'Higgs boson',                                          emoji:'⚛️' },
-        { id:'grav_waves',   year:2016, title:'Gravitational Waves Detected',desc:'LIGO detects gravitational waves from two merging black holes.',                    wiki:'First observation of gravitational waves',             emoji:'🌊' }
+        { id:'arpanet',      year:1969, title:'ARPANET Created',             desc:'The US military creates ARPANET, the network that became the internet.',            wiki:'ARPANET',                                           emoji:'💻' },
+        { id:'www',          year:1990, title:'World Wide Web Invented',     desc:'Tim Berners-Lee invents the Web at CERN, revolutionizing information sharing.',     wiki:'History of the World Wide Web',                     emoji:'🌐' },
+        { id:'exoplanet',    year:1995, title:'First Exoplanet Confirmed',   desc:'Scientists confirm the first planet orbiting another star, 51 Pegasi b.',          wiki:'51 Pegasi b',                                       emoji:'🌟' },
+        { id:'higgs',        year:2012, title:'Higgs Boson Discovered',      desc:'CERN scientists confirm the Higgs boson, completing the Standard Model.',           wiki:'Higgs boson',                                       emoji:'⚛️' },
+        { id:'grav_waves',   year:2016, title:'Gravitational Waves Detected',desc:'LIGO detects gravitational waves from two merging black holes.',                   wiki:'First observation of gravitational waves',          emoji:'🌊' }
       ]}
     ]
   }
@@ -552,21 +621,14 @@ const MODES = {
    STATE
 ============================================================ */
 let currentMode, currentRoundIdx, totalScore, roundScores;
-let currentEvents;            // events for current round
-let tlStartYear, tlEndYear, tlSpan, pixelsPerYear, totalTLWidth;
-let panOffset = 0, maxPanOffset = 0;
-let placements = {};           // eventId -> { year, markerEl }
+let currentEvents;
+let placements = {};   // eventId -> { slotYear }
 let checked = false;
-let draggingCard = null;       // { evt, ghost, ghostOffX, ghostOffY }
-let isPanning = false, panStartX = 0, panStartOffset = 0;
+let draggingCard = null;
 let imageCache = {};
 
-const tlViewport = document.getElementById('tlViewport');
-const tlInner    = document.getElementById('tlInner');
-const yearTooltip = document.getElementById('yearTooltip');
-
 /* ============================================================
-   SCREEN MANAGEMENT
+   SCREENS
 ============================================================ */
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -575,13 +637,13 @@ function showScreen(id) {
 }
 
 /* ============================================================
-   MODE / ROUND SELECTION
+   MODE / ROUND
 ============================================================ */
 function selectMode(modeId) {
-  currentMode    = modeId;
+  currentMode     = modeId;
   currentRoundIdx = 0;
-  totalScore     = 0;
-  roundScores    = [];
+  totalScore      = 0;
+  roundScores     = [];
   showScreen('gameScreen');
   loadRound();
 }
@@ -589,7 +651,7 @@ function selectMode(modeId) {
 function loadRound() {
   checked = false;
   placements = {};
-  document.getElementById('roundResultBar').classList.remove('visible');
+  document.getElementById('resultBar').classList.remove('visible');
   document.getElementById('checkBtn').disabled = true;
   document.getElementById('checkBtn').style.display = '';
   document.getElementById('continueBtn').style.display = 'none';
@@ -599,8 +661,9 @@ function loadRound() {
   currentEvents = shuffle([...round.events]);
 
   document.getElementById('gameRoundTitle').textContent =
-    `${mode.emoji} Round ${currentRoundIdx + 1}/3 — ${round.title}`;
+    `${mode.emoji}  Round ${currentRoundIdx + 1}/3 — ${round.title}`;
   document.getElementById('scoreDisplay').textContent = totalScore;
+  updateProgress();
 
   buildTimeline(round.events);
   buildCardsTray(currentEvents);
@@ -608,95 +671,42 @@ function loadRound() {
 }
 
 /* ============================================================
-   TIMELINE BUILDER
+   TIMELINE — 5 preset year slots
 ============================================================ */
 function buildTimeline(events) {
-  const years = events.map(e => e.year);
-  const minYear = Math.min(...years);
-  const maxYear = Math.max(...years);
-  const eventSpan = Math.max(maxYear - minYear, 50);
+  const sortedYears = events.map(e => e.year).sort((a, b) => a - b);
+  const container   = document.getElementById('tlSlots');
+  const rope        = document.getElementById('tlRope');
+  container.innerHTML = '';
 
-  tlStartYear = minYear - (Math.floor(Math.random() * 151) + 50);   // 50-200 before
-  tlEndYear   = maxYear + (Math.floor(Math.random() * 251) + 50);   // 50-300 after
-  tlSpan      = tlEndYear - tlStartYear;
+  // Position the rope line at the dot level
+  rope.style.top = '60px'; // approximate mid of slot-year-label + dot
 
-  const vw = tlViewport.clientWidth || window.innerWidth;
-  pixelsPerYear = Math.max(4, Math.min(14, 2600 / tlSpan));
-  totalTLWidth  = Math.max(vw * 2.5, tlSpan * pixelsPerYear);
-  pixelsPerYear = totalTLWidth / tlSpan;  // recompute with final width
+  sortedYears.forEach((yr, i) => {
+    const slot = document.createElement('div');
+    slot.className = 'tl-slot';
+    slot.dataset.year = yr;
 
-  maxPanOffset = Math.max(0, totalTLWidth - vw);
-  // Start panned so that the first event is roughly centered
-  const firstEventX = yearToX(minYear);
-  panOffset = Math.max(0, Math.min(maxPanOffset, firstEventX - vw * 0.35));
+    const yLabel = document.createElement('div');
+    yLabel.className = 'slot-year-label';
+    yLabel.textContent = yr < 0 ? `${Math.abs(yr)} BCE` : yr;
 
-  tlInner.innerHTML = '';
-  tlInner.style.width  = totalTLWidth + 'px';
+    const dot = document.createElement('div');
+    dot.className = 'slot-dot';
 
-  // Timeline line height (center of viewport)
-  const vh = tlViewport.clientHeight || 200;
-  const axisY = Math.round(vh * 0.52);
+    const zone = document.createElement('div');
+    zone.className = 'slot-drop-zone';
+    zone.innerHTML = `
+      <div class="slot-empty-hint">
+        <span class="hint-arrow">⬇</span>
+        <span>drop here</span>
+      </div>`;
 
-  // Axis line
-  const axis = document.createElement('div');
-  axis.className = 'tl-axis';
-  axis.style.top = axisY + 'px';
-  tlInner.appendChild(axis);
-
-  // Tick interval
-  let tickInterval;
-  if (tlSpan <= 80)        tickInterval = 10;
-  else if (tlSpan <= 200)  tickInterval = 25;
-  else if (tlSpan <= 500)  tickInterval = 50;
-  else if (tlSpan <= 1000) tickInterval = 100;
-  else                     tickInterval = 200;
-
-  const firstTick = Math.ceil(tlStartYear / tickInterval) * tickInterval;
-  for (let yr = firstTick; yr <= tlEndYear; yr += tickInterval) {
-    const isMajor = yr % (tickInterval * 4) === 0 || tickInterval >= 100;
-    const tick = document.createElement('div');
-    tick.className = 'tl-tick';
-    const x = yearToX(yr);
-    tick.style.left = x + 'px';
-    tick.style.top  = (axisY - (isMajor ? 16 : 8)) + 'px';
-    tick.style.transform = 'translateX(-50%)';
-
-    const line = document.createElement('div');
-    line.className = 'tl-tick-line' + (isMajor ? ' major' : '');
-    line.style.height = (isMajor ? 16 : 8) + 'px';
-
-    const label = document.createElement('div');
-    label.className = 'tl-tick-label' + (isMajor ? ' major' : '');
-    label.textContent = yr < 0 ? (Math.abs(yr) + ' BCE') : yr;
-
-    tick.appendChild(line);
-    tick.appendChild(label);
-    tlInner.appendChild(tick);
-  }
-
-  applyPan();
-  updateHintArrows();
-}
-
-function yearToX(year) {
-  return Math.round((year - tlStartYear) / tlSpan * totalTLWidth);
-}
-function xToYear(innerX) {
-  return Math.round(tlStartYear + innerX / totalTLWidth * tlSpan);
-}
-function clientXToYear(clientX) {
-  const rect = tlViewport.getBoundingClientRect();
-  const innerX = (clientX - rect.left) + panOffset;
-  return xToYear(innerX);
-}
-
-function applyPan() {
-  tlInner.style.transform = `translateX(-${panOffset}px)`;
-}
-
-function updateHintArrows() {
-  document.getElementById('hintLeft').style.opacity  = panOffset > 10 ? '' : '0';
-  document.getElementById('hintRight').style.opacity = panOffset < maxPanOffset - 10 ? '' : '0';
+    slot.appendChild(yLabel);
+    slot.appendChild(dot);
+    slot.appendChild(zone);
+    container.appendChild(slot);
+  });
 }
 
 /* ============================================================
@@ -706,29 +716,23 @@ function buildCardsTray(events) {
   const tray = document.getElementById('cardsTray');
   tray.innerHTML = '';
   events.forEach(evt => {
-    const card = createTrayCard(evt);
+    const card = document.createElement('div');
+    card.className = 'event-card';
+    card.dataset.id = evt.id;
+    card.innerHTML = `
+      <div class="card-img-wrap">
+        <div class="img-skeleton"></div>
+        <span class="card-emoji">${evt.emoji}</span>
+        <img class="card-wiki-img" alt="${evt.title}" draggable="false">
+        <div class="placed-badge">✅</div>
+      </div>
+      <div class="card-body">
+        <div class="card-title">${evt.title}</div>
+        <div class="card-desc">${evt.desc}</div>
+      </div>`;
+    card.addEventListener('pointerdown', e => onCardPointerDown(e, evt));
     tray.appendChild(card);
   });
-}
-
-function createTrayCard(evt) {
-  const card = document.createElement('div');
-  card.className = 'event-card';
-  card.dataset.id = evt.id;
-  card.innerHTML = `
-    <div class="card-img-wrap">
-      <div class="img-skeleton"></div>
-      <span class="card-emoji">${evt.emoji}</span>
-      <img class="card-wiki-img" alt="${evt.title}" draggable="false">
-      <div class="placed-badge">✅</div>
-    </div>
-    <div class="card-body">
-      <div class="card-title">${evt.title}</div>
-      <div class="card-desc">${evt.desc}</div>
-    </div>
-  `;
-  card.addEventListener('pointerdown', e => onCardPointerDown(e, evt));
-  return card;
 }
 
 /* ============================================================
@@ -738,7 +742,7 @@ async function fetchWikiImage(title) {
   if (imageCache[title] !== undefined) return imageCache[title];
   try {
     const url = `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(title)}&prop=pageimages&pithumbsize=300&format=json&origin=*`;
-    const res = await fetch(url, { signal: AbortSignal.timeout(6000) });
+    const res  = await fetch(url, { signal: AbortSignal.timeout(6000) });
     const data = await res.json();
     const page = Object.values(data.query.pages)[0];
     const src  = page?.thumbnail?.source || null;
@@ -749,43 +753,33 @@ async function fetchWikiImage(title) {
 
 function loadImages(events) {
   events.forEach(async evt => {
-    const src = await fetchWikiImage(evt.wiki);
-    // Update tray card
+    const src  = await fetchWikiImage(evt.wiki);
     const card = document.querySelector(`.event-card[data-id="${evt.id}"]`);
     if (card && src) {
-      const img  = card.querySelector('.card-wiki-img');
+      const img   = card.querySelector('.card-wiki-img');
       const emoji = card.querySelector('.card-emoji');
       const skel  = card.querySelector('.img-skeleton');
       img.src = src;
-      img.onload = () => { skel?.remove(); emoji.style.display = 'none'; img.style.display = 'block'; };
+      img.onload  = () => { skel?.remove(); emoji.style.display = 'none'; img.style.display = 'block'; };
       img.onerror = () => skel?.remove();
     } else if (card) {
       card.querySelector('.img-skeleton')?.remove();
-    }
-    // Update any existing timeline marker
-    const marker = document.querySelector(`.tl-marker[data-id="${evt.id}"]`);
-    if (marker && src) {
-      const mImg  = marker.querySelector('.tl-marker-img');
-      const mEmoji = marker.querySelector('.tl-marker-emoji');
-      if (mImg) { mImg.src = src; mImg.onload = () => { mImg.style.display = 'block'; if (mEmoji) mEmoji.style.display = 'none'; }; }
     }
   });
 }
 
 /* ============================================================
-   CARD DRAG
+   DRAG
 ============================================================ */
 function onCardPointerDown(e, evt) {
   if (checked) return;
   const card = e.currentTarget;
-  if (card.classList.contains('placed')) return; // click to unplace handled by marker
+  if (card.classList.contains('placed')) return;
+  e.preventDefault(); e.stopPropagation();
 
-  e.preventDefault();
-  e.stopPropagation();
-
-  const rect = card.getBoundingClientRect();
+  const rect  = card.getBoundingClientRect();
   const ghost = card.cloneNode(true);
-  ghost.className = card.className + ' drag-ghost';
+  ghost.className = 'event-card drag-ghost';
   ghost.style.width = rect.width + 'px';
   ghost.style.left  = rect.left  + 'px';
   ghost.style.top   = rect.top   + 'px';
@@ -793,164 +787,119 @@ function onCardPointerDown(e, evt) {
   card.classList.add('dragging');
 
   draggingCard = {
-    evt, card,
-    ghost,
+    evt, card, ghost,
     ghostOffX: e.clientX - rect.left,
     ghostOffY: e.clientY - rect.top
   };
 }
 
-/* ============================================================
-   TIMELINE PAN
-============================================================ */
-tlViewport.addEventListener('pointerdown', e => {
-  if (draggingCard) return;
-  if (e.target.closest('.tl-marker')) return;
-  isPanning = true;
-  panStartX = e.clientX;
-  panStartOffset = panOffset;
-  tlViewport.classList.add('panning');
-  tlViewport.setPointerCapture(e.pointerId);
-}, { passive: false });
-
-/* ============================================================
-   UNIFIED POINTER MOVE / UP
-============================================================ */
 document.addEventListener('pointermove', e => {
-  if (draggingCard) {
-    draggingCard.ghost.style.left = (e.clientX - draggingCard.ghostOffX) + 'px';
-    draggingCard.ghost.style.top  = (e.clientY - draggingCard.ghostOffY) + 'px';
-
-    // Show year tooltip if hovering over timeline
-    const rect = tlViewport.getBoundingClientRect();
-    if (e.clientY >= rect.top && e.clientY <= rect.bottom && e.clientX >= rect.left && e.clientX <= rect.right) {
-      const yr = clientXToYear(e.clientX);
-      yearTooltip.textContent = yr < 0 ? (Math.abs(yr) + ' BCE') : yr;
-      const relX = e.clientX - rect.left;
-      yearTooltip.style.left = Math.max(40, Math.min(rect.width - 40, relX)) + 'px';
-      yearTooltip.classList.remove('hidden');
-    } else {
-      yearTooltip.classList.add('hidden');
-    }
-    return;
-  }
-  if (isPanning) {
-    const dx = e.clientX - panStartX;
-    panOffset = Math.max(0, Math.min(maxPanOffset, panStartOffset - dx));
-    applyPan();
-    updateHintArrows();
-  }
+  if (!draggingCard) return;
+  draggingCard.ghost.style.left = (e.clientX - draggingCard.ghostOffX) + 'px';
+  draggingCard.ghost.style.top  = (e.clientY - draggingCard.ghostOffY) + 'px';
+  // Highlight slot under cursor
+  document.querySelectorAll('.tl-slot').forEach(s => s.classList.remove('drag-over'));
+  const slot = findSlotAtPoint(e.clientX, e.clientY);
+  if (slot) slot.classList.add('drag-over');
 }, { passive: true });
 
 document.addEventListener('pointerup', e => {
-  yearTooltip.classList.add('hidden');
+  if (!draggingCard) return;
+  const { evt, card, ghost } = draggingCard;
+  ghost.remove();
+  card.classList.remove('dragging');
+  document.querySelectorAll('.tl-slot').forEach(s => s.classList.remove('drag-over'));
 
-  if (draggingCard) {
-    const { evt, card, ghost } = draggingCard;
-    ghost.remove();
-    card.classList.remove('dragging');
-
-    const rect = tlViewport.getBoundingClientRect();
-    if (e.clientY >= rect.top && e.clientY <= rect.bottom &&
-        e.clientX >= rect.left && e.clientX <= rect.right) {
-      // Dropped on timeline
-      const guessedYear = clientXToYear(e.clientX);
-      placeEvent(evt, guessedYear);
-    }
-    draggingCard = null;
-    updateCheckButton();
-    return;
-  }
-
-  if (isPanning) {
-    isPanning = false;
-    tlViewport.classList.remove('panning');
-  }
+  const slot = findSlotAtPoint(e.clientX, e.clientY);
+  if (slot) placeEvent(evt, parseInt(slot.dataset.year));
+  draggingCard = null;
+  updateCheckButton();
 });
 
+function findSlotAtPoint(x, y) {
+  for (const slot of document.querySelectorAll('.tl-slot')) {
+    const r = slot.getBoundingClientRect();
+    if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) return slot;
+  }
+  return null;
+}
+
 /* ============================================================
-   PLACE EVENT ON TIMELINE
+   PLACE / UNPLACE
 ============================================================ */
-function placeEvent(evt, year) {
-  // Remove previous placement if any
+function placeEvent(evt, slotYear) {
+  // If another event is already in this slot, displace it back to tray
+  const existingId = Object.keys(placements).find(id => placements[id].slotYear === slotYear);
+  if (existingId) unplaceEvent(existingId, true);
+
+  // Remove previous placement of this event
   unplaceEvent(evt.id, false);
 
-  // Mark card as placed
+  placements[evt.id] = { slotYear };
+
+  // Dim tray card
   const card = document.querySelector(`.event-card[data-id="${evt.id}"]`);
   if (card) card.classList.add('placed');
 
-  const x = yearToX(year);
-  const vh = tlViewport.clientHeight || 200;
-  const axisY = Math.round(vh * 0.52);
-
-  // Alternate above/below
-  const placedCount = Object.keys(placements).length;
-  const isAbove = placedCount % 2 === 0;
-  const stemH = 32 + (placedCount % 3) * 12; // vary height slightly
-
-  const marker = document.createElement('div');
-  marker.className = 'tl-marker' + (isAbove ? ' above' : '');
-  marker.dataset.id = evt.id;
-  marker.style.left = x + 'px';
-  marker.style.top  = isAbove
-    ? (axisY - stemH - 54 - 10) + 'px'
-    : (axisY + 10) + 'px';
-  marker.style.transform = 'translateX(-50%)';
-  marker.style.zIndex = 20 + placedCount;
+  // Fill the slot drop zone
+  const slotEl = document.querySelector(`.tl-slot[data-year="${slotYear}"]`);
+  if (!slotEl) return;
+  const zone = slotEl.querySelector('.slot-drop-zone');
 
   const imgSrc = imageCache[evt.wiki];
-  const imgHtml = imgSrc
-    ? `<img class="tl-marker-img" src="${imgSrc}" style="display:block" alt="">`
-    : `<span class="tl-marker-emoji">${evt.emoji}</span><img class="tl-marker-img" alt="">`;
+  const mediaHtml = imgSrc
+    ? `<img class="spc-img" src="${imgSrc}" alt="">`
+    : `<div class="spc-emoji">${evt.emoji}</div>`;
 
-  const yearDisplay = year < 0 ? Math.abs(year) + ' BCE' : year;
+  zone.innerHTML = `
+    <div class="slot-placed-card" data-id="${evt.id}">
+      ${mediaHtml}
+      <div class="spc-title">${evt.title}</div>
+      <div class="spc-remove">tap to remove</div>
+    </div>`;
 
-  marker.innerHTML = `
-    <div class="tl-marker-card">
-      <div class="tl-marker-img-wrap">${imgHtml}</div>
-      <div class="tl-marker-body">
-        <div class="tl-marker-title">${evt.title}</div>
-        <div class="tl-marker-year-guess">${yearDisplay}</div>
-        <div class="tl-marker-remove-hint">Tap to remove</div>
-      </div>
-    </div>
-    <div class="tl-marker-stem" style="height:${stemH}px"></div>
-    <div class="tl-marker-dot"></div>
-  `;
-
-  if (isAbove) {
-    // Reverse DOM order for above layout
-    const children = [...marker.children];
-    children.reverse().forEach(c => marker.appendChild(c));
-  }
-
-  marker.addEventListener('pointerdown', e => {
+  zone.querySelector('.slot-placed-card').addEventListener('pointerdown', e2 => {
     if (checked) return;
-    e.stopPropagation();
+    e2.stopPropagation();
     unplaceEvent(evt.id, true);
     updateCheckButton();
   });
 
-  tlInner.appendChild(marker);
-  placements[evt.id] = { year, markerEl: marker };
+  updateProgress();
 }
 
 function unplaceEvent(id, restoreCard) {
-  if (placements[id]) {
-    placements[id].markerEl.remove();
-    delete placements[id];
+  if (!placements[id]) return;
+  const { slotYear } = placements[id];
+  delete placements[id];
+
+  const slotEl = document.querySelector(`.tl-slot[data-year="${slotYear}"]`);
+  if (slotEl) {
+    const zone = slotEl.querySelector('.slot-drop-zone');
+    zone.innerHTML = `
+      <div class="slot-empty-hint">
+        <span class="hint-arrow">⬇</span>
+        <span>drop here</span>
+      </div>`;
   }
   if (restoreCard) {
     const card = document.querySelector(`.event-card[data-id="${id}"]`);
     if (card) card.classList.remove('placed');
   }
+  updateProgress();
 }
 
 function updateCheckButton() {
-  const mode  = MODES[currentMode];
-  const round = mode.rounds[currentRoundIdx];
-  const allPlaced = round.events.every(e => placements[e.id] !== undefined);
-  document.getElementById('checkBtn').disabled = !allPlaced;
+  const round  = MODES[currentMode].rounds[currentRoundIdx];
+  const allSet = round.events.every(e => placements[e.id] !== undefined);
+  document.getElementById('checkBtn').disabled = !allSet;
+}
+
+function updateProgress() {
+  const placed = Object.keys(placements).length;
+  const total  = 5;
+  document.getElementById('gameProgress').textContent =
+    placed === total ? '✅ All placed! Hit Check Answers when ready.' : `${placed} / ${total} events placed`;
 }
 
 /* ============================================================
@@ -960,59 +909,45 @@ function checkAnswers() {
   if (checked) return;
   checked = true;
 
-  const mode   = MODES[currentMode];
-  const round  = mode.rounds[currentRoundIdx];
+  const round  = MODES[currentMode].rounds[currentRoundIdx];
   const events = round.events;
-
-  const years  = events.map(e => e.year);
-  const eventSpan = Math.max(Math.max(...years) - Math.min(...years), 50);
+  const sortedYears = events.map(e => e.year).sort((a, b) => a - b);
 
   let roundPts = 0;
-  const vh = tlViewport.clientHeight || 200;
-  const axisY = Math.round(vh * 0.52);
 
   events.forEach(evt => {
     const p = placements[evt.id];
     if (!p) return;
-    const dist = Math.abs(p.year - evt.year);
-    const score = calcScore(dist, eventSpan);
-    roundPts += score;
-    p.score = score;
+    const pts = calcMatchScore(evt.year, p.slotYear, sortedYears);
+    roundPts += pts;
+    p.score = pts;
 
-    // Color the marker
-    const marker = p.markerEl;
-    marker.classList.add(score >= 60 ? 'correct-marker' : 'wrong-marker');
-    const markerBody = marker.querySelector('.tl-marker-body');
+    const slotEl = document.querySelector(`.tl-slot[data-year="${p.slotYear}"]`);
+    if (!slotEl) return;
 
-    // Add score display
-    const scoreRow = marker.querySelector('.tl-marker-score-row') || document.createElement('div');
-    scoreRow.className = 'tl-marker-score-row';
-    scoreRow.style.color = score >= 80 ? 'var(--correct)' : score >= 50 ? 'var(--gold)' : 'var(--wrong)';
-    scoreRow.textContent = `${score}/100 pts`;
-    if (!markerBody.querySelector('.tl-marker-score-row')) markerBody.insertBefore(scoreRow, markerBody.querySelector('.tl-marker-remove-hint'));
+    const correct = pts === 100;
+    slotEl.classList.add(correct ? 'correct-slot' : 'wrong-slot');
 
-    // Remove "tap to remove" hint
-    marker.querySelector('.tl-marker-remove-hint')?.remove();
+    // Remove "tap to remove" hint from placed card
+    slotEl.querySelector('.spc-remove')?.remove();
 
-    // Show correct year marker if off
-    if (dist > 2) {
-      const correctX = yearToX(evt.year);
-      const correctMarker = document.createElement('div');
-      correctMarker.className = 'tl-correct-marker';
-      const isAbove = marker.classList.contains('above');
-      correctMarker.style.left = correctX + 'px';
-      correctMarker.style.top  = (axisY + (isAbove ? 10 : -44)) + 'px';
-      correctMarker.style.transform = 'translateX(-50%)';
-      correctMarker.innerHTML = `
-        <div class="tl-correct-dot"></div>
-        <div class="tl-correct-line"></div>
-        <div class="tl-correct-label">✓ ${evt.year < 0 ? Math.abs(evt.year)+' BCE' : evt.year}</div>
-      `;
-      if (!isAbove) {
-        const children = [...correctMarker.children];
-        children.reverse().forEach(c => correctMarker.appendChild(c));
+    // Score badge
+    const badge = document.createElement('div');
+    const cls   = pts === 100 ? 's100' : pts === 40 ? 's40' : 's0';
+    badge.className = `slot-score-badge ${cls}`;
+    badge.textContent = `${pts} pts`;
+    slotEl.querySelector('.slot-drop-zone').appendChild(badge);
+
+    // If wrong, highlight the correct slot
+    if (!correct) {
+      const correctSlot = document.querySelector(`.tl-slot[data-year="${evt.year}"]`);
+      if (correctSlot) {
+        correctSlot.classList.add('correct-reveal');
+        const hint = document.createElement('div');
+        hint.className = 'correct-year-hint';
+        hint.textContent = `✓ ${evt.title}`;
+        correctSlot.appendChild(hint);
       }
-      tlInner.appendChild(correctMarker);
     }
   });
 
@@ -1022,30 +957,21 @@ function checkAnswers() {
 
   // Result bar
   const maxPts = events.length * 100;
-  const pct = roundPts / maxPts;
-  const icons = pct >= 0.8 ? '🏆' : pct >= 0.6 ? '🎉' : pct >= 0.4 ? '👍' : '💪';
-  const msgs  = pct >= 0.8 ? 'Excellent time travel!' : pct >= 0.6 ? 'Great job!' : pct >= 0.4 ? 'Good effort!' : 'Keep practicing!';
-  document.getElementById('rrIcon').textContent = icons;
-  document.getElementById('rrText').textContent = msgs;
+  const pct    = roundPts / maxPts;
+  const icon   = pct >= 0.8 ? '🏆' : pct >= 0.6 ? '🎉' : pct >= 0.4 ? '👍' : '💪';
+  const msg    = pct >= 0.8 ? 'Incredible history knowledge!'
+               : pct >= 0.6 ? 'Great job, time traveler!'
+               : pct >= 0.4 ? 'Good effort — keep exploring!'
+               : 'Keep practicing — you\'ll get it!';
+  document.getElementById('rrIcon').textContent = icon;
+  document.getElementById('rrText').textContent = msg;
   document.getElementById('rrPts').textContent  = `+${roundPts} pts`;
-  document.getElementById('roundResultBar').classList.add('visible');
+  document.getElementById('resultBar').classList.add('visible');
 
-  // Add Wikipedia badges to placed markers
-  events.forEach(evt => {
-    const p = placements[evt.id];
-    if (!p) return;
-    const badge = document.createElement('a');
-    badge.className = 'card-wiki-badge';
-    badge.style.cssText = 'display:inline-block;font-size:0.58rem;font-weight:800;color:#4adaff;background:rgba(74,218,255,0.1);border:1px solid rgba(74,218,255,0.5);border-radius:5px;padding:0.1rem 0.35rem;margin-top:0.2rem;text-decoration:none;cursor:pointer';
-    badge.textContent = '📖 Wiki';
-    badge.href   = `https://en.wikipedia.org/wiki/${encodeURIComponent(evt.wiki)}`;
-    badge.target = '_blank'; badge.rel = 'noopener noreferrer';
-    badge.addEventListener('click', e => e.stopPropagation());
-    p.markerEl.querySelector('.tl-marker-body')?.appendChild(badge);
+  // Disable tray cards
+  document.querySelectorAll('.event-card').forEach(c => {
+    c.style.cursor = 'default'; c.style.opacity = '0.45';
   });
-
-  // Disable dragging
-  document.querySelectorAll('.event-card').forEach(c => { c.style.cursor = 'default'; c.style.opacity = '0.5'; });
 
   document.getElementById('checkBtn').style.display = 'none';
   const cb = document.getElementById('continueBtn');
@@ -1053,9 +979,11 @@ function checkAnswers() {
   cb.textContent = currentRoundIdx < 2 ? `▶ Round ${currentRoundIdx + 2}` : '🏁 See Final Score';
 }
 
-function calcScore(dist, eventSpan) {
-  const maxDist = Math.max(eventSpan * 0.4, 20);
-  return Math.max(0, Math.round(100 * Math.max(0, 1 - dist / maxDist)));
+function calcMatchScore(eventYear, chosenYear, sortedYears) {
+  if (eventYear === chosenYear) return 100;
+  const evtIdx = sortedYears.indexOf(eventYear);
+  const chsIdx = sortedYears.indexOf(chosenYear);
+  return Math.abs(evtIdx - chsIdx) === 1 ? 40 : 0;
 }
 
 /* ============================================================
@@ -1063,11 +991,8 @@ function calcScore(dist, eventSpan) {
 ============================================================ */
 function continueGame() {
   currentRoundIdx++;
-  if (currentRoundIdx >= 3) {
-    showResults();
-  } else {
-    loadRound();
-  }
+  if (currentRoundIdx >= 3) showResults();
+  else loadRound();
 }
 
 /* ============================================================
@@ -1075,30 +1000,31 @@ function continueGame() {
 ============================================================ */
 function showResults() {
   showScreen('resultsScreen');
-  const maxTotal = 3 * 5 * 100;
+  const maxTotal = 3 * 5 * 100; // 1500
   const pct = totalScore / maxTotal;
-  let grade, icon;
-  if (pct >= 0.90)      { grade = 'A+'; icon = '🏆'; }
-  else if (pct >= 0.75) { grade = 'A';  icon = '🌟'; }
-  else if (pct >= 0.60) { grade = 'B';  icon = '😊'; }
-  else if (pct >= 0.45) { grade = 'C';  icon = '👍'; }
-  else                  { grade = 'D';  icon = '💪'; }
-  const gc = pct >= 0.75 ? 'var(--correct)' : pct >= 0.45 ? 'var(--gold)' : 'var(--wrong)';
-  document.getElementById('resIcon').textContent  = icon;
-  document.getElementById('resGrade').textContent = grade;
-  document.getElementById('resGrade').style.color = gc;
-  document.getElementById('resScore').textContent = `${totalScore} / ${maxTotal} pts`;
+  let grade, icon, label;
+  if (pct >= 0.90)      { grade = 'A+'; icon = '🏆'; label = 'History Master!'; }
+  else if (pct >= 0.75) { grade = 'A';  icon = '🌟'; label = 'Excellent explorer!'; }
+  else if (pct >= 0.60) { grade = 'B';  icon = '😊'; label = 'Great job!'; }
+  else if (pct >= 0.45) { grade = 'C';  icon = '👍'; label = 'Good effort!'; }
+  else                  { grade = 'D';  icon = '💪'; label = 'Keep learning!'; }
+  const gc = pct >= 0.75 ? 'var(--correct)' : pct >= 0.45 ? 'var(--amber2)' : 'var(--wrong)';
+  document.getElementById('resIcon').textContent   = icon;
+  document.getElementById('resGrade').textContent  = grade;
+  document.getElementById('resGrade').style.color  = gc;
+  document.getElementById('resLabel').textContent  = label;
+  document.getElementById('resScore').textContent  = `${totalScore} / ${maxTotal} pts`;
 
   const mode = MODES[currentMode];
   const bd   = document.getElementById('resBreakdown');
   bd.innerHTML = '';
-  roundScores.forEach(rs => {
+  roundScores.forEach((rs, i) => {
     const row = document.createElement('div');
     row.className = 'res-row';
+    row.style.animationDelay = (i * 0.12) + 's';
     row.innerHTML = `
       <span class="res-row-label">${mode.emoji} Round ${rs.round + 1}: ${rs.title}</span>
-      <span class="res-row-pts">${rs.pts} / 500</span>
-    `;
+      <span class="res-row-pts">${rs.pts} / 500</span>`;
     bd.appendChild(row);
   });
 }
@@ -1107,34 +1033,32 @@ function showResults() {
    UTILITIES
 ============================================================ */
 function shuffle(arr) {
-  for (let i = arr.length-1; i > 0; i--) {
-    const j = Math.floor(Math.random()*(i+1));
-    [arr[i],arr[j]] = [arr[j],arr[i]];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
   }
   return arr;
 }
 
 /* ============================================================
-   MODE SCREEN STARS
+   MODE SCREEN FLOATING DECORATIONS
 ============================================================ */
 (function() {
-  const layer = document.getElementById('modeStars');
-  for (let i = 0; i < 80; i++) {
-    const s = document.createElement('div');
-    const size = 1 + Math.random() * 3;
-    Object.assign(s.style, {
-      position:'absolute', width:size+'px', height:size+'px', borderRadius:'50%', background:'#fff',
-      opacity:(Math.random()*0.4+0.05).toFixed(2),
-      left:Math.random()*100+'%', top:Math.random()*100+'%',
-      animation:`starTwinkle ${(2.5+Math.random()*3).toFixed(1)}s ease-in-out infinite`,
-      animationDelay:(Math.random()*5).toFixed(1)+'s'
-    });
-    layer.appendChild(s);
+  const layer = document.getElementById('floatLayer');
+  const items = ['🗺️','⏰','📜','🧭','⏳','🔑','📚','🕯️','🏺','⚔️'];
+  for (let i = 0; i < 18; i++) {
+    const el = document.createElement('div');
+    el.className = 'float-item';
+    el.textContent = items[i % items.length];
+    const dur   = 7 + Math.random() * 8;
+    const delay = -(Math.random() * dur);
+    el.style.setProperty('--dur',   dur   + 's');
+    el.style.setProperty('--delay', delay + 's');
+    el.style.left = (Math.random() * 95) + '%';
+    el.style.fontSize = (1.2 + Math.random() * 1.2) + 'rem';
+    layer.appendChild(el);
   }
 })();
-const sty = document.createElement('style');
-sty.textContent = '@keyframes starTwinkle{0%,100%{opacity:0.05}50%{opacity:0.45}}';
-document.head.appendChild(sty);
 </script>
 </body>
 </html>
