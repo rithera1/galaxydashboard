@@ -124,9 +124,9 @@
     border-bottom: 2px solid rgba(200,155,55,0.25);
     flex-wrap: wrap;
   }
-  .game-round-title { font-family: 'Fredoka One', cursive; font-size: clamp(0.85rem,3vw,1.2rem); }
-  .game-score-badge { font-family: 'Orbitron', monospace; font-size: 0.9rem; font-weight: 700; color: var(--amber2); text-shadow: 0 0 10px rgba(247,201,72,0.5); }
-  .game-progress { font-size: 0.75rem; font-weight: 700; color: var(--muted); flex-basis: 100%; }
+  .game-round-title { font-family: 'Fredoka One', cursive; font-size: clamp(1rem,3vw,1.5rem); }
+  .game-score-badge { font-family: 'Orbitron', monospace; font-size: 1.1rem; font-weight: 700; color: var(--amber2); text-shadow: 0 0 10px rgba(247,201,72,0.5); }
+  .game-progress { font-size: 0.88rem; font-weight: 700; color: var(--muted); flex-basis: 100%; }
 
   /* ── TIMELINE AREA ── */
   .tl-section {
@@ -148,9 +148,10 @@
   }
   /* Slots row */
   .tl-slots {
-    display: flex; gap: 0.55rem;
+    display: flex; gap: 0.7rem;
     overflow-x: auto; padding-bottom: 4px;
     position: relative; z-index: 1;
+    justify-content: center;
     scrollbar-width: thin;
     scrollbar-color: rgba(200,155,55,0.4) transparent;
   }
@@ -160,7 +161,7 @@
   /* ── INDIVIDUAL SLOT ── */
   .tl-slot {
     flex-shrink: 0;
-    width: clamp(135px, 18vw, 168px);
+    width: clamp(140px, 17vw, 220px);
     display: flex; flex-direction: column; align-items: center;
     animation: slotPop 0.4s cubic-bezier(.34,1.56,.64,1) both;
   }
@@ -172,7 +173,7 @@
   .tl-slot:nth-child(5){ animation-delay:.25s }
 
   .slot-year-label {
-    font-family: 'Orbitron', monospace; font-size: 0.8rem; font-weight: 700;
+    font-family: 'Orbitron', monospace; font-size: 0.95rem; font-weight: 700;
     color: var(--amber2); text-shadow: 0 0 8px rgba(247,201,72,0.6);
     margin-bottom: 0.4rem;
   }
@@ -183,7 +184,7 @@
     border: 2px solid rgba(255,255,255,0.3);
   }
   .slot-drop-zone {
-    width: 100%; min-height: 118px;
+    width: 100%; min-height: 140px;
     background: var(--slot-bg);
     border: 2px dashed var(--slot-bd);
     border-radius: 14px; overflow: hidden;
@@ -222,8 +223,8 @@
   }
   @keyframes cardDropIn { from{ opacity:0; transform:scale(0.7) } to{ opacity:1; transform:scale(1) } }
   .spc-emoji { font-size: 1.8rem; line-height: 1; }
-  .spc-img { width: 100%; height: 58px; object-fit: cover; border-radius: 6px; }
-  .spc-title { font-family: 'Fredoka One', cursive; font-size: 0.75rem; color: var(--text); text-align: center; line-height: 1.2; }
+  .spc-img { width: 100%; height: 70px; object-fit: cover; border-radius: 6px; }
+  .spc-title { font-family: 'Fredoka One', cursive; font-size: 0.85rem; color: var(--text); text-align: center; line-height: 1.2; }
   .spc-remove { font-size: 0.55rem; color: var(--muted); margin-top: 0.1rem; }
 
   /* Checked states */
@@ -295,8 +296,9 @@
   }
   .tray-label { font-family: 'Fredoka One', cursive; font-size: 0.8rem; color: var(--muted); margin-bottom: 0.4rem; flex-shrink: 0; }
   .cards-tray {
-    display: flex; gap: 0.55rem;
+    display: flex; gap: 0.7rem;
     overflow-x: auto; padding-bottom: 4px; flex: 1; align-items: flex-start;
+    justify-content: center;
     scrollbar-width: thin; scrollbar-color: rgba(200,155,55,0.4) transparent;
   }
   .cards-tray::-webkit-scrollbar { height: 4px; }
@@ -304,7 +306,7 @@
 
   .event-card {
     flex-shrink: 0;
-    width: clamp(135px, 18vw, 165px);
+    width: clamp(140px, 16vw, 200px);
     background: var(--brown);
     border: 2px solid rgba(200,155,55,0.45);
     border-radius: 12px; overflow: hidden;
@@ -323,7 +325,7 @@
   .event-card.dragging { opacity: 0.25; }
 
   .card-img-wrap {
-    width: 100%; height: 90px; overflow: hidden;
+    width: 100%; height: 108px; overflow: hidden;
     background: rgba(200,155,55,0.1);
     display: flex; align-items: center; justify-content: center;
     position: relative; font-size: 2rem;
@@ -340,10 +342,10 @@
     display: none; align-items: center; justify-content: center; font-size: 1.6rem;
   }
   .event-card.placed .placed-badge { display: flex; }
-  .card-body { padding: 0.5rem 0.55rem; }
-  .card-title { font-family: 'Fredoka One', cursive; font-size: 0.82rem; color: var(--text); line-height: 1.2; margin-bottom: 0.22rem; }
+  .card-body { padding: 0.55rem 0.6rem; }
+  .card-title { font-family: 'Fredoka One', cursive; font-size: 0.92rem; color: var(--text); line-height: 1.2; margin-bottom: 0.22rem; }
   .card-desc  {
-    font-size: 0.66rem; font-weight: 700; color: var(--muted); line-height: 1.3;
+    font-size: 0.72rem; font-weight: 700; color: var(--muted); line-height: 1.3;
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
   }
 
@@ -470,7 +472,7 @@
       <h3>🎮 How to Play</h3>
       <p>5 events appear in the tray below. A timeline shows 5 years across the top.
          <strong>Drag each event card to the year you think it happened!</strong>
-         Score 100 pts for exact match, 40 pts for being one slot off.</p>
+         Score 100 pts for exact match, 25 pts for being one slot off.</p>
     </div>
   </div>
 </div>
@@ -1044,7 +1046,7 @@ function checkAnswers() {
 
   document.getElementById('checkBtn').style.display = 'none';
   const cb = document.getElementById('continueBtn');
-  cb.style.display = '';
+  cb.style.display = 'inline-flex';
   cb.textContent = currentRoundIdx < 2 ? `▶ Round ${currentRoundIdx + 2}` : '🏁 See Final Score';
 }
 
@@ -1052,7 +1054,7 @@ function calcMatchScore(eventYear, chosenYear, sortedYears) {
   if (eventYear === chosenYear) return 100;
   const evtIdx = sortedYears.indexOf(eventYear);
   const chsIdx = sortedYears.indexOf(chosenYear);
-  return Math.abs(evtIdx - chsIdx) === 1 ? 40 : 0;
+  return Math.abs(evtIdx - chsIdx) === 1 ? 25 : 0;
 }
 
 /* ============================================================
