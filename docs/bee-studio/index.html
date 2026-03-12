@@ -482,11 +482,11 @@ function speak(text) {
   if (synth.speaking) synth.cancel();
   return new Promise(resolve=>{
     setTimeout(()=>{
-      const u = new SpeechSynthesisUtterance(text);
-      if (preferredVoice) u.voice = preferredVoice;
-      u.lang='en-US'; u.rate=0.85; u.pitch=1.05; u.volume=1;
-      u.onend=u.onerror=resolve;
-      synth.speak(u);
+      const makeU = ()=>{ const u=new SpeechSynthesisUtterance(text); if(preferredVoice) u.voice=preferredVoice; u.lang='en-US'; u.rate=0.75; u.pitch=1.05; u.volume=1; return u; };
+      const u1=makeU();
+      u1.onerror=resolve;
+      u1.onend=()=>setTimeout(()=>{ const u2=makeU(); u2.onend=u2.onerror=resolve; synth.speak(u2); },900);
+      synth.speak(u1);
     },80);
   });
 }
