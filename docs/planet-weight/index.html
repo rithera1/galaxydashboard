@@ -263,7 +263,7 @@
     position: absolute; bottom: 8px; left: 5%; right: 5%; height: 2px;
     background: repeating-linear-gradient(90deg, rgba(74,218,255,0.35) 0, rgba(74,218,255,0.35) 10px, transparent 10px, transparent 20px);
   }
-  .run-fig { font-size: 1.9rem; position: absolute; bottom: 8px; animation: run-cross var(--rdur, 2s) linear infinite; }
+  .run-fig { font-size: 1.9rem; position: absolute; bottom: 8px; transform: scaleX(-1); animation: run-cross var(--rdur, 2s) linear infinite; }
   @keyframes run-cross { from{ left:-35px } to{ left:calc(100% + 10px) } }
 
   /* THROW ARENA */
@@ -281,21 +281,35 @@
   .detail-divider-label { font-family: 'Fredoka One', cursive; font-size: 0.85rem; color: var(--text-muted); }
 
   /* FACTS GRID */
-  .facts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+  .facts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
   .fact-item {
     background: rgba(255,255,255,0.04);
     border: 1.5px solid rgba(160,140,255,0.2);
-    border-radius: 12px; padding: 0.65rem 0.75rem;
+    border-radius: 16px; padding: 0.9rem 0.75rem 0.8rem;
+    text-align: center;
+    display: flex; flex-direction: column; align-items: center; gap: 0.25rem;
   }
-  .fact-item.full-width { grid-column: 1 / -1; }
-  .fact-label { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 0.25rem; }
-  .fact-value { font-family: 'Fredoka One', cursive; font-size: 0.9rem; color: var(--text); line-height: 1.35; }
+  .fact-item.full-width {
+    grid-column: 1 / -1;
+    background: rgba(139,111,255,0.09);
+    border-color: rgba(139,111,255,0.4);
+    text-align: left;
+    flex-direction: row; align-items: flex-start; gap: 0.8rem;
+    padding: 0.9rem 1rem;
+  }
+  .fact-icon { font-size: 1.6rem; line-height: 1; }
+  .fact-item.full-width .fact-icon { font-size: 1.9rem; flex-shrink: 0; margin-top: 0.1rem; }
+  .fact-label { font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); }
+  .fact-value { font-family: 'Fredoka One', cursive; font-size: 0.92rem; color: var(--text); line-height: 1.35; }
+  .fact-value-sub { font-size: 0.72rem; font-weight: 700; color: var(--text-muted); line-height: 1.3; margin-top: 0.05rem; }
+  .fact-item.full-width .fact-body { flex: 1; min-width: 0; }
+  .fact-item.full-width .fact-value { color: var(--accent2); }
 
   @media (max-width: 520px) {
     .planet-grid { grid-template-columns: repeat(4, 1fr); }
     .physics-grid { grid-template-columns: 1fr; }
-    .facts-grid { grid-template-columns: 1fr; }
-    .fact-item.full-width { grid-column: 1; }
+    .facts-grid { grid-template-columns: 1fr 1fr; }
+    .fact-item.full-width { grid-column: 1 / -1; }
     .detail-sphere { width: 68px; height: 68px; }
   }
 </style>
@@ -400,7 +414,7 @@ const BODIES = [
     id:'mercury', name:'Mercury', gravity:0.38,
     gradient:'radial-gradient(circle at 35% 30%, #d8d8d8, #888)',
     barColor:'#aabbcc',
-    temp:'−180°C to 430°C',
+    temp:'−180°C to 430°C', tempF:'−292°F to 806°F',
     atmosphere:'Essentially none (trace exosphere)',
     survival:'Seconds — no air, extreme heat swings, intense radiation',
     dayLength:'59 Earth days', moons:0,
@@ -410,7 +424,7 @@ const BODIES = [
     id:'venus', name:'Venus', gravity:0.91,
     gradient:'radial-gradient(circle at 35% 30%, #f0d890, #c09020)',
     barColor:'#d4a820',
-    temp:'465°C average — the hottest planet!',
+    temp:'465°C average — the hottest planet!', tempF:'869°F average',
     atmosphere:'Thick CO₂ + sulfuric acid clouds',
     survival:'About 1 second — instantly crushed, cooked, and dissolved',
     dayLength:'243 Earth days (longer than its year!)', moons:0,
@@ -420,7 +434,7 @@ const BODIES = [
     id:'earth', name:'Earth', gravity:1.00,
     gradient:'radial-gradient(circle at 35% 30%, #6ab4f0, #1a5a99)',
     barColor:'#4adaff', isEarth:true,
-    temp:'Average 15°C',
+    temp:'Average 15°C', tempF:'Average 59°F',
     atmosphere:'78% nitrogen, 21% oxygen — perfect for us!',
     survival:'This is home — you\'re already thriving here!',
     dayLength:'24 hours', moons:1,
@@ -430,7 +444,7 @@ const BODIES = [
     id:'moon', name:'Moon', gravity:0.166,
     gradient:'radial-gradient(circle at 35% 30%, #e8e8e8, #999)',
     barColor:'#ccccee',
-    temp:'−173°C to 127°C',
+    temp:'−173°C to 127°C', tempF:'−279°F to 261°F',
     atmosphere:'Trace exosphere only (essentially vacuum)',
     survival:'Seconds without a spacesuit',
     dayLength:'29.5 Earth days', moons:0,
@@ -440,7 +454,7 @@ const BODIES = [
     id:'mars', name:'Mars', gravity:0.38,
     gradient:'radial-gradient(circle at 35% 30%, #f08060, #a03010)',
     barColor:'#d9603c',
-    temp:'−125°C to 20°C',
+    temp:'−125°C to 20°C', tempF:'−193°F to 68°F',
     atmosphere:'Thin CO₂ (only 1% of Earth\'s pressure)',
     survival:'Minutes — suffocation and intense radiation',
     dayLength:'24.6 hours (similar to Earth!)', moons:2,
@@ -450,7 +464,7 @@ const BODIES = [
     id:'jupiter', name:'Jupiter', gravity:2.34,
     gradient:'radial-gradient(circle at 35% 30%, #e8c090, #a06030)',
     barColor:'#c8936c',
-    temp:'−110°C at cloud tops',
+    temp:'−110°C at cloud tops', tempF:'−166°F at cloud tops',
     atmosphere:'90% hydrogen, 10% helium — no solid surface!',
     survival:'Instantly crushed — pressure 1,000× Earth at depth',
     dayLength:'9.9 hours (fastest rotation!)', moons:95,
@@ -460,7 +474,7 @@ const BODIES = [
     id:'saturn', name:'Saturn', gravity:0.92,
     gradient:'radial-gradient(circle at 35% 30%, #f0e8a0, #b0a040)',
     barColor:'#d4b830', hasRing:true,
-    temp:'−178°C at cloud tops',
+    temp:'−178°C at cloud tops', tempF:'−288°F at cloud tops',
     atmosphere:'96% hydrogen, 3% helium — no solid surface!',
     survival:'No solid ground — you\'d slowly sink into gas',
     dayLength:'10.7 hours', moons:146,
@@ -470,7 +484,7 @@ const BODIES = [
     id:'uranus', name:'Uranus', gravity:0.89,
     gradient:'radial-gradient(circle at 35% 30%, #b0f0f0, #4090a0)',
     barColor:'#60c8d0', hasRingUranus:true,
-    temp:'−224°C — the coldest planet!',
+    temp:'−224°C — the coldest planet!', tempF:'−371°F',
     atmosphere:'Hydrogen, helium & methane (gives its blue-green color)',
     survival:'Instantly frozen and crushed — extreme cold and pressure',
     dayLength:'17.2 hours', moons:28,
@@ -480,7 +494,7 @@ const BODIES = [
     id:'neptune', name:'Neptune', gravity:1.12,
     gradient:'radial-gradient(circle at 35% 30%, #6080f0, #2030b0)',
     barColor:'#4060d9',
-    temp:'−218°C at cloud tops',
+    temp:'−218°C at cloud tops', tempF:'−360°F at cloud tops',
     atmosphere:'Hydrogen, helium & methane',
     survival:'Winds of 2,100 km/h would shred you in an instant',
     dayLength:'16.1 hours', moons:16,
@@ -490,7 +504,7 @@ const BODIES = [
     id:'pluto', name:'Pluto', gravity:0.063,
     gradient:'radial-gradient(circle at 35% 30%, #d8c0a8, #907050)',
     barColor:'#b09070',
-    temp:'−233°C to −223°C',
+    temp:'−233°C to −223°C', tempF:'−387°F to −369°F',
     atmosphere:'Thin nitrogen & methane',
     survival:'Instantly frozen — colder than liquid nitrogen',
     dayLength:'6.4 Earth days', moons:5,
@@ -500,7 +514,7 @@ const BODIES = [
     id:'sun', name:'Sun ☀️', gravity:27.9,
     gradient:'radial-gradient(circle at 35% 30%, #fff090, #f07000)',
     barColor:'#f7c030',
-    temp:'5,500°C surface · 15 million°C core!',
+    temp:'5,500°C surface · 15 million°C core!', tempF:'9,932°F surface · 27 million°F core!',
     atmosphere:'Plasma — 74% hydrogen, 24% helium',
     survival:'Vaporized before you got within 1 million km',
     dayLength:'~25 Earth days (equator)', moons:0,
@@ -686,21 +700,32 @@ function drawThrowArc(ratio) {
 
 function buildFacts(body) {
   const grid = document.getElementById('factsGrid');
-  const facts = [
-    { label:'🌡️ Temperature',   value: body.temp },
-    { label:'🌬️ Atmosphere',    value: body.atmosphere },
-    { label:'⚠️ Survival Time', value: body.survival },
-    { label:'🌀 Day Length',    value: body.dayLength },
-    { label:'🌙 Moons',         value: body.moons + (body.moons === 1 ? ' moon' : ' moons') },
-    { label:'🪐 Fun Fact',      value: body.funFact, full: true }
+  const stats = [
+    { icon:'🌡️', label:'Temperature',   value: body.temp, sub: body.tempF },
+    { icon:'🌬️', label:'Atmosphere',    value: body.atmosphere },
+    { icon:'⚠️', label:'Survival Time', value: body.survival },
+    { icon:'🌀', label:'Day Length',    value: body.dayLength },
+    { icon:'🌙', label:'Moons',         value: body.moons + (body.moons === 1 ? ' moon' : ' moons') }
   ];
   grid.innerHTML = '';
-  facts.forEach(f => {
+  stats.forEach(f => {
     const item = document.createElement('div');
-    item.className = 'fact-item' + (f.full ? ' full-width' : '');
-    item.innerHTML = `<div class="fact-label">${f.label}</div><div class="fact-value">${f.value}</div>`;
+    item.className = 'fact-item';
+    item.innerHTML = `<div class="fact-icon">${f.icon}</div>
+      <div class="fact-label">${f.label}</div>
+      <div class="fact-value">${f.value}</div>
+      ${f.sub ? `<div class="fact-value-sub">${f.sub}</div>` : ''}`;
     grid.appendChild(item);
   });
+  // Fun fact — full-width row
+  const ff = document.createElement('div');
+  ff.className = 'fact-item full-width';
+  ff.innerHTML = `<div class="fact-icon">🪐</div>
+    <div class="fact-body">
+      <div class="fact-label">Fun Fact</div>
+      <div class="fact-value">${body.funFact}</div>
+    </div>`;
+  grid.appendChild(ff);
 }
 
 // Background stars
