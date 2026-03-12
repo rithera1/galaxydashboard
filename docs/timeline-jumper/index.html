@@ -70,7 +70,7 @@
     90%  { opacity: 0.4; }
     100% { transform: translateY(-80px) rotate(20deg);  opacity: 0; }
   }
-  .mode-content { position: relative; z-index: 1; max-width: 500px; width: 100%; }
+  .mode-content { position: relative; z-index: 1; max-width: 660px; width: 100%; }
   .mode-icon {
     font-size: 5.5rem; display: block; margin-bottom: 0.4rem;
     animation: iconBob 3s ease-in-out infinite;
@@ -84,28 +84,28 @@
     margin-bottom: 0.4rem; line-height: 1.1;
   }
   .mode-sub { color: var(--muted); font-size: 1rem; font-weight: 700; margin-bottom: 2rem; }
-  .mode-grid { display: flex; flex-direction: column; gap: 0.85rem; max-width: 380px; margin: 0 auto 1.5rem; }
+  .mode-grid { display: flex; flex-direction: column; gap: 1rem; max-width: 540px; margin: 0 auto 1.5rem; }
   .mode-btn {
-    font-family: 'Fredoka One', cursive; font-size: 1.15rem;
-    padding: 1rem 1.4rem; border-radius: 18px; cursor: pointer;
-    text-align: left; display: flex; align-items: center; gap: 0.75rem;
+    font-family: 'Fredoka One', cursive; font-size: 1.3rem;
+    padding: 1.3rem 1.75rem; border-radius: 20px; cursor: pointer;
+    text-align: left; display: flex; align-items: center; gap: 0.9rem;
     border: 2.5px solid currentColor;
     transition: transform 0.18s cubic-bezier(.34,1.56,.64,1), box-shadow 0.15s;
     box-shadow: 0 4px 20px rgba(0,0,0,0.5);
   }
-  .mode-btn:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 8px 30px rgba(0,0,0,0.6); }
+  .mode-btn:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 10px 36px rgba(0,0,0,0.7); }
   .mode-us    { background: rgba(180,55,40,0.2);  color: #ffaaaa; border-color: #d05040; }
   .mode-world { background: rgba(40,140,70,0.2);  color: #a0ffb8; border-color: #40bb60; }
   .mode-sci   { background: rgba(80,120,220,0.2); color: #b0c8ff; border-color: #6090e0; }
-  .mode-btn-icon { font-size: 2rem; }
+  .mode-btn-icon { font-size: 2.8rem; }
   .mode-btn-text  { display: flex; flex-direction: column; }
-  .mode-btn-name  { font-size: 1.15rem; }
-  .mode-btn-desc  { font-size: 0.72rem; font-weight: 700; opacity: 0.75; margin-top: 0.1rem; }
+  .mode-btn-name  { font-size: 1.3rem; }
+  .mode-btn-desc  { font-size: 0.82rem; font-weight: 700; opacity: 0.8; margin-top: 0.15rem; }
   .how-box {
     background: rgba(255,255,255,0.05);
     border: 2px solid rgba(200,155,55,0.3);
-    border-radius: 16px; padding: 0.9rem 1.1rem; text-align: left;
-    max-width: 380px; margin: 0 auto;
+    border-radius: 16px; padding: 0.9rem 1.2rem; text-align: left;
+    max-width: 540px; margin: 0 auto;
   }
   .how-box h3 { font-family: 'Fredoka One', cursive; font-size: 1rem; color: var(--amber2); margin-bottom: 0.5rem; }
   .how-box p  { font-size: 0.82rem; font-weight: 700; color: var(--muted); line-height: 1.55; }
@@ -228,35 +228,56 @@
 
   /* Checked states */
   .tl-slot.correct-slot .slot-drop-zone {
-    border-color: var(--correct); border-style: solid;
-    background: rgba(76,221,104,0.12);
-    box-shadow: 0 0 20px rgba(76,221,104,0.4);
+    border-color: var(--correct); border-style: solid; border-width: 3px;
+    background: rgba(76,221,104,0.18);
+    box-shadow: 0 0 28px rgba(76,221,104,0.7), inset 0 0 16px rgba(76,221,104,0.12);
     animation: correctPulse 0.5s ease;
   }
   @keyframes correctPulse {
-    0%{ transform:scale(1) } 30%{ transform:scale(1.08) } 60%{ transform:scale(0.97) } 100%{ transform:scale(1) }
+    0%{ transform:scale(1) } 30%{ transform:scale(1.09) } 60%{ transform:scale(0.97) } 100%{ transform:scale(1) }
   }
   .tl-slot.wrong-slot .slot-drop-zone {
-    border-color: var(--wrong); border-style: solid;
-    background: rgba(255,85,68,0.1);
+    border-color: var(--wrong); border-style: solid; border-width: 3px;
+    background: rgba(255,85,68,0.18);
+    box-shadow: 0 0 28px rgba(255,85,68,0.65), inset 0 0 16px rgba(255,85,68,0.1);
     animation: wrongShake 0.45s ease;
   }
   @keyframes wrongShake {
     0%,100%{ transform:translateX(0) } 20%,60%{ transform:translateX(-5px) } 40%,80%{ transform:translateX(5px) }
   }
-  .tl-slot.correct-slot .slot-dot { background: var(--correct); box-shadow: 0 0 14px rgba(76,221,104,0.9); }
-  .tl-slot.wrong-slot   .slot-dot { background: var(--wrong);   box-shadow: 0 0 14px rgba(255,85,68,0.9); }
+  .tl-slot.correct-slot .slot-dot { background: var(--correct); box-shadow: 0 0 18px rgba(76,221,104,1); }
+  .tl-slot.wrong-slot   .slot-dot { background: var(--wrong);   box-shadow: 0 0 18px rgba(255,85,68,1); }
   .tl-slot.correct-reveal .slot-year-label { color: var(--correct); text-shadow: 0 0 10px rgba(76,221,104,0.8); }
 
-  /* Score badge on slot after check */
+  /* Score badge — absolutely positioned so it's never clipped */
   .slot-score-badge {
-    font-family: 'Orbitron', monospace; font-size: 0.68rem; font-weight: 700;
-    padding: 0.1rem 0.4rem; border-radius: 6px; margin-top: 0.3rem;
-    border: 1.5px solid currentColor;
+    position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%);
+    font-family: 'Orbitron', monospace; font-size: 0.72rem; font-weight: 700;
+    padding: 0.15rem 0.5rem; border-radius: 7px; white-space: nowrap;
+    border: 2px solid currentColor; z-index: 10;
+    animation: badgePop 0.35s cubic-bezier(.34,1.56,.64,1) both;
   }
-  .slot-score-badge.s100 { color: var(--correct); background: rgba(76,221,104,0.12); }
-  .slot-score-badge.s40  { color: var(--amber2);  background: rgba(247,201,72,0.12); }
-  .slot-score-badge.s0   { color: var(--wrong);   background: rgba(255,85,68,0.1); }
+  @keyframes badgePop { from{ opacity:0; transform:translateX(-50%) scale(0.5) } to{ opacity:1; transform:translateX(-50%) scale(1) } }
+  .slot-score-badge.s100 { color: var(--correct); background: rgba(76,221,104,0.18); }
+  .slot-score-badge.s40  { color: var(--amber2);  background: rgba(247,201,72,0.18); }
+  .slot-score-badge.s0   { color: var(--wrong);   background: rgba(255,85,68,0.14); }
+
+  /* Result overlay on placed card after check */
+  .result-overlay {
+    position: absolute; inset: 0; border-radius: 12px; pointer-events: none; z-index: 8;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+    animation: overlayIn 0.4s cubic-bezier(.34,1.56,.64,1) both;
+  }
+  .result-overlay.correct { background: rgba(76,221,104,0.22); }
+  .result-overlay.wrong   { background: rgba(255,85,68,0.22); }
+  .result-overlay-icon  { font-size: 2rem; line-height: 1; }
+  .result-overlay-label {
+    font-family: 'Fredoka One', cursive; font-size: 0.72rem; letter-spacing: 0.5px;
+    padding: 2px 8px; border-radius: 7px;
+  }
+  .result-overlay.correct .result-overlay-label { color: var(--correct); background: rgba(76,221,104,0.2); border: 1.5px solid rgba(76,221,104,0.6); }
+  .result-overlay.wrong   .result-overlay-label { color: var(--wrong);   background: rgba(255,85,68,0.14); border: 1.5px solid rgba(255,85,68,0.5); }
+  @keyframes overlayIn { from{ opacity:0; transform:scale(1.25) } to{ opacity:1; transform:scale(1) } }
 
   /* Correct-reveal annotation (shows what year was correct) */
   .correct-year-hint {
@@ -350,8 +371,34 @@
   .drag-ghost {
     position: fixed; pointer-events: none; z-index: 500;
     opacity: 0.93; transform: rotate(5deg) scale(1.08); cursor: grabbing;
-    box-shadow: 0 10px 35px rgba(0,0,0,0.75), 0 0 22px rgba(232,160,32,0.4);
     border-radius: 12px; overflow: hidden;
+    animation: warpDrag 0.65s ease-in-out infinite alternate !important;
+  }
+  @keyframes warpDrag {
+    from { box-shadow: 0 10px 35px rgba(0,0,0,0.8), 0 0 22px rgba(232,160,32,0.7), 0 0 45px rgba(100,180,255,0.3); }
+    to   { box-shadow: 0 10px 35px rgba(0,0,0,0.8), 0 0 45px rgba(247,201,72,1),   0 0 80px rgba(180,100,255,0.6); }
+  }
+
+  /* ── WARP BURST (drop animation) ── */
+  .warp-ring {
+    position: fixed; width: 0; height: 0; border-radius: 50%;
+    pointer-events: none; z-index: 600;
+    transform: translate(-50%, -50%);
+    animation: warpRing 0.55s ease-out forwards;
+  }
+  @keyframes warpRing {
+    0%   { box-shadow: 0 0 0  0px rgba(150,220,255,0.95), 0 0 0  0px rgba(232,160,32,0.7); }
+    50%  { box-shadow: 0 0 0 44px rgba(150,220,255,0.45), 0 0 0 28px rgba(232,160,32,0.35); }
+    100% { box-shadow: 0 0 0 75px rgba(150,220,255,0),    0 0 0 60px rgba(232,160,32,0); }
+  }
+  .warp-star {
+    position: fixed; pointer-events: none; z-index: 601; font-size: 1rem;
+    transform: translate(-50%, -50%);
+    animation: starFly 0.65s ease-out forwards;
+  }
+  @keyframes starFly {
+    0%   { transform: translate(-50%,-50%) scale(1.3); opacity: 1; }
+    100% { transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(0); opacity: 0; }
   }
 
   /* ── ACTION ROW ── */
@@ -679,8 +726,8 @@ function buildTimeline(events) {
   const rope        = document.getElementById('tlRope');
   container.innerHTML = '';
 
-  // Position the rope line at the dot level
-  rope.style.top = '60px'; // approximate mid of slot-year-label + dot
+  // Position the rope at the dot center: section padding-top(~14px) + label(~20px) + label-mb(~6px) + half-dot(6px)
+  rope.style.top = '44px';
 
   sortedYears.forEach((yr, i) => {
     const slot = document.createElement('div');
@@ -817,11 +864,44 @@ document.addEventListener('pointerup', e => {
 });
 
 function findSlotAtPoint(x, y) {
-  for (const slot of document.querySelectorAll('.tl-slot')) {
-    const r = slot.getBoundingClientRect();
-    if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) return slot;
+  for (const zone of document.querySelectorAll('.slot-drop-zone')) {
+    const r = zone.getBoundingClientRect();
+    if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom)
+      return zone.closest('.tl-slot');
   }
   return null;
+}
+
+/* ============================================================
+   WARP BURST (time travel drop effect)
+============================================================ */
+function triggerWarpBurst(zone) {
+  const rect = zone.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top  + rect.height / 2;
+
+  const ring = document.createElement('div');
+  ring.className = 'warp-ring';
+  ring.style.left = cx + 'px';
+  ring.style.top  = cy + 'px';
+  document.body.appendChild(ring);
+  setTimeout(() => ring.remove(), 600);
+
+  const stars = ['✨','💫','⭐','🌟','⚡','🔮'];
+  for (let i = 0; i < 6; i++) {
+    const s = document.createElement('div');
+    s.className = 'warp-star';
+    s.textContent = stars[i];
+    const angle = (i / 6) * Math.PI * 2;
+    const dist  = 55 + Math.random() * 30;
+    s.style.left = cx + 'px';
+    s.style.top  = cy + 'px';
+    s.style.setProperty('--tx', (Math.cos(angle) * dist) + 'px');
+    s.style.setProperty('--ty', (Math.sin(angle) * dist) + 'px');
+    s.style.animationDelay = (i * 0.04) + 's';
+    document.body.appendChild(s);
+    setTimeout(() => s.remove(), 750);
+  }
 }
 
 /* ============================================================
@@ -865,6 +945,7 @@ function placeEvent(evt, slotYear) {
     updateCheckButton();
   });
 
+  triggerWarpBurst(zone);
   updateProgress();
 }
 
@@ -937,6 +1018,13 @@ function checkAnswers() {
     badge.className = `slot-score-badge ${cls}`;
     badge.textContent = `${pts} pts`;
     slotEl.querySelector('.slot-drop-zone').appendChild(badge);
+
+    // Overlay on the placed card
+    const overlay = document.createElement('div');
+    overlay.className = `result-overlay ${correct ? 'correct' : 'wrong'}`;
+    overlay.innerHTML = `<span class="result-overlay-icon">${correct ? '✅' : '❌'}</span>
+      <span class="result-overlay-label">${correct ? 'CORRECT!' : 'WRONG'}</span>`;
+    slotEl.querySelector('.slot-drop-zone').appendChild(overlay);
 
     // If wrong, highlight the correct slot
     if (!correct) {
