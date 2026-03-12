@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>💬 Parts of Speech Blaster</title>
+<title>💬 Speech Blaster</title>
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
-<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
 <style>
   :root {
     --beige: #f5ead6;
@@ -15,904 +15,1125 @@
     --ink: #3b2f1e;
     --ink-light: #7a5c3a;
     --red: #e8453c;
-    --orange: #f5832a;
-    --c-noun: #4a90d9;
-    --c-noun-bg: #dbeeff;
-    --c-verb: #f5832a;
-    --c-verb-bg: #fdecd4;
-    --c-adj: #9b6fda;
-    --c-adj-bg: #ede0ff;
+    --green: #5cbb6f;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: var(--beige);
+  html, body {
+    height: 100%;
     font-family: 'Nunito', sans-serif;
-    min-height: 100vh;
-    color: var(--ink);
-    overflow-x: hidden;
+    background: #080820;
+    color: #fff;
+    overflow: hidden;
     -webkit-tap-highlight-color: transparent;
     user-select: none;
   }
 
   /* NAV */
   .site-nav {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 0.7rem 1.25rem;
-    background: var(--cream);
-    border-bottom: 3px solid var(--ink);
-    position: sticky;
-    top: 0;
-    z-index: 200;
+    display: flex; align-items: center; gap: 1rem;
+    padding: 0.6rem 1.25rem;
+    background: #0f0f35;
+    border-bottom: 2px solid rgba(255,255,255,0.1);
+    position: relative; z-index: 200;
+    height: 48px;
   }
   .site-nav-back {
-    font-family: 'Fredoka One', cursive;
-    font-size: 0.95rem;
-    color: var(--ink);
-    text-decoration: none;
-    background: var(--beige);
-    border: 2.5px solid var(--ink);
-    border-radius: 10px;
-    padding: 0.28rem 0.75rem;
-    transition: transform 0.15s, background 0.15s;
+    font-family: 'Fredoka One', cursive; font-size: 0.9rem;
+    color: #fff; text-decoration: none;
+    background: rgba(255,255,255,0.1);
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 10px; padding: 0.2rem 0.7rem;
+    transition: background 0.15s;
   }
-  .site-nav-back:hover { background: var(--beige-dark); transform: scale(1.05); }
+  .site-nav-back:hover { background: rgba(255,255,255,0.2); }
   .site-nav-title {
-    font-family: 'Fredoka One', cursive;
-    font-size: 1.15rem;
+    font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: #fff;
   }
 
   /* SCREENS */
-  .screen { display: none; }
+  .screen { display: none; position: absolute; inset: 0; }
   .screen.active { display: flex; flex-direction: column; }
 
-  /* =====================
-     HOME SCREEN
-  ===================== */
+  /* ===================== HOME SCREEN ===================== */
   #homeScreen {
-    max-width: 580px;
-    margin: 0 auto;
-    padding: 2rem 1.25rem 3rem;
+    top: 48px;
     align-items: center;
+    justify-content: center;
+    padding: 1.5rem 1.25rem 2rem;
+    background: radial-gradient(ellipse at 50% 0%, #1a1a5a 0%, #080820 70%);
+    overflow-y: auto;
     text-align: center;
   }
+  .home-stars { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+  .home-content { position: relative; z-index: 1; max-width: 480px; width: 100%; }
   .home-icon {
-    font-size: 5rem;
-    display: inline-block;
-    animation: iconBob 2.5s ease-in-out infinite;
-    filter: drop-shadow(0 6px 14px rgba(0,0,0,0.15));
-    margin-bottom: 0.5rem;
+    font-size: 5rem; display: block; margin-bottom: 0.4rem;
+    animation: iconBob 2.8s ease-in-out infinite;
+    filter: drop-shadow(0 0 20px rgba(150,150,255,0.6));
   }
   @keyframes iconBob {
     0%,100% { transform: translateY(0) rotate(-5deg); }
-    50%      { transform: translateY(-12px) rotate(5deg); }
+    50%      { transform: translateY(-14px) rotate(5deg); }
   }
   .home-title {
     font-family: 'Fredoka One', cursive;
-    font-size: clamp(2rem, 7vw, 3rem);
-    color: var(--ink);
-    text-shadow: 3px 3px 0 var(--beige-darker);
-    line-height: 1.1;
-    margin-bottom: 0.6rem;
+    font-size: clamp(2.2rem, 7vw, 3.2rem);
+    color: #fff;
+    text-shadow: 0 0 30px rgba(150,150,255,0.8);
+    line-height: 1.1; margin-bottom: 0.35rem;
   }
   .home-sub {
-    color: var(--ink-light);
-    font-size: 1rem;
-    font-weight: 700;
-    margin-bottom: 2rem;
+    font-size: 0.95rem; font-weight: 700;
+    color: rgba(200,200,255,0.8); margin-bottom: 1.75rem;
   }
-
-  .diff-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 0.75rem;
-    width: 100%;
-    max-width: 320px;
-    margin-bottom: 2rem;
-  }
+  .diff-grid { display: flex; flex-direction: column; gap: 0.7rem; width: 100%; max-width: 320px; margin: 0 auto 1.75rem; }
   .diff-btn {
-    font-family: 'Fredoka One', cursive;
-    font-size: 1.15rem;
-    padding: 0.85rem 1.5rem;
-    border: 3px solid var(--ink);
-    border-radius: 16px;
-    box-shadow: 4px 4px 0 var(--ink);
-    cursor: pointer;
+    font-family: 'Fredoka One', cursive; font-size: 1.1rem;
+    padding: 0.8rem 1.5rem;
+    border: 2.5px solid rgba(255,255,255,0.4);
+    border-radius: 16px; cursor: pointer;
     transition: transform 0.18s cubic-bezier(.34,1.56,.64,1), box-shadow 0.15s;
-    text-align: left;
+    text-align: left; display: flex; align-items: center; gap: 0.65rem;
   }
-  .diff-btn:hover { transform: translateY(-3px); box-shadow: 4px 7px 0 var(--ink); }
-  .diff-btn:active { transform: translateY(0); box-shadow: 2px 2px 0 var(--ink); }
-  .diff-easy   { background: #ddf5e3; color: #1e7a35; }
-  .diff-medium { background: var(--c-verb-bg); color: #904010; }
-  .diff-hard   { background: #fde8e7; color: #b02020; }
-
+  .diff-btn:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.5); }
+  .diff-easy   { background: rgba(92,187,111,0.2);  color: #a0ffb0; border-color: #5cbb6f; }
+  .diff-medium { background: rgba(245,131,42,0.2);  color: #ffd0a0; border-color: #f5832a; }
+  .diff-hard   { background: rgba(232,69,60,0.2);   color: #ffb0b0; border-color: #e8453c; }
   .how-to-box {
-    background: var(--cream);
-    border: 3px solid var(--ink);
-    border-radius: 18px;
-    box-shadow: 4px 4px 0 var(--ink);
-    padding: 1.25rem 1.5rem;
-    text-align: left;
-    width: 100%;
-    max-width: 420px;
+    background: rgba(255,255,255,0.06);
+    border: 2px solid rgba(255,255,255,0.15);
+    border-radius: 16px; padding: 1rem 1.25rem;
+    text-align: left; width: 100%;
   }
-  .how-to-box h3 {
-    font-family: 'Fredoka One', cursive;
-    font-size: 1.15rem;
-    margin-bottom: 0.6rem;
+  .how-to-box h3 { font-family: 'Fredoka One', cursive; font-size: 1rem; margin-bottom: 0.5rem; color: #fff; }
+  .how-to-box p  { font-size: 0.82rem; font-weight: 700; color: rgba(200,200,255,0.8); line-height: 1.55; }
+  .pos-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.65rem; }
+  .pos-chip {
+    font-family: 'Fredoka One', cursive; font-size: 0.75rem;
+    padding: 0.2rem 0.6rem; border-radius: 20px; border: 1.5px solid currentColor;
   }
-  .how-to-box p {
-    font-size: 0.88rem;
-    font-weight: 700;
-    color: var(--ink-light);
-    line-height: 1.55;
-  }
-  .pos-pills {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-    margin-top: 0.75rem;
-  }
-  .pos-pill {
-    font-family: 'Fredoka One', cursive;
-    font-size: 0.8rem;
-    padding: 0.25rem 0.7rem;
-    border-radius: 20px;
-    border: 2px solid var(--ink);
-  }
+  .chip-n { color: #80c8ff; }
+  .chip-v { color: #ffc080; }
+  .chip-a { color: #d0a0ff; }
 
-  /* =====================
-     GAME SCREEN
-  ===================== */
-  #gameScreen { flex: 1; position: relative; }
-
-  .game-hud {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.6rem 1.2rem;
-    background: var(--cream);
-    border-bottom: 2.5px solid var(--beige-darker);
-    position: relative;
-    z-index: 10;
-  }
-  .hud-lives { font-size: 1.4rem; letter-spacing: 0.1em; min-width: 80px; }
-  .hud-score {
-    font-family: 'Fredoka One', cursive;
-    font-size: 1.5rem;
-    color: var(--ink);
-  }
-  .hud-round {
-    font-family: 'Fredoka One', cursive;
-    font-size: 0.95rem;
-    color: var(--ink-light);
-    min-width: 80px;
-    text-align: right;
-  }
-
-  .target-banner {
-    text-align: center;
-    padding: 0.55rem 1rem;
-    font-family: 'Fredoka One', cursive;
-    font-size: clamp(1.1rem, 4vw, 1.4rem);
-    color: var(--ink);
-    background: var(--beige);
-    border-bottom: 2.5px solid var(--beige-darker);
-    transition: background 0.3s;
-  }
-  .target-banner .target-word {
-    padding: 0.1rem 0.6rem;
-    border-radius: 8px;
-    color: #fff;
-    font-size: 1.1em;
-  }
-
-  .game-area-wrap {
-    position: relative;
-    overflow: hidden;
-    background: var(--cream);
-    border-bottom: 2.5px solid var(--beige-darker);
-    flex: 1;
-    min-height: 280px;
-    max-height: 420px;
-  }
-
-  /* WORD BUBBLES */
-  .word-bubble {
+  /* ===================== GAME CONTAINER ===================== */
+  #gameContainer {
+    top: 48px;
     position: absolute;
-    font-family: 'Fredoka One', cursive;
-    font-size: clamp(1rem, 3.5vw, 1.3rem);
-    padding: 0.45em 1em;
-    border-radius: 50px;
-    border: 3px solid var(--ink);
-    box-shadow: 3px 3px 0 var(--ink);
-    cursor: pointer;
-    white-space: nowrap;
-    animation: word-drift linear forwards;
-    will-change: left;
-    touch-action: none;
-  }
-  .word-bubble.noun { background: var(--c-noun-bg); color: #1e5a99; }
-  .word-bubble.verb { background: var(--c-verb-bg); color: #904010; }
-  .word-bubble.adjective { background: var(--c-adj-bg); color: #5c2ea8; }
-
-  .word-bubble.correct {
-    animation: pop-correct 0.4s cubic-bezier(.34,1.56,.64,1) forwards !important;
-  }
-  .word-bubble.wrong {
-    animation: shake-wrong 0.4s ease forwards !important;
-  }
-
-  @keyframes word-drift {
-    from { left: calc(100% + 10px); }
-    to   { left: -240px; }
-  }
-  @keyframes pop-correct {
-    0%   { transform: scale(1); opacity: 1; }
-    50%  { transform: scale(1.4); opacity: 0.8; }
-    100% { transform: scale(0); opacity: 0; }
-  }
-  @keyframes shake-wrong {
-    0%,100% { transform: translateX(0) scale(1); }
-    20%,60% { transform: translateX(-8px) scale(0.95); }
-    40%,80% { transform: translateX(8px) scale(0.95); }
-  }
-
-  /* Progress */
-  .progress-wrap {
-    padding: 0.5rem 1.2rem;
-    background: var(--beige);
-  }
-  .progress-label {
-    font-family: 'Fredoka One', cursive;
-    font-size: 0.8rem;
-    color: var(--ink-light);
-    margin-bottom: 0.3rem;
-  }
-  .progress-track {
-    background: var(--beige-dark);
-    border-radius: 6px;
-    height: 10px;
+    left: 0; right: 0; bottom: 0;
     overflow: hidden;
-    border: 2px solid var(--beige-darker);
   }
-  .progress-fill {
-    height: 100%;
-    border-radius: 4px;
-    background: #5cbb6f;
-    transition: width 0.3s ease;
-    min-width: 0;
+  #gameCanvas { display: block; width: 100%; height: 100%; touch-action: none; }
+
+  /* HUD overlaid on canvas */
+  .game-hud {
+    position: absolute; top: 0; left: 0; right: 0;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.5rem 0.85rem;
+    background: linear-gradient(180deg, rgba(8,8,32,0.85) 0%, transparent 100%);
+    pointer-events: none; z-index: 10;
+  }
+  .hud-score {
+    font-family: 'Orbitron', monospace; font-size: clamp(1rem, 3.5vw, 1.35rem);
+    font-weight: 900; color: #f7c948;
+    text-shadow: 0 0 12px rgba(247,201,72,0.7);
+  }
+  .hud-target {
+    font-family: 'Fredoka One', cursive; font-size: clamp(0.85rem, 2.8vw, 1.15rem);
+    text-align: center;
+    padding: 0.25rem 0.85rem;
+    border-radius: 30px;
+    border: 2px solid currentColor;
+    letter-spacing: 0.03em;
+  }
+  .hud-lives {
+    font-size: clamp(1rem, 3vw, 1.25rem);
+    letter-spacing: 0.08em;
+    text-shadow: 0 0 10px rgba(255,80,80,0.6);
   }
 
-  /* OVERLAY (round announcement / game over) */
-  .overlay {
-    position: fixed;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    background: rgba(59,47,30,0.6);
-    z-index: 150;
+  /* Powerup bar */
+  .powerup-bar {
+    position: absolute; bottom: 12px; left: 12px;
+    display: flex; flex-direction: column; gap: 6px;
+    pointer-events: none; z-index: 10;
+  }
+  .pw-item {
+    font-family: 'Orbitron', monospace; font-size: 0.65rem; font-weight: 700;
+    padding: 0.2rem 0.5rem;
+    border-radius: 8px; border: 1.5px solid currentColor;
+    display: flex; align-items: center; gap: 5px;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .pw-item.active { opacity: 1; }
+  .pw-shield { color: #4a90d9; background: rgba(74,144,217,0.15); }
+  .pw-slow   { color: #9b6fda; background: rgba(155,111,218,0.15); }
+  .pw-multi  { color: #f7c948; background: rgba(247,201,72,0.15); }
+  .pw-blast  { color: #f5832a; background: rgba(245,131,42,0.15); }
+
+  /* Round announcement overlay */
+  .round-overlay {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(8,8,32,0.75);
+    z-index: 100;
     animation: fadeIn 0.2s ease both;
   }
-  .overlay.hidden { display: none; }
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to   { opacity: 1; }
-  }
-  .overlay-card {
-    background: var(--cream);
-    border: 3px solid var(--ink);
+  .round-overlay.hidden { display: none; }
+  .round-card {
+    background: rgba(15,15,53,0.95);
+    border: 2.5px solid rgba(150,150,255,0.4);
     border-radius: 24px;
-    box-shadow: 6px 6px 0 var(--ink);
     padding: 2rem 2.5rem;
     text-align: center;
-    animation: slideUp 0.3s cubic-bezier(.34,1.56,.64,1) both;
-    max-width: 360px;
-    width: 90%;
+    box-shadow: 0 0 60px rgba(100,100,255,0.3);
+    animation: cardPop 0.3s cubic-bezier(.34,1.56,.64,1) both;
+    max-width: 340px; width: 90%;
   }
-  @keyframes slideUp {
-    from { transform: translateY(30px) scale(0.9); opacity: 0; }
-    to   { transform: translateY(0) scale(1); opacity: 1; }
-  }
-  .overlay-icon { font-size: 3.5rem; margin-bottom: 0.5rem; display: block; }
-  .overlay-title {
-    font-family: 'Fredoka One', cursive;
-    font-size: 2rem;
-    color: var(--ink);
-    margin-bottom: 0.3rem;
-  }
-  .overlay-sub {
-    font-family: 'Fredoka One', cursive;
-    font-size: 1.2rem;
-    margin-bottom: 1.2rem;
-  }
-  .overlay-countdown {
-    font-family: 'Fredoka One', cursive;
-    font-size: 3rem;
-    color: var(--red);
-    margin-top: 0.5rem;
+  .round-num  { font-family: 'Orbitron', monospace; font-size: 1rem; color: rgba(200,200,255,0.7); font-weight: 700; margin-bottom: 0.3rem; letter-spacing: 0.1em; }
+  .round-target { font-family: 'Fredoka One', cursive; font-size: 2.2rem; color: #fff; margin-bottom: 0.5rem; line-height: 1.1; }
+  .round-hint { font-size: 0.82rem; font-weight: 700; color: rgba(200,200,255,0.7); margin-bottom: 1rem; }
+  .round-countdown { font-family: 'Orbitron', monospace; font-size: 3.5rem; font-weight: 900; color: #f7c948; text-shadow: 0 0 20px rgba(247,201,72,0.6); }
+
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes cardPop {
+    from { transform: scale(0.85) translateY(20px); opacity: 0; }
+    to   { transform: scale(1) translateY(0); opacity: 1; }
   }
 
-  /* =====================
-     RESULTS SCREEN
-  ===================== */
+  /* ===================== RESULTS SCREEN ===================== */
   #resultsScreen {
-    max-width: 520px;
-    margin: 0 auto;
-    padding: 2rem 1.25rem 3rem;
-    align-items: center;
-    text-align: center;
+    top: 48px;
+    align-items: center; justify-content: center;
+    padding: 1.5rem 1.25rem 2.5rem;
+    background: radial-gradient(ellipse at 50% 0%, #1a1a5a 0%, #080820 70%);
+    overflow-y: auto; text-align: center;
   }
-  .result-icon { font-size: 5rem; margin-bottom: 0.5rem; display: block; }
-  .result-grade {
-    font-family: 'Fredoka One', cursive;
-    font-size: 5rem;
-    line-height: 1;
-    margin-bottom: 0.3rem;
-  }
-  .result-score {
-    font-family: 'Fredoka One', cursive;
-    font-size: 2rem;
-    color: var(--ink);
-    margin-bottom: 1.5rem;
-  }
-  .stats-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.75rem;
-    width: 100%;
-    max-width: 360px;
-    margin-bottom: 2rem;
+  .res-icon  { font-size: 4.5rem; display: block; margin-bottom: 0.3rem; }
+  .res-grade { font-family: 'Orbitron', monospace; font-size: 5rem; font-weight: 900; line-height: 1; margin-bottom: 0.3rem; text-shadow: 0 0 30px currentColor; }
+  .res-label { font-family: 'Fredoka One', cursive; font-size: 1.4rem; color: rgba(200,200,255,0.8); margin-bottom: 0.3rem; }
+  .res-score { font-family: 'Orbitron', monospace; font-size: 1.6rem; font-weight: 900; color: #f7c948; text-shadow: 0 0 15px rgba(247,201,72,0.6); margin-bottom: 1.5rem; }
+  .res-stats {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 0.65rem; max-width: 360px; width: 100%; margin: 0 auto 1.75rem;
   }
   .stat-card {
-    background: var(--cream);
-    border: 3px solid var(--ink);
-    border-radius: 14px;
-    padding: 0.85rem;
-    box-shadow: 3px 3px 0 var(--ink);
+    background: rgba(255,255,255,0.07);
+    border: 2px solid rgba(255,255,255,0.15);
+    border-radius: 14px; padding: 0.75rem 0.5rem;
   }
-  .stat-val {
-    font-family: 'Fredoka One', cursive;
-    font-size: 2rem;
-    line-height: 1;
-  }
-  .stat-lbl {
-    font-size: 0.72rem;
-    font-weight: 800;
-    color: var(--ink-light);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    margin-top: 0.2rem;
-  }
+  .stat-val { font-family: 'Orbitron', monospace; font-size: 1.8rem; font-weight: 700; line-height: 1; }
+  .stat-lbl { font-size: 0.68rem; font-weight: 800; letter-spacing: 0.06em; opacity: 0.65; margin-top: 0.2rem; text-transform: uppercase; }
   .play-again-btn {
-    font-family: 'Fredoka One', cursive;
-    font-size: 1.25rem;
+    font-family: 'Fredoka One', cursive; font-size: 1.2rem;
     padding: 0.8rem 2.5rem;
-    background: #5cbb6f;
-    color: #fff;
-    border: 3px solid var(--ink);
-    border-radius: 14px;
-    box-shadow: 4px 4px 0 var(--ink);
+    background: rgba(92,187,111,0.2); color: #a0ffb0;
+    border: 2.5px solid #5cbb6f; border-radius: 14px;
     cursor: pointer;
     transition: transform 0.18s cubic-bezier(.34,1.56,.64,1), box-shadow 0.15s;
+    box-shadow: 0 4px 20px rgba(92,187,111,0.2);
   }
-  .play-again-btn:hover { transform: translateY(-3px); box-shadow: 4px 7px 0 var(--ink); }
-
-  /* BURST PARTICLES */
-  .burst-p {
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 20;
-    transition: transform 0.45s ease-out, opacity 0.45s ease-out;
-  }
-
-  /* MISS FLASH */
-  .miss-flash {
-    position: absolute;
-    font-family: 'Fredoka One', cursive;
-    font-size: 1.2rem;
-    color: var(--red);
-    pointer-events: none;
-    z-index: 20;
-    animation: miss-float 0.8s ease forwards;
-  }
-  @keyframes miss-float {
-    from { opacity: 1; transform: translateY(0); }
-    to   { opacity: 0; transform: translateY(-40px); }
-  }
+  .play-again-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(92,187,111,0.4); }
 </style>
 </head>
 <body>
 
 <nav class="site-nav">
   <a href="../" class="site-nav-back">← Home</a>
-  <span class="site-nav-title">💬 Parts of Speech Blaster</span>
+  <span class="site-nav-title">💬 Speech Blaster</span>
 </nav>
 
 <!-- HOME SCREEN -->
 <div class="screen active" id="homeScreen">
-  <div class="home-icon">💬</div>
-  <h1 class="home-title">Parts of Speech<br>Blaster!</h1>
-  <p class="home-sub">Words are flying past — tap the right ones before they escape!</p>
-
-  <div class="diff-grid">
-    <button class="diff-btn diff-easy"   onclick="startGame('easy')">⭐ Easy — Two types, slow speed</button>
-    <button class="diff-btn diff-medium" onclick="startGame('medium')">⭐⭐ Medium — All three types</button>
-    <button class="diff-btn diff-hard"   onclick="startGame('hard')">⭐⭐⭐ Hard — Fast &amp; furious!</button>
-  </div>
-
-  <div class="how-to-box">
-    <h3>🎮 How to Play</h3>
-    <p>A target type appears at the top — <strong>only tap those words</strong> as they float by! Tapping the wrong type costs a life ❤️.</p>
-    <div class="pos-pills">
-      <span class="pos-pill" style="background:var(--c-noun-bg);color:#1e5a99">🔵 Nouns — people, places, things</span>
-      <span class="pos-pill" style="background:var(--c-verb-bg);color:#904010">🟠 Verbs — actions &amp; doing words</span>
-      <span class="pos-pill" style="background:var(--c-adj-bg);color:#5c2ea8">🟣 Adjectives — describing words</span>
+  <div class="home-stars" id="homeStars"></div>
+  <div class="home-content">
+    <span class="home-icon">💬</span>
+    <h1 class="home-title">Speech<br>Blaster!</h1>
+    <p class="home-sub">🛸 Defend your planet — blast the right words out of the sky!</p>
+    <div class="diff-grid">
+      <button class="diff-btn diff-easy"   onclick="startGame('easy')">  ⭐ Easy   <small style="font-size:0.7rem;opacity:0.7">Slow · 2 types</small></button>
+      <button class="diff-btn diff-medium" onclick="startGame('medium')">⭐⭐ Medium <small style="font-size:0.7rem;opacity:0.7">Faster · All 3 types</small></button>
+      <button class="diff-btn diff-hard"   onclick="startGame('hard')">  ⭐⭐⭐ Hard  <small style="font-size:0.7rem;opacity:0.7">Chaos · Lots of words!</small></button>
+    </div>
+    <div class="how-to-box">
+      <h3>🎮 How to Play</h3>
+      <p>Aim with your mouse or finger — <strong>tap/click to fire</strong> at the target words!<br>Let the wrong words fall — they give you <strong>powerups</strong> when they hit your planet. But if a target word slips through — you lose a ❤️!</p>
+      <div class="pos-chips">
+        <span class="pos-chip chip-n">🔵 Nouns — things</span>
+        <span class="pos-chip chip-v">🟠 Verbs — actions</span>
+        <span class="pos-chip chip-a">🟣 Adjectives — describing words</span>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- GAME SCREEN -->
-<div class="screen" id="gameScreen">
+<!-- GAME CONTAINER -->
+<div id="gameContainer">
+  <canvas id="gameCanvas"></canvas>
+
+  <!-- HUD overlay -->
   <div class="game-hud">
-    <div class="hud-lives" id="livesDisplay">❤️❤️❤️</div>
-    <div class="hud-score" id="scoreDisplay">0</div>
-    <div class="hud-round" id="roundDisplay">Round 1/5</div>
+    <div class="hud-score" id="hudScore">0</div>
+    <div class="hud-target" id="hudTarget" style="color:#80c8ff;border-color:#80c8ff">BLAST THE NOUNS!</div>
+    <div class="hud-lives" id="hudLives">❤️❤️❤️</div>
   </div>
 
-  <div class="target-banner" id="targetBanner">
-    TAP ALL THE <span class="target-word" id="targetWordSpan">NOUNS</span>! 🎯
+  <!-- Powerup status bar -->
+  <div class="powerup-bar">
+    <div class="pw-item pw-shield" id="pwShield">🛡️ SHIELD</div>
+    <div class="pw-item pw-slow"   id="pwSlow">  ⏱️ SLOW</div>
+    <div class="pw-item pw-multi"  id="pwMulti">💰 2×</div>
+    <div class="pw-item pw-blast"  id="pwBlast">💥 BLAST!</div>
   </div>
 
-  <div class="game-area-wrap" id="gameArea"></div>
-
-  <div class="progress-wrap">
-    <div class="progress-label" id="progressLabel">Progress: 0 / 8</div>
-    <div class="progress-track">
-      <div class="progress-fill" id="progressFill" style="width:0%"></div>
+  <!-- Round announcement overlay -->
+  <div class="round-overlay hidden" id="roundOverlay">
+    <div class="round-card">
+      <div class="round-num"   id="roNum">ROUND 1 / 5</div>
+      <div class="round-target" id="roTarget">BLAST THE NOUNS!</div>
+      <div class="round-hint"  id="roHint">Shoot nouns — let everything else fall!</div>
+      <div class="round-countdown" id="roCountdown">3</div>
     </div>
   </div>
 </div>
 
 <!-- RESULTS SCREEN -->
 <div class="screen" id="resultsScreen">
-  <span class="result-icon" id="resultIcon">🏆</span>
-  <div class="result-grade" id="resultGrade">A</div>
-  <div class="result-score" id="resultScore">Score: 0</div>
-  <div class="stats-grid">
-    <div class="stat-card">
-      <div class="stat-val" id="statCorrect" style="color:#5cbb6f">0</div>
-      <div class="stat-lbl">Correct Taps</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-val" id="statWrong" style="color:var(--red)">0</div>
-      <div class="stat-lbl">Wrong Taps</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-val" id="statRounds">5</div>
-      <div class="stat-lbl">Rounds Played</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-val" id="statBonus" style="color:#9b6fda">0</div>
-      <div class="stat-lbl">Bonus Points</div>
-    </div>
+  <span class="res-icon"  id="resIcon">🏆</span>
+  <div class="res-grade"  id="resGrade" style="color:#f7c948">A</div>
+  <div class="res-label"  id="resLabel">Outstanding!</div>
+  <div class="res-score"  id="resScore">0 pts</div>
+  <div class="res-stats">
+    <div class="stat-card"><div class="stat-val" id="stCorrect" style="color:#5cbb6f">0</div><div class="stat-lbl">Blasted</div></div>
+    <div class="stat-card"><div class="stat-val" id="stWrong"   style="color:#e8453c">0</div><div class="stat-lbl">Wrong Shots</div></div>
+    <div class="stat-card"><div class="stat-val" id="stPowerup" style="color:#9b6fda">0</div><div class="stat-lbl">Powerups</div></div>
+    <div class="stat-card"><div class="stat-val" id="stRound">5</div><div class="stat-lbl">Rounds</div></div>
   </div>
-  <button class="play-again-btn" id="playAgainBtn">🎮 Play Again</button>
-</div>
-
-<!-- OVERLAY (announcements) -->
-<div class="overlay hidden" id="overlay">
-  <div class="overlay-card">
-    <span class="overlay-icon" id="overlayIcon">🎯</span>
-    <div class="overlay-title" id="overlayTitle">Round 1</div>
-    <div class="overlay-sub" id="overlaySub">TAP THE NOUNS!</div>
-    <div class="overlay-countdown" id="overlayCountdown">3</div>
-  </div>
+  <button class="play-again-btn" onclick="goHome()">🎮 Play Again</button>
 </div>
 
 <script>
 /* ============================================================
-   WORD BANK
+   WORD BANK  (60 per type, shuffled without replacement)
 ============================================================ */
-const WORDS = {
-  noun: ['cat','dog','house','tree','school','book','car','bird','river',
-         'mountain','city','table','phone','apple','star','door','planet',
-         'rocket','castle','dragon','sword','flower','ocean','forest','cloud',
-         'fire','hero','dream','music','storm','thunder','treasure','robot',
-         'bridge','island','rainbow','monster','wizard','ship','cave'],
-  verb: ['run','jump','swim','fly','eat','sleep','read','write','sing','dance',
-         'play','laugh','think','talk','walk','climb','drive','cook','draw',
-         'throw','catch','build','explore','discover','chase','spin','blast',
-         'zoom','crash','bounce','float','glow','hide','lift','push','pull',
-         'break','shine','grow','fall'],
-  adjective: ['big','small','red','blue','happy','sad','fast','slow','tall',
-              'short','hot','cold','bright','dark','loud','quiet','soft','hard',
-              'funny','brave','clever','wild','ancient','magical','tiny','glowing',
-              'mysterious','powerful','silly','gentle','fierce','golden','silver',
-              'frozen','burning','fluffy','shiny','mighty','sweet','sharp']
+const RAW_WORDS = {
+  noun: [
+    'cat','dog','house','tree','school','book','car','bird','river','mountain',
+    'city','table','phone','apple','star','door','planet','rocket','castle','dragon',
+    'sword','flower','ocean','forest','cloud','fire','hero','dream','music','storm',
+    'thunder','treasure','robot','bridge','island','rainbow','monster','wizard','ship',
+    'cave','crown','crystal','tunnel','volcano','lighthouse','comet','nebula','galaxy',
+    'portal','knight','garden','jungle','diamond','echo','shadow','spirit','fortress',
+    'beacon','glacier','canyon','labyrinth'
+  ],
+  verb: [
+    'run','jump','swim','fly','eat','sleep','read','write','sing','dance',
+    'play','laugh','think','talk','walk','climb','drive','cook','draw','throw',
+    'catch','build','explore','discover','chase','spin','blast','zoom','crash','bounce',
+    'float','glow','hide','lift','push','pull','break','shine','grow','fall',
+    'soar','dive','orbit','collide','vanish','appear','transform','ignite','freeze','shatter',
+    'emerge','invade','rescue','battle','defend','dodge','charge','leap','sprint','hover'
+  ],
+  adjective: [
+    'big','small','red','blue','happy','sad','fast','slow','tall','short',
+    'hot','cold','bright','dark','loud','quiet','soft','hard','funny','brave',
+    'clever','wild','ancient','magical','tiny','glowing','mysterious','powerful','silly','gentle',
+    'fierce','golden','silver','frozen','burning','fluffy','shiny','mighty','sweet','sharp',
+    'cosmic','electric','rusty','invisible','massive','vibrant','hollow','twisted','jagged','graceful',
+    'nimble','radiant','distant','crimson','emerald','sapphire','blazing','icy','stormy','legendary'
+  ]
 };
 
-const POS_CONFIG = {
-  noun:      { label: 'NOUNS',      color: 'var(--c-noun)',  bg: 'var(--c-noun-bg)',  bannerBg: '#dbeeff' },
-  verb:      { label: 'VERBS',      color: 'var(--c-verb)',  bg: 'var(--c-verb-bg)',  bannerBg: '#fdecd4' },
-  adjective: { label: 'ADJECTIVES', color: 'var(--c-adj)',   bg: 'var(--c-adj-bg)',   bannerBg: '#ede0ff' }
-};
+// Shuffle-without-replacement queues
+const queues = { noun: [], verb: [], adjective: [] };
+function getWord(type) {
+  if (!queues[type].length) queues[type] = shuffle([...RAW_WORDS[type]]);
+  return queues[type].pop();
+}
 
 /* ============================================================
    DIFFICULTY CONFIG
 ============================================================ */
-const DIFF_CONFIG = {
-  easy:   {
-    crossTime: [5.5, 7.0], spawnDelay: 2600, targetGoal: 8,
-    targets: ['noun','verb','noun','verb','noun'],
-    activeTypes: ['noun','verb'],
-    targetRatio: 0.5  // 50% target words
-  },
-  medium: {
-    crossTime: [3.8, 5.2], spawnDelay: 2000, targetGoal: 8,
-    targets: ['noun','verb','adjective','noun','verb'],
-    activeTypes: ['noun','verb','adjective'],
-    targetRatio: 0.4
-  },
-  hard:   {
-    crossTime: [2.5, 3.8], spawnDelay: 1500, targetGoal: 10,
-    targets: ['adjective','noun','verb','adjective','noun'],
-    activeTypes: ['noun','verb','adjective'],
-    targetRatio: 0.38
-  }
+const DIFFS = {
+  easy:   { spawnMs:2800, speedPx:[55,90],  maxOnScreen:2, targetRatio:0.45, goal:8,  types:['noun','verb'] },
+  medium: { spawnMs:2100, speedPx:[85,135], maxOnScreen:3, targetRatio:0.42, goal:10, types:['noun','verb','adjective'] },
+  hard:   { spawnMs:1500, speedPx:[120,190],maxOnScreen:4, targetRatio:0.38, goal:12, types:['noun','verb','adjective'] }
 };
+const ROUND_TARGETS = ['noun','verb','adjective','noun','verb'];
+
+/* ============================================================
+   POS VISUAL CONFIG
+============================================================ */
+const POS_VIS = {
+  noun:      { fill:'rgba(8,20,60,0.88)',  border:'#4a90d9',  text:'#90c8ff', glow:'#4a90d9', hudColor:'#80c8ff',  hudBorder:'#4a90d9',  label:'NOUNS',      hint:'Shoot nouns — let everything else fall!' },
+  verb:      { fill:'rgba(60,25,8,0.88)',  border:'#f5832a',  text:'#ffd090', glow:'#f5832a', hudColor:'#ffd090',  hudBorder:'#f5832a',  label:'VERBS',      hint:'Shoot verbs — let everything else fall!' },
+  adjective: { fill:'rgba(40,8,60,0.88)', border:'#9b6fda',  text:'#d0a0ff', glow:'#9b6fda', hudColor:'#d0a0ff',  hudBorder:'#9b6fda',  label:'ADJECTIVES', hint:'Shoot adjectives — let everything else fall!' }
+};
+
+/* ============================================================
+   CANVAS SETUP
+============================================================ */
+const canvas  = document.getElementById('gameCanvas');
+const ctx     = canvas.getContext('2d');
+const PLANET_R = 80;
+let W, H, planetCX, planetCY;
+
+function resizeCanvas() {
+  const container = document.getElementById('gameContainer');
+  W = canvas.width  = container.clientWidth;
+  H = canvas.height = container.clientHeight;
+  planetCX = W / 2;
+  planetCY = H + PLANET_R - 55;
+  initStars();
+}
+window.addEventListener('resize', resizeCanvas);
 
 /* ============================================================
    GAME STATE
 ============================================================ */
-let state = {};
-let spawnTimer = null;
+let diff, cfg, phase; // 'idle'|'announcing'|'playing'|'over'
+let score, lives, round, currentTarget, targetKilled, wrongShots, powerupsCollected, totalCorrect;
+let multiplier;
+let shieldActive, shieldTimer;
+let slowActive, slowTimer;
+let multiActive, multiTimer;
+let cannonAngle;
+let spawnTimer, countdownTimer, animId;
 
-function resetState(diff) {
-  const cfg = DIFF_CONFIG[diff];
-  return {
-    diff, cfg,
-    lives: 3,
-    score: 0,
-    round: 0,
-    currentTarget: '',
-    targetGoal: cfg.targetGoal,
-    targetSeen: 0,
-    correctTaps: 0,
-    wrongTaps: 0,
-    bonusPoints: 0,
-    wrongThisRound: 0,
-    phase: 'idle'
-  };
+// Object lists
+let words, lasers, particles, floatTexts;
+
+// Stars
+let stars = [];
+function initStars() {
+  stars = [];
+  for (let i = 0; i < 160; i++) {
+    stars.push({
+      x: Math.random() * W, y: Math.random() * H,
+      r: Math.random() * 1.8 + 0.3,
+      baseOpacity: Math.random() * 0.5 + 0.15,
+      twinkleSpeed: Math.random() * 2.5 + 0.8,
+      twinkleOff: Math.random() * Math.PI * 2
+    });
+  }
 }
 
 /* ============================================================
-   UI HELPERS
+   SCREEN MANAGEMENT
 ============================================================ */
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+  const el = document.getElementById(id);
+  if (el) el.classList.add('active');
 }
 
-function updateHUD() {
-  const hearts = ['❤️','❤️','❤️'].slice(0, state.lives).join('') + '🖤'.repeat(3 - state.lives);
-  document.getElementById('livesDisplay').textContent = hearts;
-  document.getElementById('scoreDisplay').textContent = state.score;
-  document.getElementById('roundDisplay').textContent = `Round ${state.round}/5`;
-}
-
-function updateProgress() {
-  const pct = Math.min(100, (state.targetSeen / state.targetGoal) * 100);
-  document.getElementById('progressFill').style.width = pct + '%';
-  document.getElementById('progressLabel').textContent =
-    `Progress: ${Math.min(state.targetSeen, state.targetGoal)} / ${state.targetGoal}`;
-}
-
-function setTargetBanner(pos) {
-  const cfg = POS_CONFIG[pos];
-  const span = document.getElementById('targetWordSpan');
-  span.textContent = cfg.label;
-  span.style.background = cfg.color;
-  span.style.color = '#fff';
-  document.getElementById('targetBanner').style.background = cfg.bannerBg;
+function goHome() {
+  stopGame();
+  showScreen('homeScreen');
 }
 
 /* ============================================================
-   OVERLAY / COUNTDOWN
+   GAME START / ROUND MANAGEMENT
 ============================================================ */
-function showOverlay(icon, title, sub, countdownFrom, onDone) {
-  const overlay = document.getElementById('overlay');
-  overlay.classList.remove('hidden');
-  document.getElementById('overlayIcon').textContent = icon;
-  document.getElementById('overlayTitle').textContent = title;
-  document.getElementById('overlaySub').textContent = sub;
+function startGame(difficulty) {
+  diff  = difficulty;
+  cfg   = DIFFS[diff];
+  score = 0; lives = 3; round = 0;
+  wrongShots = 0; powerupsCollected = 0; totalCorrect = 0;
+  multiplier = 1;
+  shieldActive = false; slowActive = false; multiActive = false;
+  cannonAngle = -Math.PI / 2;
+  words = []; lasers = []; particles = []; floatTexts = [];
 
-  let count = countdownFrom;
-  document.getElementById('overlayCountdown').textContent = count;
+  document.getElementById('gameContainer').classList.add('active');
+  showScreen(null); // hide all HTML screens
+  document.getElementById('gameContainer').style.display = '';
 
-  const tick = setInterval(() => {
-    count--;
-    if (count <= 0) {
-      clearInterval(tick);
-      overlay.classList.add('hidden');
-      onDone();
-    } else {
-      document.getElementById('overlayCountdown').textContent = count;
+  resizeCanvas();
+  startRound();
+  if (!animId) gameLoop();
+}
+
+function startRound() {
+  words = []; lasers = []; particles = []; floatTexts = [];
+  currentTarget = ROUND_TARGETS[round % ROUND_TARGETS.length];
+  targetKilled = 0;
+  phase = 'announcing';
+  clearTimeout(spawnTimer);
+  showRoundAnnounce();
+  updateHUD();
+}
+
+function showRoundAnnounce() {
+  const ov = document.getElementById('roundOverlay');
+  const vis = POS_VIS[currentTarget];
+  ov.classList.remove('hidden');
+  document.getElementById('roNum').textContent    = `ROUND ${round + 1} / 5`;
+  document.getElementById('roTarget').textContent = `BLAST THE ${vis.label}!`;
+  document.getElementById('roTarget').style.color = vis.hudColor;
+  document.getElementById('roHint').textContent   = vis.hint;
+  let c = 3;
+  document.getElementById('roCountdown').textContent = c;
+  clearInterval(countdownTimer);
+  countdownTimer = setInterval(() => {
+    c--;
+    document.getElementById('roCountdown').textContent = c;
+    if (c <= 0) {
+      clearInterval(countdownTimer);
+      ov.classList.add('hidden');
+      phase = 'playing';
+      scheduleSpawn();
     }
   }, 900);
 }
 
-/* ============================================================
-   START / ROUND MANAGEMENT
-============================================================ */
-function startGame(diff) {
-  state = resetState(diff);
-  showScreen('gameScreen');
-  nextRound();
-}
-
-function nextRound() {
-  clearSpawner();
-  clearWords();
-
-  state.round++;
-  if (state.round > 5) {
-    showResults();
-    return;
-  }
-
-  state.currentTarget = state.cfg.targets[state.round - 1];
-  state.targetSeen = 0;
-  state.wrongThisRound = 0;
-  state.phase = 'announcing';
-
-  updateHUD();
-  updateProgress();
-  setTargetBanner(state.currentTarget);
-
-  const posLabel = POS_CONFIG[state.currentTarget].label;
-  showOverlay('🎯', `Round ${state.round}`, `TAP THE ${posLabel}!`, 3, beginSpawning);
-}
-
-function beginSpawning() {
-  state.phase = 'playing';
-  scheduleNextSpawn();
-}
-
-function scheduleNextSpawn() {
-  if (state.phase !== 'playing') return;
-  const delay = state.cfg.spawnDelay * (0.8 + Math.random() * 0.4);
+function scheduleSpawn() {
+  if (phase !== 'playing') return;
+  const delay = cfg.spawnMs * (0.75 + Math.random() * 0.5);
   spawnTimer = setTimeout(() => {
-    spawnWord();
-    scheduleNextSpawn();
+    if (phase === 'playing') {
+      if (words.filter(w => !w.dead).length < cfg.maxOnScreen) spawnWord();
+      scheduleSpawn();
+    }
   }, delay);
 }
 
-function clearSpawner() {
+function stopGame() {
+  phase = 'idle';
   clearTimeout(spawnTimer);
-  spawnTimer = null;
-}
-
-function clearWords() {
-  const area = document.getElementById('gameArea');
-  area.querySelectorAll('.word-bubble').forEach(w => w.remove());
+  clearInterval(countdownTimer);
+  if (animId) { cancelAnimationFrame(animId); animId = null; }
+  document.getElementById('roundOverlay').classList.add('hidden');
+  document.getElementById('gameContainer').style.display = 'none';
 }
 
 /* ============================================================
    WORD SPAWNING
 ============================================================ */
-function pickWordType() {
-  const r = Math.random();
-  if (r < state.cfg.targetRatio) return state.currentTarget;
-  // Pick a random non-target from active types
-  const others = state.cfg.activeTypes.filter(t => t !== state.currentTarget);
-  return others[Math.floor(Math.random() * others.length)];
-}
-
 function spawnWord() {
-  if (state.phase !== 'playing') return;
+  const types = cfg.types;
+  const isTarget = Math.random() < cfg.targetRatio;
+  const type = isTarget ? currentTarget : types.filter(t => t !== currentTarget)[Math.floor(Math.random() * (types.length - 1))];
+  const text = getWord(type);
+  const vis  = POS_VIS[type];
 
-  const area = document.getElementById('gameArea');
-  const areaH = area.offsetHeight;
-  if (areaH < 40) return;
+  // Measure text width
+  ctx.font = 'bold 16px Nunito';
+  const tw  = ctx.measureText(text).width;
+  const bw  = tw + 30;
+  const bh  = 38;
 
-  const type = pickWordType();
-  const wordList = WORDS[type];
-  const text = wordList[Math.floor(Math.random() * wordList.length)];
+  const slowFactor = slowActive ? 0.4 : 1.0;
+  const [minV, maxV] = cfg.speedPx;
+  const speed = (minV + Math.random() * (maxV - minV)) * slowFactor;
+  const margin = bw / 2 + 10;
 
-  const [minT, maxT] = state.cfg.crossTime;
-  const duration = minT + Math.random() * (maxT - minT);
-
-  const minY = 8, maxY = areaH - 55;
-  const top = Math.floor(Math.random() * (maxY - minY) + minY);
-
-  const bubble = document.createElement('div');
-  bubble.className = `word-bubble ${type}`;
-  bubble.textContent = text;
-  bubble.dataset.type = type;
-  bubble.dataset.tapped = 'false';
-  bubble.style.top = top + 'px';
-  bubble.style.animationDuration = duration + 's';
-  area.appendChild(bubble);
-
-  // Count target words spawned
-  if (type === state.currentTarget) {
-    state.targetSeen++;
-    updateProgress();
-    if (state.targetSeen >= state.targetGoal) {
-      state.phase = 'roundEnding';
-      clearSpawner();
-      // Let remaining words finish, then end round after delay
-      setTimeout(finishRound, duration * 1000 + 600);
-    }
-  }
-
-  // Tap handler
-  bubble.addEventListener('pointerdown', (e) => {
-    e.preventDefault();
-    if (bubble.dataset.tapped === 'true') return;
-    bubble.dataset.tapped = 'true';
-    handleTap(bubble, e);
-  }, { once: true });
-
-  // Animationend — word exited
-  bubble.addEventListener('animationend', () => {
-    bubble.remove();
+  words.push({
+    text, type, vis,
+    x: margin + Math.random() * (W - margin * 2),
+    y: -bh,
+    vy: speed / 60,   // px per frame (targeting 60fps)
+    vx: (Math.random() - 0.5) * 0.4,
+    bw, bh,
+    shot: false, collected: false, dead: false,
+    opacity: 1
   });
 }
 
 /* ============================================================
-   TAP HANDLING
+   FIRE!
 ============================================================ */
-function handleTap(bubble, e) {
-  const area = document.getElementById('gameArea');
-  const isTarget = bubble.dataset.type === state.currentTarget;
-
-  // Get position for burst
-  const bRect = bubble.getBoundingClientRect();
-  const aRect = area.getBoundingClientRect();
-  const cx = bRect.left + bRect.width / 2 - aRect.left;
-  const cy = bRect.top  + bRect.height / 2 - aRect.top;
-
-  // Freeze the word in place
-  const currentLeft = bRect.left - aRect.left;
-  bubble.style.animationPlayState = 'paused';
-  bubble.style.animation = 'none';
-  bubble.style.left = currentLeft + 'px';
-
-  if (isTarget) {
-    // CORRECT
-    state.score += 10;
-    state.correctTaps++;
-    bubble.classList.add('correct');
-    createBurst(cx, cy, 'var(--c-noun)', ['#5cbb6f','#f7c948','#4a90d9','#9b6fda']);
-    showFloatingText('+10', cx, cy, '#5cbb6f');
-    setTimeout(() => bubble.remove(), 400);
-  } else {
-    // WRONG
-    state.wrongTaps++;
-    state.wrongThisRound++;
-    loseLife();
-    bubble.classList.add('wrong');
-    showFloatingText('✗', cx, cy, '#e8453c');
-    setTimeout(() => bubble.remove(), 450);
-  }
-
-  updateHUD();
-}
-
-function loseLife() {
-  state.lives = Math.max(0, state.lives - 1);
-  if (state.lives === 0) {
-    state.phase = 'over';
-    clearSpawner();
-    setTimeout(showResults, 800);
-  }
+function fire(tx, ty) {
+  if (phase !== 'playing') return;
+  const SPEED = 1800;
+  const angle = Math.atan2(ty - planetCY, tx - planetCX);
+  const clampedAngle = Math.max(-Math.PI + 0.25, Math.min(-0.25, angle));
+  cannonAngle = clampedAngle;
+  const tipX = planetCX + Math.cos(clampedAngle) * (PLANET_R + 12);
+  const tipY = planetCY + Math.sin(clampedAngle) * (PLANET_R + 12);
+  const dist = Math.hypot(tx - tipX, ty - tipY);
+  const nx = (tx - tipX) / dist;
+  const ny = (ty - tipY) / dist;
+  lasers.push({
+    x: tipX, y: tipY, vx: nx * SPEED / 60, vy: ny * SPEED / 60,
+    startX: tipX, startY: tipY, age: 0, maxAge: 0.3, hit: false
+  });
 }
 
 /* ============================================================
-   ROUND END
+   INPUT
 ============================================================ */
-function finishRound() {
-  if (state.phase === 'over') return;
-  // Bonus for clean round
-  if (state.wrongThisRound === 0) {
-    state.bonusPoints += 25;
-    state.score += 25;
+canvas.addEventListener('pointerdown', e => {
+  e.preventDefault();
+  const r = canvas.getBoundingClientRect();
+  const sx = canvas.width  / r.width;
+  const sy = canvas.height / r.height;
+  fire((e.clientX - r.left) * sx, (e.clientY - r.top) * sy);
+}, { passive: false });
+
+canvas.addEventListener('pointermove', e => {
+  if (phase !== 'playing') return;
+  const r = canvas.getBoundingClientRect();
+  const sx = canvas.width  / r.width;
+  const sy = canvas.height / r.height;
+  const tx = (e.clientX - r.left) * sx;
+  const ty = (e.clientY - r.top)  * sy;
+  cannonAngle = Math.max(-Math.PI + 0.25, Math.min(-0.25, Math.atan2(ty - planetCY, tx - planetCX)));
+}, { passive: true });
+
+/* ============================================================
+   GAME LOOP
+============================================================ */
+let lastTs = 0;
+function gameLoop(ts = 0) {
+  animId = requestAnimationFrame(gameLoop);
+  const dt = Math.min((ts - lastTs) / 1000, 0.05);
+  lastTs = ts;
+
+  if (phase === 'playing' || phase === 'announcing') {
+    update(dt);
   }
+  draw(ts);
+}
 
-  clearWords();
+/* ============================================================
+   UPDATE
+============================================================ */
+function update(dt) {
+  if (phase !== 'playing') { updateParticles(dt); return; }
 
-  if (state.round >= 5 || state.lives <= 0) {
+  const slow = slowActive ? 0.38 : 1.0;
+
+  // Update timers
+  if (slowActive)  { slowTimer  -= dt; if (slowTimer  <= 0) { slowActive  = false; updatePowerupBar(); } }
+  if (multiActive) { multiTimer -= dt; if (multiTimer <= 0) { multiActive = false; multiplier = 1; updatePowerupBar(); } }
+  if (shieldActive && shieldTimer > 0) { shieldTimer -= dt; }
+
+  // Words
+  words.forEach(w => {
+    if (w.dead) return;
+    w.x += w.vx;
+    w.y += w.vy * slow;
+    // Bounce walls
+    if (w.x - w.bw/2 < 0)  { w.x = w.bw/2; w.vx = Math.abs(w.vx); }
+    if (w.x + w.bw/2 > W)  { w.x = W - w.bw/2; w.vx = -Math.abs(w.vx); }
+  });
+
+  // Lasers
+  lasers.forEach(l => { l.x += l.vx; l.y += l.vy; l.age += dt; });
+
+  updateParticles(dt);
+  floatTexts.forEach(f => { f.y -= 55 * dt; f.age += dt; });
+  floatTexts = floatTexts.filter(f => f.age < 0.9);
+
+  // Collision: laser vs word
+  lasers.forEach(laser => {
+    if (laser.hit || laser.age > laser.maxAge) return;
+    words.forEach(word => {
+      if (word.shot || word.collected || word.dead) return;
+      if (laser.x >= word.x - word.bw/2 && laser.x <= word.x + word.bw/2 &&
+          laser.y >= word.y - word.bh/2 && laser.y <= word.y + word.bh/2) {
+        laser.hit = true;
+        word.shot = true;
+        word.dead = true;
+        if (word.type === currentTarget) {
+          onCorrectHit(word);
+        } else {
+          onWrongHit(word);
+        }
+      }
+    });
+  });
+  lasers = lasers.filter(l => !l.hit && l.age < l.maxAge && l.y > -50 && l.y < H + 50 && l.x > -50 && l.x < W + 50);
+
+  // Words reaching planet
+  words.forEach(word => {
+    if (word.dead || word.shot || word.collected) return;
+    if (word.y + word.bh / 2 > planetCY - PLANET_R + 20) {
+      word.collected = true;
+      word.dead = true;
+      if (word.type === currentTarget) {
+        onMissedTarget(word);
+      } else {
+        onCollectedWrong(word);
+      }
+    }
+  });
+
+  words = words.filter(w => !w.dead || w.opacity > 0);
+}
+
+function updateParticles(dt) {
+  particles.forEach(p => {
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+    p.vy += 80 * dt; // gravity
+    p.vx *= 0.96;
+    p.age += dt;
+  });
+  particles = particles.filter(p => p.age < p.life);
+}
+
+/* ============================================================
+   HIT HANDLERS
+============================================================ */
+function onCorrectHit(word) {
+  const pts = 10 * multiplier;
+  score += pts;
+  totalCorrect++;
+  targetKilled++;
+  burst(word.x, word.y, word.vis.border, 18);
+  floatText(`+${pts}`, word.x, word.y - 20, word.vis.border);
+  updateHUD();
+
+  if (targetKilled >= cfg.goal) {
+    phase = 'roundEnding';
+    clearTimeout(spawnTimer);
+    setTimeout(endRound, 1400);
+  }
+}
+
+function onWrongHit(word) {
+  wrongShots++;
+  lives = Math.max(0, lives - 1);
+  burst(word.x, word.y, '#e8453c', 12);
+  floatText('✗ WRONG!', word.x, word.y - 20, '#ff6060');
+  screenShake();
+  updateHUD();
+  if (lives <= 0) { phase = 'over'; setTimeout(showResults, 800); }
+}
+
+function onMissedTarget(word) {
+  if (shieldActive) {
+    shieldActive = false;
+    updatePowerupBar();
+    floatText('🛡️ BLOCKED!', word.x, planetCY - PLANET_R - 30, '#4a90d9');
+    return;
+  }
+  lives = Math.max(0, lives - 1);
+  floatText('MISSED! ❌', word.x, planetCY - PLANET_R - 30, '#ff6060');
+  screenShake();
+  updateHUD();
+  if (lives <= 0) { phase = 'over'; setTimeout(showResults, 800); }
+}
+
+function onCollectedWrong(word) {
+  powerupsCollected++;
+  const roll = Math.random();
+  if (roll < 0.28) {
+    // Shield
+    shieldActive = true; shieldTimer = 999;
+    floatText('🛡️ SHIELD!', word.x, planetCY - PLANET_R - 40, '#4a90d9');
+    activatePowerup('shield');
+  } else if (roll < 0.52) {
+    // Slow
+    slowActive = true; slowTimer = 8;
+    floatText('⏱️ SLOW!', word.x, planetCY - PLANET_R - 40, '#9b6fda');
+    activatePowerup('slow');
+  } else if (roll < 0.72) {
+    // Double points
+    multiActive = true; multiTimer = 10; multiplier = 2;
+    floatText('💰 2× POINTS!', word.x, planetCY - PLANET_R - 40, '#f7c948');
+    activatePowerup('multi');
+  } else if (roll < 0.85) {
+    // BLAST ALL — destroy all words
+    activatePowerup('blast');
+    floatText('💥 BLAST ALL!', W / 2, H / 2, '#f5832a');
+    words.forEach(w => {
+      if (!w.dead) {
+        w.dead = true;
+        burst(w.x, w.y, w.type === currentTarget ? w.vis.border : '#f5832a', 10);
+      }
+    });
+  } else {
+    // Bonus points silently
+    score += 5;
+    floatText('+5 ⭐', word.x, planetCY - PLANET_R - 35, '#f7c948');
+    updateHUD();
+  }
+}
+
+function activatePowerup(type) {
+  updatePowerupBar();
+  // Flash the badge
+  const map = { shield:'pwShield', slow:'pwSlow', multi:'pwMulti', blast:'pwBlast' };
+  const el = document.getElementById(map[type]);
+  if (el) { el.style.transform = 'scale(1.3)'; setTimeout(() => el.style.transform = '', 300); }
+}
+
+/* ============================================================
+   ROUND END / RESULTS
+============================================================ */
+function endRound() {
+  if (phase === 'over') return;
+  round++;
+  if (round >= 5 || lives <= 0) {
     showResults();
   } else {
-    const posLabel = POS_CONFIG[state.currentTarget].label;
-    const clean = state.wrongThisRound === 0 ? '⭐ Perfect Round! +25 bonus!' : '';
-    showOverlay('✅', `Round ${state.round} Done!`, clean || `Score: ${state.score}`, 2, nextRound);
+    startRound();
   }
 }
 
-/* ============================================================
-   RESULTS
-============================================================ */
 function showResults() {
-  clearSpawner();
-  clearWords();
+  stopGame();
   showScreen('resultsScreen');
 
-  const maxScore = state.cfg.targetGoal * 5 * 10 + 125; // 5 rounds * 10pts + 5 bonuses
-  const pct = state.score / maxScore;
-  let grade, icon;
-  if (pct >= 0.9)      { grade = 'A+'; icon = '🏆'; }
-  else if (pct >= 0.75) { grade = 'A';  icon = '🌟'; }
-  else if (pct >= 0.6)  { grade = 'B',  icon = '😊'; }
-  else if (pct >= 0.45) { grade = 'C',  icon = '👍'; }
-  else                  { grade = 'D',  icon = '💪'; }
+  const maxScore = 5 * cfg.goal * 10 + 50;
+  const pct = score / maxScore;
+  let grade, icon, label;
+  if (pct >= 0.92)      { grade = 'A+'; icon = '🏆'; label = 'Outstanding!'; }
+  else if (pct >= 0.78) { grade = 'A';  icon = '🌟'; label = 'Excellent!'; }
+  else if (pct >= 0.62) { grade = 'B';  icon = '😊'; label = 'Great Job!'; }
+  else if (pct >= 0.45) { grade = 'C';  icon = '👍'; label = 'Good Effort!'; }
+  else                  { grade = 'D';  icon = '💪'; label = 'Keep Practicing!'; }
 
-  let gradeColor = pct >= 0.75 ? '#5cbb6f' : pct >= 0.45 ? '#f5832a' : '#e8453c';
-
-  document.getElementById('resultIcon').textContent  = icon;
-  document.getElementById('resultGrade').textContent = grade;
-  document.getElementById('resultGrade').style.color = gradeColor;
-  document.getElementById('resultScore').textContent = `Final Score: ${state.score}`;
-  document.getElementById('statCorrect').textContent = state.correctTaps;
-  document.getElementById('statWrong').textContent   = state.wrongTaps;
-  document.getElementById('statRounds').textContent  = state.round;
-  document.getElementById('statBonus').textContent   = state.bonusPoints;
+  const gc = pct >= 0.78 ? '#5cbb6f' : pct >= 0.45 ? '#f5832a' : '#e8453c';
+  document.getElementById('resIcon').textContent   = icon;
+  document.getElementById('resGrade').textContent  = grade;
+  document.getElementById('resGrade').style.color  = gc;
+  document.getElementById('resLabel').textContent  = label;
+  document.getElementById('resScore').textContent  = score + ' pts';
+  document.getElementById('stCorrect').textContent = totalCorrect;
+  document.getElementById('stWrong').textContent   = wrongShots;
+  document.getElementById('stPowerup').textContent = powerupsCollected;
+  document.getElementById('stRound').textContent   = round;
 }
 
-document.getElementById('playAgainBtn').addEventListener('click', () => {
-  showScreen('homeScreen');
-});
+/* ============================================================
+   HUD
+============================================================ */
+function updateHUD() {
+  document.getElementById('hudScore').textContent = score;
+  const hearts = '❤️'.repeat(lives) + '🖤'.repeat(Math.max(0, 3 - lives));
+  document.getElementById('hudLives').textContent = hearts;
+  const vis = POS_VIS[currentTarget];
+  const tgt = document.getElementById('hudTarget');
+  tgt.textContent    = `BLAST THE ${vis.label}!`;
+  tgt.style.color    = vis.hudColor;
+  tgt.style.borderColor = vis.hudBorder;
+}
+
+function updatePowerupBar() {
+  document.getElementById('pwShield').classList.toggle('active', shieldActive);
+  document.getElementById('pwSlow').classList.toggle('active', slowActive);
+  document.getElementById('pwMulti').classList.toggle('active', multiActive);
+  // blast is just a flash, not persistent
+}
 
 /* ============================================================
-   VISUAL EFFECTS
+   SCREEN SHAKE
 ============================================================ */
-function createBurst(cx, cy, _baseColor, colors) {
-  const area = document.getElementById('gameArea');
-  const count = 10;
+let shakeUntil = 0;
+function screenShake() { shakeUntil = performance.now() + 300; }
+
+/* ============================================================
+   DRAW
+============================================================ */
+function draw(ts) {
+  ctx.save();
+  // Screen shake
+  if (performance.now() < shakeUntil) {
+    const intensity = 6;
+    ctx.translate(
+      (Math.random() - 0.5) * intensity,
+      (Math.random() - 0.5) * intensity
+    );
+  }
+
+  // Background
+  const bgGrad = ctx.createLinearGradient(0, 0, 0, H);
+  bgGrad.addColorStop(0, '#080820');
+  bgGrad.addColorStop(1, '#0f0f35');
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0, 0, W, H);
+
+  // Nebula hints
+  drawNebula(ts);
+
+  // Stars
+  drawStars(ts);
+
+  // Words (behind planet/cannon)
+  drawWords();
+
+  // Lasers
+  drawLasers();
+
+  // Particles
+  drawParticles();
+
+  // Float texts
+  drawFloatTexts();
+
+  // Planet + cannon on top
+  drawPlanet(ts);
+  drawCannon();
+
+  ctx.restore();
+}
+
+function drawNebula(ts) {
+  const t = ts * 0.0003;
+  [[0.2, 0.2, 80, 'rgba(40,20,100,0.04)'],
+   [0.8, 0.15, 60, 'rgba(20,60,100,0.05)'],
+   [0.5, 0.5, 100, 'rgba(60,20,80,0.03)']
+  ].forEach(([rx, ry, r, c]) => {
+    const g = ctx.createRadialGradient(W*rx + Math.sin(t)*20, H*ry + Math.cos(t)*15, 0, W*rx, H*ry, r + Math.sin(t)*20);
+    g.addColorStop(0, c); g.addColorStop(1, 'transparent');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  });
+}
+
+function drawStars(ts) {
+  const t = ts * 0.001;
+  stars.forEach(s => {
+    const op = s.baseOpacity * (0.6 + 0.4 * Math.sin(t * s.twinkleSpeed + s.twinkleOff));
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(255,255,255,${op.toFixed(3)})`;
+    ctx.fill();
+  });
+}
+
+function drawWords() {
+  words.forEach(w => {
+    if (w.opacity <= 0) return;
+    const vis = w.vis;
+    ctx.save();
+    ctx.globalAlpha = w.opacity;
+    ctx.shadowColor  = vis.glow;
+    ctx.shadowBlur   = 14;
+    // Background
+    roundRectFill(ctx, w.x - w.bw/2, w.y - w.bh/2, w.bw, w.bh, 12, vis.fill);
+    // Border
+    ctx.shadowBlur = 8;
+    roundRectStroke(ctx, w.x - w.bw/2, w.y - w.bh/2, w.bw, w.bh, 12, vis.border, 2.5);
+    // Text
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = vis.text;
+    ctx.font = 'bold 16px Nunito';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(w.text, w.x, w.y);
+    ctx.restore();
+  });
+}
+
+function drawLasers() {
+  lasers.forEach(l => {
+    const frac = 1 - l.age / l.maxAge;
+    ctx.save();
+    ctx.globalAlpha = frac * 0.9;
+    ctx.strokeStyle = '#ffffa0';
+    ctx.lineWidth   = 3;
+    ctx.shadowColor = '#ffff60';
+    ctx.shadowBlur  = 18;
+    ctx.lineCap     = 'round';
+    ctx.beginPath();
+    const trailLen = 28;
+    const angle = Math.atan2(l.vy, l.vx);
+    ctx.moveTo(l.x - Math.cos(angle) * trailLen, l.y - Math.sin(angle) * trailLen);
+    ctx.lineTo(l.x, l.y);
+    ctx.stroke();
+    ctx.restore();
+  });
+}
+
+function drawParticles() {
+  particles.forEach(p => {
+    const alpha = Math.max(0, 1 - p.age / p.life);
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle   = p.color;
+    ctx.shadowColor = p.color;
+    ctx.shadowBlur  = 6;
+    ctx.beginPath();
+    const r = p.r * (1 - p.age / p.life * 0.5);
+    ctx.arc(p.x, p.y, Math.max(0.5, r), 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  });
+}
+
+function drawFloatTexts() {
+  floatTexts.forEach(f => {
+    const alpha = Math.max(0, 1 - f.age / 0.9);
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.font      = `bold 800 ${f.size}px Nunito`;
+    ctx.fillStyle = f.color;
+    ctx.shadowColor = f.color;
+    ctx.shadowBlur = 12;
+    ctx.textAlign   = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(f.text, f.x, f.y);
+    ctx.restore();
+  });
+}
+
+function drawPlanet(ts) {
+  ctx.save();
+  const t = ts * 0.001;
+
+  // Atmosphere glow
+  const atmGrad = ctx.createRadialGradient(planetCX, planetCY, PLANET_R - 5, planetCX, planetCY, PLANET_R + 30);
+  atmGrad.addColorStop(0, 'rgba(80,160,255,0.18)');
+  atmGrad.addColorStop(1, 'transparent');
+  ctx.fillStyle = atmGrad; ctx.beginPath(); ctx.arc(planetCX, planetCY, PLANET_R + 30, 0, Math.PI * 2); ctx.fill();
+
+  // Planet body
+  const grad = ctx.createRadialGradient(planetCX - 22, planetCY - 22, 8, planetCX, planetCY, PLANET_R);
+  grad.addColorStop(0, '#6ab4f0'); grad.addColorStop(0.45, '#2a6aa0'); grad.addColorStop(1, '#0a2840');
+  ctx.beginPath(); ctx.arc(planetCX, planetCY, PLANET_R, 0, Math.PI * 2);
+  ctx.fillStyle = grad; ctx.fill();
+
+  // Continent blobs
+  ctx.globalAlpha = 0.32;
+  ctx.fillStyle = '#5cbb6f';
+  [[-18, -28, 22, 13, -0.4], [28, -8, 14, 20, 0.3], [-30, 10, 10, 14, 0.8]].forEach(([dx, dy, rx, ry, rot]) => {
+    ctx.save(); ctx.translate(planetCX + dx, planetCY + dy); ctx.rotate(rot + Math.sin(t * 0.2) * 0.04);
+    ctx.beginPath(); ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+  });
+  ctx.globalAlpha = 1;
+
+  // Powerup glow if any active
+  if (slowActive) {
+    ctx.strokeStyle = '#9b6fda'; ctx.lineWidth = 3; ctx.globalAlpha = 0.5 + 0.2 * Math.sin(t * 5);
+    ctx.shadowColor = '#9b6fda'; ctx.shadowBlur = 25;
+    ctx.beginPath(); ctx.arc(planetCX, planetCY, PLANET_R + 5, 0, Math.PI * 2); ctx.stroke();
+  }
+  if (shieldActive) {
+    ctx.strokeStyle = '#4a90d9'; ctx.lineWidth = 4; ctx.globalAlpha = 0.4 + 0.3 * Math.sin(t * 8);
+    ctx.shadowColor = '#4a90d9'; ctx.shadowBlur = 30;
+    ctx.beginPath(); ctx.arc(planetCX, planetCY, PLANET_R + 12, 0, Math.PI * 2); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawCannon() {
+  const cx = planetCX;
+  const cy = planetCY - PLANET_R + 4;
+  const L  = 34;
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(cannonAngle);
+  // Barrel glow
+  ctx.shadowColor = POS_VIS[currentTarget || 'noun'].glow;
+  ctx.shadowBlur  = 20;
+  // Barrel
+  ctx.fillStyle   = '#6060a0';
+  roundRectFill(ctx, -6, -L, 12, L, 4, '#6060a0');
+  ctx.strokeStyle = 'rgba(200,200,255,0.6)'; ctx.lineWidth = 1.5;
+  roundRectStroke(ctx, -6, -L, 12, L, 4, 'rgba(200,200,255,0.6)', 1.5);
+  // Tip glow
+  ctx.fillStyle = POS_VIS[currentTarget || 'noun'].glow;
+  ctx.globalAlpha = 0.9;
+  ctx.beginPath(); ctx.arc(0, -L - 2, 7, 0, Math.PI * 2); ctx.fill();
+  // Base
+  ctx.globalAlpha = 1;
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = '#505080';
+  ctx.beginPath(); ctx.arc(0, 0, 16, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = 'rgba(200,200,255,0.5)'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(0, 0, 16, 0, Math.PI * 2); ctx.stroke();
+  ctx.restore();
+}
+
+/* ============================================================
+   PARTICLE HELPERS
+============================================================ */
+function burst(x, y, color, count) {
   for (let i = 0; i < count; i++) {
-    const p = document.createElement('div');
-    p.className = 'burst-p';
-    const col = colors[i % colors.length];
-    p.style.background = col;
-    p.style.left = cx + 'px';
-    p.style.top  = cy + 'px';
-    p.style.transform = 'translate(-50%,-50%) scale(1)';
-    p.style.opacity = '1';
-    area.appendChild(p);
-
-    const angle = (i / count) * Math.PI * 2;
-    const dist  = 40 + Math.random() * 30;
-    const dx    = Math.cos(angle) * dist;
-    const dy    = Math.sin(angle) * dist;
-
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      p.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(0)`;
-      p.style.opacity = '0';
-    }));
-    setTimeout(() => p.remove(), 500);
+    const angle = (Math.random() * Math.PI * 2);
+    const speed = 80 + Math.random() * 160;
+    particles.push({
+      x, y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - 40,
+      r: 3 + Math.random() * 4,
+      color,
+      age: 0, life: 0.4 + Math.random() * 0.3
+    });
   }
 }
 
-function showFloatingText(text, cx, cy, color) {
-  const area = document.getElementById('gameArea');
-  const el = document.createElement('div');
-  el.className = 'miss-flash';
-  el.textContent = text;
-  el.style.left = (cx - 15) + 'px';
-  el.style.top  = (cy - 10) + 'px';
-  el.style.color = color;
-  area.appendChild(el);
-  setTimeout(() => el.remove(), 850);
+function floatText(text, x, y, color, size = 15) {
+  floatTexts.push({ text, x, y, color, size, age: 0 });
 }
+
+/* ============================================================
+   CANVAS SHAPE HELPERS
+============================================================ */
+function roundRectFill(ctx, x, y, w, h, r, fill) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+  ctx.fillStyle = fill;
+  ctx.fill();
+}
+function roundRectStroke(ctx, x, y, w, h, r, stroke, lw) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+  ctx.strokeStyle = stroke; ctx.lineWidth = lw; ctx.stroke();
+}
+
+/* ============================================================
+   UTILITIES
+============================================================ */
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+/* ============================================================
+   HOME SCREEN STAR BACKGROUND
+============================================================ */
+(function() {
+  const layer = document.getElementById('homeStars');
+  for (let i = 0; i < 60; i++) {
+    const s = document.createElement('div');
+    const size = 2 + Math.random() * 3;
+    Object.assign(s.style, {
+      position: 'absolute',
+      width: size + 'px', height: size + 'px',
+      borderRadius: '50%',
+      background: '#fff',
+      opacity: (Math.random() * 0.5 + 0.1).toFixed(2),
+      left: Math.random() * 100 + '%',
+      top:  Math.random() * 100 + '%',
+      animation: `twinkle ${(2.5 + Math.random() * 3).toFixed(1)}s ease-in-out infinite`,
+      animationDelay: (Math.random() * 4).toFixed(1) + 's'
+    });
+    layer.appendChild(s);
+  }
+})();
+
+// Inject keyframe for home star twinkle
+const style = document.createElement('style');
+style.textContent = '@keyframes twinkle { 0%,100% { opacity: 0.1; } 50% { opacity: 0.5; } }';
+document.head.appendChild(style);
+
+// Hide game container initially
+document.getElementById('gameContainer').style.display = 'none';
 </script>
 </body>
 </html>

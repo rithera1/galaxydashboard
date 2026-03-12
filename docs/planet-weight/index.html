@@ -349,6 +349,108 @@
     .planet-grid { grid-template-columns: repeat(2, 1fr); }
     .planet-card { padding: 1rem 0.65rem 0.85rem; }
   }
+
+  /* ---- FUN PHYSICS SECTION ---- */
+  .fun-section { margin-top: 2.5rem; animation: fadeUp 0.4s ease both; }
+  .fun-divider {
+    display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;
+  }
+  .fun-divider .fdl {
+    flex: 1; height: 3px; border-radius: 2px;
+    background: repeating-linear-gradient(
+      90deg, var(--beige-darker) 0, var(--beige-darker) 8px,
+      transparent 8px, transparent 16px
+    );
+  }
+  .fun-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.6rem; text-align: center; color: var(--ink); margin-bottom: 0.3rem;
+  }
+  .fun-sub {
+    text-align: center; font-size: 0.92rem; font-weight: 700;
+    color: var(--ink-light); margin-bottom: 1.25rem;
+  }
+  .world-selector { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; margin-bottom: 1.5rem; }
+  .world-btn {
+    font-family: 'Fredoka One', cursive; font-size: 0.85rem;
+    padding: 0.3rem 0.8rem;
+    border: 2.5px solid var(--ink); border-radius: 10px;
+    background: var(--cream); color: var(--ink);
+    cursor: pointer; box-shadow: 2px 2px 0 var(--ink);
+    transition: transform 0.15s cubic-bezier(.34,1.56,.64,1), background 0.15s;
+  }
+  .world-btn:hover { transform: translateY(-2px) scale(1.06); }
+  .world-btn.active { background: var(--ink); color: var(--cream); box-shadow: 2px 4px 0 var(--accent-dark); }
+  .movement-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;
+  }
+  .move-card {
+    background: var(--cream); border: 3px solid var(--ink); border-radius: 18px;
+    padding: 1.1rem 1rem 1rem; text-align: center;
+    box-shadow: 4px 4px 0 var(--ink);
+    animation: cardPop 0.35s cubic-bezier(.34,1.56,.64,1) both;
+  }
+  .move-card-title { font-family: 'Fredoka One', cursive; font-size: 1rem; margin-bottom: 0.75rem; }
+  /* Jump arena */
+  .jump-arena {
+    position: relative; height: 160px; overflow: hidden; border-radius: 10px;
+    background: linear-gradient(180deg, #e8f2fc 50%, #c8ddf2 100%); margin-bottom: 0.7rem;
+  }
+  .jump-fig {
+    font-size: 2.2rem; position: absolute; bottom: 30px; left: 50%;
+    transform: translateX(-50%);
+    animation: jump-bounce var(--jdur, 0.9s) cubic-bezier(.25,.46,.45,.94) infinite;
+  }
+  @keyframes jump-bounce {
+    0%   { transform: translateX(-50%) translateY(0) scaleX(1.15) scaleY(0.85); }
+    12%  { transform: translateX(-50%) translateY(0) scaleX(1.15) scaleY(0.85); }
+    40%  { transform: translateX(-50%) translateY(var(--jhpx,-30px)) scaleX(0.9) scaleY(1.1); }
+    60%  { transform: translateX(-50%) translateY(var(--jhpx,-30px)) scaleX(0.9) scaleY(1.1); }
+    88%  { transform: translateX(-50%) translateY(0) scaleX(1.15) scaleY(0.85); }
+    100% { transform: translateX(-50%) translateY(0) scaleX(1.15) scaleY(0.85); }
+  }
+  .jump-height-label {
+    position: absolute; right: 8px; font-family: 'Fredoka One', cursive;
+    font-size: 0.78rem; color: var(--accent); transition: bottom 0.5s ease;
+  }
+  .jump-ground-line {
+    position: absolute; bottom: 28px; left: 8%; right: 8%;
+    height: 3px; background: var(--beige-darker); border-radius: 2px;
+  }
+  /* Run arena */
+  .run-arena {
+    position: relative; height: 80px; overflow: hidden; border-radius: 10px;
+    background: linear-gradient(180deg, #fef9e8 60%, #fef3c2 100%); margin-bottom: 0.7rem;
+  }
+  .run-track {
+    position: absolute; bottom: 10px; left: 5%; right: 5%; height: 3px;
+    background: repeating-linear-gradient(
+      90deg, var(--beige-darker) 0, var(--beige-darker) 10px,
+      transparent 10px, transparent 20px
+    );
+  }
+  .run-fig {
+    font-size: 2.2rem; position: absolute; bottom: 10px;
+    animation: run-cross var(--rdur, 2s) linear infinite;
+  }
+  @keyframes run-cross {
+    from { left: -38px; }
+    to   { left: calc(100% + 12px); }
+  }
+  /* Throw arena */
+  .throw-arena {
+    border-radius: 10px; overflow: hidden; background: #e8f5e9;
+    margin-bottom: 0.7rem; display: flex; align-items: center; justify-content: center;
+  }
+  .throw-arena canvas { display: block; }
+  .move-value {
+    font-family: 'Fredoka One', cursive; font-size: 1.45rem;
+    color: var(--accent); margin-bottom: 0.15rem;
+  }
+  .move-compare { font-size: 0.75rem; font-weight: 800; color: var(--ink-light); line-height: 1.35; }
+  @media (max-width: 500px) {
+    .movement-grid { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
@@ -384,6 +486,47 @@
   <div class="results-section" id="resultsSection" style="display:none">
     <h2 class="results-title" id="resultsTitle"></h2>
     <div class="planet-grid" id="planetGrid"></div>
+
+    <!-- Fun Physics Section -->
+    <div class="fun-section" id="funSection">
+      <div class="fun-divider">
+        <div class="fdl"></div>
+        <span style="font-size:1.4rem">🔬</span>
+        <div class="fdl"></div>
+      </div>
+      <h2 class="fun-title">How would you move?</h2>
+      <p class="fun-sub">Pick a world and see what changes about your body!</p>
+      <div class="world-selector" id="worldSelector"></div>
+      <div class="movement-grid" id="movementGrid" style="display:none">
+        <div class="move-card">
+          <div class="move-card-title">🦘 Jump Height</div>
+          <div class="jump-arena">
+            <div class="jump-fig" id="jumpFig">🧑‍🚀</div>
+            <div class="jump-height-label" id="jumpHeightLabel"></div>
+            <div class="jump-ground-line"></div>
+          </div>
+          <div class="move-value" id="jumpValue">—</div>
+          <div class="move-compare" id="jumpCompare">—</div>
+        </div>
+        <div class="move-card">
+          <div class="move-card-title">🏃 Top Running Speed</div>
+          <div class="run-arena">
+            <div class="run-fig" id="runFig">🏃</div>
+            <div class="run-track"></div>
+          </div>
+          <div class="move-value" id="runValue">—</div>
+          <div class="move-compare" id="runCompare">—</div>
+        </div>
+        <div class="move-card">
+          <div class="move-card-title">⚾ Ball Throw Distance</div>
+          <div class="throw-arena">
+            <canvas id="throwCanvas" width="200" height="90"></canvas>
+          </div>
+          <div class="move-value" id="throwValue">—</div>
+          <div class="move-compare" id="throwCompare">—</div>
+        </div>
+      </div>
+    </div>
   </div>
 
 </div>
@@ -553,6 +696,125 @@ function calculate() {
 
   setTimeout(() => resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
 }
+
+/* ============================================================
+   FUN PHYSICS SIMULATOR
+============================================================ */
+function buildWorldSelector() {
+  const sel = document.getElementById('worldSelector');
+  sel.innerHTML = '';
+  BODIES.forEach(body => {
+    const btn = document.createElement('button');
+    btn.className = 'world-btn';
+    btn.textContent = body.name.replace(' ☀️', '');
+    btn.dataset.id = body.id;
+    btn.addEventListener('click', () => selectWorld(body, btn));
+    sel.appendChild(btn);
+  });
+}
+
+function selectWorld(body, btn) {
+  document.querySelectorAll('.world-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  // ---- JUMP ----
+  const earthJumpM = 0.5;
+  const jumpM = earthJumpM / body.gravity;
+  const jumpPx = Math.min(128, Math.max(2, (jumpM / 3.0) * 128));
+  const jumpDurS = Math.max(0.28, 0.85 * Math.sqrt(1 / body.gravity)).toFixed(2);
+
+  const jf = document.getElementById('jumpFig');
+  jf.style.setProperty('--jhpx', `-${jumpPx.toFixed(1)}px`);
+  jf.style.setProperty('--jdur', jumpDurS + 's');
+  jf.style.animation = 'none';
+  void jf.offsetWidth;
+  jf.style.animation = '';
+
+  const jumpLabel = document.getElementById('jumpHeightLabel');
+  jumpLabel.textContent = jumpM < 100 ? jumpM.toFixed(1) + ' m' : Math.round(jumpM) + ' m';
+  jumpLabel.style.bottom = (jumpPx + 36) + 'px';
+
+  const jumpDisp = jumpM < 10 ? jumpM.toFixed(2) + ' m' : jumpM < 1000 ? jumpM.toFixed(1) + ' m' : (jumpM / 1000).toFixed(2) + ' km';
+  document.getElementById('jumpValue').textContent = jumpDisp;
+  const jr = jumpM / earthJumpM;
+  document.getElementById('jumpCompare').textContent = body.isEarth
+    ? '← your normal jump height'
+    : jr > 1 ? `${jr.toFixed(1)}× higher than on Earth!`
+    : `${(1/jr).toFixed(1)}× lower than on Earth`;
+
+  // ---- RUN ----
+  const earthSpeedMs = 10;
+  const runMs = earthSpeedMs * Math.sqrt(1 / body.gravity);
+  const runDurS = Math.max(0.35, Math.min(6, 2.0 / Math.sqrt(1 / body.gravity))).toFixed(2);
+
+  const rf = document.getElementById('runFig');
+  rf.style.setProperty('--rdur', runDurS + 's');
+  rf.style.animation = 'none';
+  void rf.offsetWidth;
+  rf.style.animation = '';
+
+  document.getElementById('runValue').textContent = runMs.toFixed(1) + ' m/s';
+  document.getElementById('runCompare').textContent =
+    `${(runMs * 3.6).toFixed(0)} km/h · ${(runMs * 2.237).toFixed(0)} mph`;
+
+  // ---- THROW ----
+  const earthThrowM = 50;
+  const throwM = earthThrowM / body.gravity;
+  drawThrowArc(throwM / earthThrowM);
+  const throwDisp = throwM < 1000 ? Math.round(throwM) + ' m' : (throwM / 1000).toFixed(1) + ' km';
+  document.getElementById('throwValue').textContent = throwDisp;
+  const tr = throwM / earthThrowM;
+  document.getElementById('throwCompare').textContent = body.isEarth
+    ? '← your normal throw distance'
+    : `${tr.toFixed(1)}× farther than on Earth`;
+
+  document.getElementById('movementGrid').style.display = '';
+}
+
+function drawThrowArc(ratio) {
+  const canvas = document.getElementById('throwCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+
+  // Ground
+  ctx.strokeStyle = '#b09070';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(8, h - 10); ctx.lineTo(w - 8, h - 10);
+  ctx.stroke();
+
+  // Thrower
+  ctx.font = '20px serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('🧍', 4, h - 10);
+
+  // Arc
+  const landX = Math.min(w - 18, Math.max(52, 26 + ratio * 62));
+  const peakY = Math.max(6, h - 10 - (landX - 26) * 0.6);
+  ctx.strokeStyle = '#4a90d9';
+  ctx.lineWidth = 2.5;
+  ctx.shadowColor = '#4a90d9';
+  ctx.shadowBlur = 6;
+  ctx.beginPath();
+  ctx.moveTo(30, h - 28);
+  ctx.quadraticCurveTo((30 + landX) / 2, peakY, landX, h - 10);
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+
+  // Landing dot
+  ctx.fillStyle = '#e8453c';
+  ctx.beginPath();
+  ctx.arc(landX, h - 10, 5, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Ball emoji
+  ctx.font = '14px serif';
+  ctx.fillText('⚾', landX - 7, h - 12);
+}
+
+buildWorldSelector();
 
 // Background stars
 const starsLayer = document.getElementById('starsLayer');

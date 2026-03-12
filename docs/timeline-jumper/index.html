@@ -224,14 +224,28 @@
     margin-bottom: 0.25rem;
   }
   .card-desc {
-    font-size: 0.62rem;
+    font-size: 0.78rem;
     font-weight: 700;
     color: var(--ink-light);
-    line-height: 1.35;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    line-height: 1.4;
+  }
+  .card-wiki-badge {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 800;
+    color: var(--teal-dark);
+    background: var(--teal-bg);
+    border: 1.5px solid var(--teal);
+    border-radius: 6px;
+    padding: 0.1rem 0.4rem;
+    margin-top: 0.45rem;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .event-card.clickable { cursor: pointer; }
+  .event-card.clickable:hover {
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: 3px 6px 0 var(--ink);
   }
 
   /* DRAG GHOST */
@@ -1025,7 +1039,38 @@ function checkAnswers() {
   document.getElementById('continueBtn').textContent =
     currentRound < 2 ? `▶ Round ${currentRound + 2}` : '🏁 See Results';
 
+  makeCardsClickable(events);
+
   rr.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+/* ============================================================
+   WIKIPEDIA LINKS (after check)
+============================================================ */
+function makeCardsClickable(events) {
+  const eventMap = {};
+  events.forEach(evt => { eventMap[evt.id] = evt; });
+
+  document.querySelectorAll('.slot-drop .event-card').forEach(card => {
+    const evt = eventMap[card.dataset.id];
+    if (!evt) return;
+
+    card.classList.add('clickable');
+    card.title = `Click to read about "${evt.title}" on Wikipedia`;
+
+    const badge = document.createElement('a');
+    badge.className = 'card-wiki-badge';
+    badge.textContent = '📖 Wikipedia';
+    badge.href = `https://en.wikipedia.org/wiki/${encodeURIComponent(evt.wiki)}`;
+    badge.target = '_blank';
+    badge.rel = 'noopener noreferrer';
+    badge.addEventListener('click', e => e.stopPropagation());
+    card.querySelector('.card-body').appendChild(badge);
+
+    card.addEventListener('click', () => {
+      window.open(`https://en.wikipedia.org/wiki/${encodeURIComponent(evt.wiki)}`, '_blank', 'noopener');
+    });
+  });
 }
 
 /* ============================================================
