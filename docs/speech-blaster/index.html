@@ -7,48 +7,28 @@
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --beige: #f5ead6;
-    --beige-dark: #ecdcc0;
-    --beige-darker: #e0c99a;
-    --cream: #fdf6e8;
-    --ink: #3b2f1e;
-    --ink-light: #7a5c3a;
-    --red: #e8453c;
-    --green: #5cbb6f;
-  }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body {
-    height: 100%;
-    font-family: 'Nunito', sans-serif;
-    background: #080820;
-    color: #fff;
-    overflow: hidden;
-    -webkit-tap-highlight-color: transparent;
-    user-select: none;
+    height: 100%; font-family: 'Nunito', sans-serif;
+    background: #080820; color: #fff;
+    overflow: hidden; -webkit-tap-highlight-color: transparent; user-select: none;
   }
 
   /* NAV */
   .site-nav {
     display: flex; align-items: center; gap: 1rem;
     padding: 0.6rem 1.25rem;
-    background: #0f0f35;
-    border-bottom: 2px solid rgba(255,255,255,0.1);
-    position: relative; z-index: 200;
-    height: 48px;
+    background: #0f0f35; border-bottom: 2px solid rgba(255,255,255,0.1);
+    position: relative; z-index: 200; height: 48px;
   }
   .site-nav-back {
     font-family: 'Fredoka One', cursive; font-size: 0.9rem;
     color: #fff; text-decoration: none;
-    background: rgba(255,255,255,0.1);
-    border: 2px solid rgba(255,255,255,0.3);
-    border-radius: 10px; padding: 0.2rem 0.7rem;
-    transition: background 0.15s;
+    background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 10px; padding: 0.2rem 0.7rem; transition: background 0.15s;
   }
   .site-nav-back:hover { background: rgba(255,255,255,0.2); }
-  .site-nav-title {
-    font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: #fff;
-  }
+  .site-nav-title { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: #fff; }
 
   /* SCREENS */
   .screen { display: none; position: absolute; inset: 0; }
@@ -56,13 +36,10 @@
 
   /* ===================== HOME SCREEN ===================== */
   #homeScreen {
-    top: 48px;
-    align-items: center;
-    justify-content: center;
+    top: 48px; align-items: center; justify-content: center;
     padding: 1.5rem 1.25rem 2rem;
     background: radial-gradient(ellipse at 50% 0%, #1a1a5a 0%, #080820 70%);
-    overflow-y: auto;
-    text-align: center;
+    overflow-y: auto; text-align: center;
   }
   .home-stars { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
   .home-content { position: relative; z-index: 1; max-width: 480px; width: 100%; }
@@ -71,27 +48,16 @@
     animation: iconBob 2.8s ease-in-out infinite;
     filter: drop-shadow(0 0 20px rgba(150,150,255,0.6));
   }
-  @keyframes iconBob {
-    0%,100% { transform: translateY(0) rotate(-5deg); }
-    50%      { transform: translateY(-14px) rotate(5deg); }
-  }
+  @keyframes iconBob { 0%,100%{ transform:translateY(0) rotate(-5deg) } 50%{ transform:translateY(-14px) rotate(5deg) } }
   .home-title {
-    font-family: 'Fredoka One', cursive;
-    font-size: clamp(2.2rem, 7vw, 3.2rem);
-    color: #fff;
-    text-shadow: 0 0 30px rgba(150,150,255,0.8);
-    line-height: 1.1; margin-bottom: 0.35rem;
+    font-family: 'Fredoka One', cursive; font-size: clamp(2.2rem, 7vw, 3.2rem); color: #fff;
+    text-shadow: 0 0 30px rgba(150,150,255,0.8); line-height: 1.1; margin-bottom: 0.35rem;
   }
-  .home-sub {
-    font-size: 0.95rem; font-weight: 700;
-    color: rgba(200,200,255,0.8); margin-bottom: 1.75rem;
-  }
+  .home-sub { font-size: 0.95rem; font-weight: 700; color: rgba(200,200,255,0.8); margin-bottom: 1.75rem; }
   .diff-grid { display: flex; flex-direction: column; gap: 0.7rem; width: 100%; max-width: 320px; margin: 0 auto 1.75rem; }
   .diff-btn {
-    font-family: 'Fredoka One', cursive; font-size: 1.1rem;
-    padding: 0.8rem 1.5rem;
-    border: 2.5px solid rgba(255,255,255,0.4);
-    border-radius: 16px; cursor: pointer;
+    font-family: 'Fredoka One', cursive; font-size: 1.1rem; padding: 0.8rem 1.5rem;
+    border: 2.5px solid rgba(255,255,255,0.4); border-radius: 16px; cursor: pointer;
     transition: transform 0.18s cubic-bezier(.34,1.56,.64,1), box-shadow 0.15s;
     text-align: left; display: flex; align-items: center; gap: 0.65rem;
   }
@@ -100,112 +66,52 @@
   .diff-medium { background: rgba(245,131,42,0.2);  color: #ffd0a0; border-color: #f5832a; }
   .diff-hard   { background: rgba(232,69,60,0.2);   color: #ffb0b0; border-color: #e8453c; }
   .how-to-box {
-    background: rgba(255,255,255,0.06);
-    border: 2px solid rgba(255,255,255,0.15);
-    border-radius: 16px; padding: 1rem 1.25rem;
-    text-align: left; width: 100%;
+    background: rgba(255,255,255,0.06); border: 2px solid rgba(255,255,255,0.15);
+    border-radius: 16px; padding: 1rem 1.25rem; text-align: left; width: 100%;
   }
-  .how-to-box h3 { font-family: 'Fredoka One', cursive; font-size: 1rem; margin-bottom: 0.5rem; color: #fff; }
+  .how-to-box h3 { font-family: 'Fredoka One', cursive; font-size: 1rem; margin-bottom: 0.5rem; }
   .how-to-box p  { font-size: 0.82rem; font-weight: 700; color: rgba(200,200,255,0.8); line-height: 1.55; }
   .pos-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.65rem; }
-  .pos-chip {
-    font-family: 'Fredoka One', cursive; font-size: 0.75rem;
-    padding: 0.2rem 0.6rem; border-radius: 20px; border: 1.5px solid currentColor;
-  }
-  .chip-n { color: #80c8ff; }
-  .chip-v { color: #ffc080; }
-  .chip-a { color: #d0a0ff; }
+  .pos-chip { font-family: 'Fredoka One', cursive; font-size: 0.75rem; padding: 0.2rem 0.6rem; border-radius: 20px; border: 1.5px solid currentColor; color: rgba(200,200,255,0.85); }
 
   /* ===================== GAME CONTAINER ===================== */
-  #gameContainer {
-    top: 48px;
-    position: absolute;
-    left: 0; right: 0; bottom: 0;
-    overflow: hidden;
-  }
+  #gameContainer { top: 48px; position: absolute; left: 0; right: 0; bottom: 0; overflow: hidden; }
   #gameCanvas { display: block; width: 100%; height: 100%; touch-action: none; }
 
-  /* HUD overlaid on canvas */
+  /* HUD */
   .game-hud {
     position: absolute; top: 0; left: 0; right: 0;
     display: flex; align-items: center; justify-content: space-between;
     padding: 0.5rem 0.85rem;
-    background: linear-gradient(180deg, rgba(8,8,32,0.85) 0%, transparent 100%);
+    background: linear-gradient(180deg, rgba(8,8,32,0.88) 0%, transparent 100%);
     pointer-events: none; z-index: 10;
   }
-  .hud-score {
-    font-family: 'Orbitron', monospace; font-size: clamp(1rem, 3.5vw, 1.35rem);
-    font-weight: 900; color: #f7c948;
-    text-shadow: 0 0 12px rgba(247,201,72,0.7);
-  }
-  .hud-target {
-    font-family: 'Fredoka One', cursive; font-size: clamp(0.85rem, 2.8vw, 1.15rem);
-    text-align: center;
-    padding: 0.25rem 0.85rem;
-    border-radius: 30px;
-    border: 2px solid currentColor;
-    letter-spacing: 0.03em;
-  }
-  .hud-lives {
-    font-size: clamp(1rem, 3vw, 1.25rem);
-    letter-spacing: 0.08em;
-    text-shadow: 0 0 10px rgba(255,80,80,0.6);
-  }
+  .hud-score { font-family: 'Orbitron', monospace; font-size: clamp(1rem, 3.5vw, 1.35rem); font-weight: 900; color: #f7c948; text-shadow: 0 0 12px rgba(247,201,72,0.7); }
+  .hud-target { font-family: 'Fredoka One', cursive; font-size: clamp(0.85rem, 2.8vw, 1.1rem); text-align: center; padding: 0.25rem 0.85rem; border-radius: 30px; border: 2px solid rgba(200,200,255,0.5); color: rgba(220,220,255,0.95); }
+  .hud-lives { font-size: clamp(1rem, 3vw, 1.25rem); letter-spacing: 0.08em; text-shadow: 0 0 10px rgba(255,80,80,0.6); }
 
-  /* Powerup bar */
-  .powerup-bar {
-    position: absolute; bottom: 12px; left: 12px;
-    display: flex; flex-direction: column; gap: 6px;
-    pointer-events: none; z-index: 10;
-  }
-  .pw-item {
-    font-family: 'Orbitron', monospace; font-size: 0.65rem; font-weight: 700;
-    padding: 0.2rem 0.5rem;
-    border-radius: 8px; border: 1.5px solid currentColor;
-    display: flex; align-items: center; gap: 5px;
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
+  /* Active powerup bar */
+  .powerup-bar { position: absolute; bottom: 12px; left: 12px; display: flex; flex-direction: column; gap: 6px; pointer-events: none; z-index: 10; }
+  .pw-item { font-family: 'Orbitron', monospace; font-size: 0.65rem; font-weight: 700; padding: 0.2rem 0.5rem; border-radius: 8px; border: 1.5px solid currentColor; display: flex; align-items: center; gap: 5px; opacity: 0; transition: opacity 0.3s; }
   .pw-item.active { opacity: 1; }
   .pw-shield { color: #4a90d9; background: rgba(74,144,217,0.15); }
   .pw-slow   { color: #9b6fda; background: rgba(155,111,218,0.15); }
   .pw-multi  { color: #f7c948; background: rgba(247,201,72,0.15); }
-  .pw-blast  { color: #f5832a; background: rgba(245,131,42,0.15); }
 
-  /* Round announcement overlay */
-  .round-overlay {
-    position: absolute; inset: 0;
-    display: flex; align-items: center; justify-content: center;
-    background: rgba(8,8,32,0.75);
-    z-index: 100;
-    animation: fadeIn 0.2s ease both;
-  }
+  /* Round overlay */
+  .round-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(8,8,32,0.78); z-index: 100; animation: fadeIn 0.2s ease both; }
   .round-overlay.hidden { display: none; }
-  .round-card {
-    background: rgba(15,15,53,0.95);
-    border: 2.5px solid rgba(150,150,255,0.4);
-    border-radius: 24px;
-    padding: 2rem 2.5rem;
-    text-align: center;
-    box-shadow: 0 0 60px rgba(100,100,255,0.3);
-    animation: cardPop 0.3s cubic-bezier(.34,1.56,.64,1) both;
-    max-width: 340px; width: 90%;
-  }
-  .round-num  { font-family: 'Orbitron', monospace; font-size: 1rem; color: rgba(200,200,255,0.7); font-weight: 700; margin-bottom: 0.3rem; letter-spacing: 0.1em; }
-  .round-target { font-family: 'Fredoka One', cursive; font-size: 2.2rem; color: #fff; margin-bottom: 0.5rem; line-height: 1.1; }
-  .round-hint { font-size: 0.82rem; font-weight: 700; color: rgba(200,200,255,0.7); margin-bottom: 1rem; }
+  .round-card { background: rgba(15,15,53,0.97); border: 2.5px solid rgba(150,150,255,0.4); border-radius: 24px; padding: 2rem 2.5rem; text-align: center; box-shadow: 0 0 60px rgba(100,100,255,0.3); animation: cardPop 0.3s cubic-bezier(.34,1.56,.64,1) both; max-width: 340px; width: 90%; }
+  .round-num     { font-family: 'Orbitron', monospace; font-size: 1rem; color: rgba(200,200,255,0.7); font-weight: 700; margin-bottom: 0.3rem; letter-spacing: 0.1em; }
+  .round-target  { font-family: 'Fredoka One', cursive; font-size: 2.2rem; color: #fff; margin-bottom: 0.5rem; line-height: 1.1; }
+  .round-hint    { font-size: 0.82rem; font-weight: 700; color: rgba(200,200,255,0.7); margin-bottom: 1rem; }
   .round-countdown { font-family: 'Orbitron', monospace; font-size: 3.5rem; font-weight: 900; color: #f7c948; text-shadow: 0 0 20px rgba(247,201,72,0.6); }
-
-  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-  @keyframes cardPop {
-    from { transform: scale(0.85) translateY(20px); opacity: 0; }
-    to   { transform: scale(1) translateY(0); opacity: 1; }
-  }
+  @keyframes fadeIn { from{ opacity:0 } to{ opacity:1 } }
+  @keyframes cardPop { from{ transform:scale(0.85) translateY(20px); opacity:0 } to{ transform:scale(1) translateY(0); opacity:1 } }
 
   /* ===================== RESULTS SCREEN ===================== */
   #resultsScreen {
-    top: 48px;
-    align-items: center; justify-content: center;
+    top: 48px; align-items: center; justify-content: center;
     padding: 1.5rem 1.25rem 2.5rem;
     background: radial-gradient(ellipse at 50% 0%, #1a1a5a 0%, #080820 70%);
     overflow-y: auto; text-align: center;
@@ -214,26 +120,11 @@
   .res-grade { font-family: 'Orbitron', monospace; font-size: 5rem; font-weight: 900; line-height: 1; margin-bottom: 0.3rem; text-shadow: 0 0 30px currentColor; }
   .res-label { font-family: 'Fredoka One', cursive; font-size: 1.4rem; color: rgba(200,200,255,0.8); margin-bottom: 0.3rem; }
   .res-score { font-family: 'Orbitron', monospace; font-size: 1.6rem; font-weight: 900; color: #f7c948; text-shadow: 0 0 15px rgba(247,201,72,0.6); margin-bottom: 1.5rem; }
-  .res-stats {
-    display: grid; grid-template-columns: 1fr 1fr;
-    gap: 0.65rem; max-width: 360px; width: 100%; margin: 0 auto 1.75rem;
-  }
-  .stat-card {
-    background: rgba(255,255,255,0.07);
-    border: 2px solid rgba(255,255,255,0.15);
-    border-radius: 14px; padding: 0.75rem 0.5rem;
-  }
-  .stat-val { font-family: 'Orbitron', monospace; font-size: 1.8rem; font-weight: 700; line-height: 1; }
-  .stat-lbl { font-size: 0.68rem; font-weight: 800; letter-spacing: 0.06em; opacity: 0.65; margin-top: 0.2rem; text-transform: uppercase; }
-  .play-again-btn {
-    font-family: 'Fredoka One', cursive; font-size: 1.2rem;
-    padding: 0.8rem 2.5rem;
-    background: rgba(92,187,111,0.2); color: #a0ffb0;
-    border: 2.5px solid #5cbb6f; border-radius: 14px;
-    cursor: pointer;
-    transition: transform 0.18s cubic-bezier(.34,1.56,.64,1), box-shadow 0.15s;
-    box-shadow: 0 4px 20px rgba(92,187,111,0.2);
-  }
+  .res-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem; max-width: 360px; width: 100%; margin: 0 auto 1.75rem; }
+  .stat-card { background: rgba(255,255,255,0.07); border: 2px solid rgba(255,255,255,0.15); border-radius: 14px; padding: 0.75rem 0.5rem; }
+  .stat-val  { font-family: 'Orbitron', monospace; font-size: 1.8rem; font-weight: 700; line-height: 1; }
+  .stat-lbl  { font-size: 0.68rem; font-weight: 800; letter-spacing: 0.06em; opacity: 0.65; margin-top: 0.2rem; text-transform: uppercase; }
+  .play-again-btn { font-family: 'Fredoka One', cursive; font-size: 1.2rem; padding: 0.8rem 2.5rem; background: rgba(92,187,111,0.2); color: #a0ffb0; border: 2.5px solid #5cbb6f; border-radius: 14px; cursor: pointer; transition: transform 0.18s cubic-bezier(.34,1.56,.64,1), box-shadow 0.15s; box-shadow: 0 4px 20px rgba(92,187,111,0.2); }
   .play-again-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(92,187,111,0.4); }
 </style>
 </head>
@@ -258,11 +149,12 @@
     </div>
     <div class="how-to-box">
       <h3>🎮 How to Play</h3>
-      <p>Aim with your mouse or finger — <strong>tap/click to fire</strong> at the target words!<br>Let the wrong words fall — they give you <strong>powerups</strong> when they hit your planet. But if a target word slips through — you lose a ❤️!</p>
+      <p>Aim with your mouse or finger — <strong>tap/click to fire</strong> at the correct words!<br>
+         Each round targets one type. Look for <strong>✨ glowing words</strong> — those give special bonuses!</p>
       <div class="pos-chips">
-        <span class="pos-chip chip-n">🔵 Nouns — things</span>
-        <span class="pos-chip chip-v">🟠 Verbs — actions</span>
-        <span class="pos-chip chip-a">🟣 Adjectives — describing words</span>
+        <span class="pos-chip">Nouns — things (cat, star, castle…)</span>
+        <span class="pos-chip">Verbs — actions (run, blast, soar…)</span>
+        <span class="pos-chip">Adjectives — descriptions (big, golden, fierce…)</span>
       </div>
     </div>
   </div>
@@ -271,28 +163,21 @@
 <!-- GAME CONTAINER -->
 <div id="gameContainer">
   <canvas id="gameCanvas"></canvas>
-
-  <!-- HUD overlay -->
   <div class="game-hud">
     <div class="hud-score" id="hudScore">0</div>
-    <div class="hud-target" id="hudTarget" style="color:#80c8ff;border-color:#80c8ff">BLAST THE NOUNS!</div>
+    <div class="hud-target" id="hudTarget">BLAST THE NOUNS!</div>
     <div class="hud-lives" id="hudLives">❤️❤️❤️</div>
   </div>
-
-  <!-- Powerup status bar -->
   <div class="powerup-bar">
     <div class="pw-item pw-shield" id="pwShield">🛡️ SHIELD</div>
     <div class="pw-item pw-slow"   id="pwSlow">  ⏱️ SLOW</div>
     <div class="pw-item pw-multi"  id="pwMulti">💰 2×</div>
-    <div class="pw-item pw-blast"  id="pwBlast">💥 BLAST!</div>
   </div>
-
-  <!-- Round announcement overlay -->
   <div class="round-overlay hidden" id="roundOverlay">
     <div class="round-card">
-      <div class="round-num"   id="roNum">ROUND 1 / 5</div>
-      <div class="round-target" id="roTarget">BLAST THE NOUNS!</div>
-      <div class="round-hint"  id="roHint">Shoot nouns — let everything else fall!</div>
+      <div class="round-num"      id="roNum">ROUND 1 / 5</div>
+      <div class="round-target"   id="roTarget">BLAST THE NOUNS!</div>
+      <div class="round-hint"     id="roHint">Shoot nouns — let everything else fall!</div>
       <div class="round-countdown" id="roCountdown">3</div>
     </div>
   </div>
@@ -307,7 +192,7 @@
   <div class="res-stats">
     <div class="stat-card"><div class="stat-val" id="stCorrect" style="color:#5cbb6f">0</div><div class="stat-lbl">Blasted</div></div>
     <div class="stat-card"><div class="stat-val" id="stWrong"   style="color:#e8453c">0</div><div class="stat-lbl">Wrong Shots</div></div>
-    <div class="stat-card"><div class="stat-val" id="stPowerup" style="color:#9b6fda">0</div><div class="stat-lbl">Powerups</div></div>
+    <div class="stat-card"><div class="stat-val" id="stBonus"   style="color:#f7c948">0</div><div class="stat-lbl">Bonuses</div></div>
     <div class="stat-card"><div class="stat-val" id="stRound">5</div><div class="stat-lbl">Rounds</div></div>
   </div>
   <button class="play-again-btn" onclick="goHome()">🎮 Play Again</button>
@@ -315,7 +200,7 @@
 
 <script>
 /* ============================================================
-   WORD BANK  (60 per type, shuffled without replacement)
+   WORD BANK (60 per type, shuffled without replacement)
 ============================================================ */
 const RAW_WORDS = {
   noun: [
@@ -345,7 +230,13 @@ const RAW_WORDS = {
   ]
 };
 
-// Shuffle-without-replacement queues
+/* Special bonus rules: what bonus does each type give when a special word is collected */
+const SPECIAL_BONUS = {
+  noun:      { type: 'heart',  text: '+❤️ EXTRA LIFE!', color: '#ff8888' },
+  verb:      { type: 'slow',   text: '⏱️ TIME SLOW!',   color: '#9b6fda' },
+  adjective: { type: 'multi',  text: '💰 2× POINTS!',   color: '#f7c948' }
+};
+
 const queues = { noun: [], verb: [], adjective: [] };
 function getWord(type) {
   if (!queues[type].length) queues[type] = shuffle([...RAW_WORDS[type]]);
@@ -356,35 +247,42 @@ function getWord(type) {
    DIFFICULTY CONFIG
 ============================================================ */
 const DIFFS = {
-  easy:   { spawnMs:2800, speedPx:[55,90],  maxOnScreen:2, targetRatio:0.45, goal:8,  types:['noun','verb'] },
-  medium: { spawnMs:2100, speedPx:[85,135], maxOnScreen:3, targetRatio:0.42, goal:10, types:['noun','verb','adjective'] },
-  hard:   { spawnMs:1500, speedPx:[120,190],maxOnScreen:4, targetRatio:0.38, goal:12, types:['noun','verb','adjective'] }
+  easy:   { spawnMs:2800, speedPx:[50,85],   maxOnScreen:2, targetRatio:0.45, goal:8,  types:['noun','verb'] },
+  medium: { spawnMs:2100, speedPx:[80,130],  maxOnScreen:3, targetRatio:0.42, goal:10, types:['noun','verb','adjective'] },
+  hard:   { spawnMs:1500, speedPx:[115,180], maxOnScreen:4, targetRatio:0.38, goal:12, types:['noun','verb','adjective'] }
 };
 const ROUND_TARGETS = ['noun','verb','adjective','noun','verb'];
 
-/* ============================================================
-   POS VISUAL CONFIG
-============================================================ */
-const POS_VIS = {
-  noun:      { fill:'rgba(8,20,60,0.88)',  border:'#4a90d9',  text:'#90c8ff', glow:'#4a90d9', hudColor:'#80c8ff',  hudBorder:'#4a90d9',  label:'NOUNS',      hint:'Shoot nouns — let everything else fall!' },
-  verb:      { fill:'rgba(60,25,8,0.88)',  border:'#f5832a',  text:'#ffd090', glow:'#f5832a', hudColor:'#ffd090',  hudBorder:'#f5832a',  label:'VERBS',      hint:'Shoot verbs — let everything else fall!' },
-  adjective: { fill:'rgba(40,8,60,0.88)', border:'#9b6fda',  text:'#d0a0ff', glow:'#9b6fda', hudColor:'#d0a0ff',  hudBorder:'#9b6fda',  label:'ADJECTIVES', hint:'Shoot adjectives — let everything else fall!' }
+/* Visual config — neutral word bubbles (no type-based color coding) */
+const WORD_VIS = {
+  normal:  { fill:'rgba(12,10,50,0.88)', border:'rgba(180,175,255,0.7)', text:'#e8e8ff', glow:'rgba(160,150,255,0.5)' },
+  special: { fill:'rgba(30,20,10,0.92)', border:'#f7c948', text:'#fff8c0', glow:'rgba(247,201,72,0.9)' }
+};
+
+const POS_LABELS = {
+  noun:      { label:'NOUNS',      hint:'Shoot nouns — let everything else fall!' },
+  verb:      { label:'VERBS',      hint:'Shoot verbs — let everything else fall!' },
+  adjective: { label:'ADJECTIVES', hint:'Shoot adjectives — let everything else fall!' }
 };
 
 /* ============================================================
    CANVAS SETUP
 ============================================================ */
-const canvas  = document.getElementById('gameCanvas');
-const ctx     = canvas.getContext('2d');
-const PLANET_R = 80;
+const canvas = document.getElementById('gameCanvas');
+const ctx    = canvas.getContext('2d');
+const PLANET_R = 120;
 let W, H, planetCX, planetCY;
+// Cannon pivot = top of visible planet
+let cannonPX, cannonPY;
 
 function resizeCanvas() {
   const container = document.getElementById('gameContainer');
   W = canvas.width  = container.clientWidth;
   H = canvas.height = container.clientHeight;
   planetCX = W / 2;
-  planetCY = H + PLANET_R - 55;
+  planetCY = H + PLANET_R - 75;   // planet center, mostly below viewport
+  cannonPX = planetCX;
+  cannonPY = planetCY - PLANET_R; // true top of planet = cannon pivot
   initStars();
 }
 window.addEventListener('resize', resizeCanvas);
@@ -393,19 +291,16 @@ window.addEventListener('resize', resizeCanvas);
    GAME STATE
 ============================================================ */
 let diff, cfg, phase; // 'idle'|'announcing'|'playing'|'over'
-let score, lives, round, currentTarget, targetKilled, wrongShots, powerupsCollected, totalCorrect;
+let score, lives, round, currentTarget, targetKilled, wrongShots, bonusesCollected, totalCorrect;
 let multiplier;
 let shieldActive, shieldTimer;
 let slowActive, slowTimer;
 let multiActive, multiTimer;
 let cannonAngle;
 let spawnTimer, countdownTimer, animId;
+let gameTime;  // seconds elapsed — used for difficulty scaling
+let words, lasers, particles, floatTexts, stars;
 
-// Object lists
-let words, lasers, particles, floatTexts;
-
-// Stars
-let stars = [];
 function initStars() {
   stars = [];
   for (let i = 0; i < 160; i++) {
@@ -427,29 +322,22 @@ function showScreen(id) {
   const el = document.getElementById(id);
   if (el) el.classList.add('active');
 }
-
-function goHome() {
-  stopGame();
-  showScreen('homeScreen');
-}
+function goHome() { stopGame(); showScreen('homeScreen'); }
 
 /* ============================================================
-   GAME START / ROUND MANAGEMENT
+   GAME START / ROUND
 ============================================================ */
 function startGame(difficulty) {
-  diff  = difficulty;
-  cfg   = DIFFS[diff];
+  diff = difficulty; cfg = DIFFS[diff];
   score = 0; lives = 3; round = 0;
-  wrongShots = 0; powerupsCollected = 0; totalCorrect = 0;
+  wrongShots = 0; bonusesCollected = 0; totalCorrect = 0; gameTime = 0;
   multiplier = 1;
   shieldActive = false; slowActive = false; multiActive = false;
   cannonAngle = -Math.PI / 2;
   words = []; lasers = []; particles = []; floatTexts = [];
 
-  document.getElementById('gameContainer').classList.add('active');
-  showScreen(null); // hide all HTML screens
+  showScreen(null);
   document.getElementById('gameContainer').style.display = '';
-
   resizeCanvas();
   startRound();
   if (!animId) gameLoop();
@@ -467,12 +355,11 @@ function startRound() {
 
 function showRoundAnnounce() {
   const ov = document.getElementById('roundOverlay');
-  const vis = POS_VIS[currentTarget];
+  const lbl = POS_LABELS[currentTarget];
   ov.classList.remove('hidden');
   document.getElementById('roNum').textContent    = `ROUND ${round + 1} / 5`;
-  document.getElementById('roTarget').textContent = `BLAST THE ${vis.label}!`;
-  document.getElementById('roTarget').style.color = vis.hudColor;
-  document.getElementById('roHint').textContent   = vis.hint;
+  document.getElementById('roTarget').textContent = `BLAST THE ${lbl.label}!`;
+  document.getElementById('roHint').textContent   = lbl.hint;
   let c = 3;
   document.getElementById('roCountdown').textContent = c;
   clearInterval(countdownTimer);
@@ -490,10 +377,12 @@ function showRoundAnnounce() {
 
 function scheduleSpawn() {
   if (phase !== 'playing') return;
-  const delay = cfg.spawnMs * (0.75 + Math.random() * 0.5);
+  // Speed up: spawnMs decreases by up to 40% over 90 seconds
+  const speedup = Math.max(0.6, 1.0 - gameTime / 225);
+  const delay = cfg.spawnMs * speedup * (0.75 + Math.random() * 0.5);
   spawnTimer = setTimeout(() => {
     if (phase === 'playing') {
-      if (words.filter(w => !w.dead).length < cfg.maxOnScreen) spawnWord();
+      if (words.filter(w => !w.fading && !w.dead).length < cfg.maxOnScreen) spawnWord();
       scheduleSpawn();
     }
   }, delay);
@@ -501,8 +390,7 @@ function scheduleSpawn() {
 
 function stopGame() {
   phase = 'idle';
-  clearTimeout(spawnTimer);
-  clearInterval(countdownTimer);
+  clearTimeout(spawnTimer); clearInterval(countdownTimer);
   if (animId) { cancelAnimationFrame(animId); animId = null; }
   document.getElementById('roundOverlay').classList.add('hidden');
   document.getElementById('gameContainer').style.display = 'none';
@@ -516,28 +404,31 @@ function spawnWord() {
   const isTarget = Math.random() < cfg.targetRatio;
   const type = isTarget ? currentTarget : types.filter(t => t !== currentTarget)[Math.floor(Math.random() * (types.length - 1))];
   const text = getWord(type);
-  const vis  = POS_VIS[type];
 
-  // Measure text width
+  // 10% chance of being a special glowing word
+  const isSpecial = Math.random() < 0.10;
+
   ctx.font = 'bold 16px Nunito';
-  const tw  = ctx.measureText(text).width;
-  const bw  = tw + 30;
-  const bh  = 38;
+  const tw = ctx.measureText(text).width;
+  const bw = tw + 30, bh = 38;
 
   const slowFactor = slowActive ? 0.4 : 1.0;
+  // Speed also scales with time elapsed
+  const timeBoost = Math.min(1.5, 1.0 + gameTime / 180);
   const [minV, maxV] = cfg.speedPx;
-  const speed = (minV + Math.random() * (maxV - minV)) * slowFactor;
+  const speed = (minV + Math.random() * (maxV - minV)) * slowFactor * timeBoost;
   const margin = bw / 2 + 10;
 
   words.push({
-    text, type, vis,
+    text, type, isSpecial,
     x: margin + Math.random() * (W - margin * 2),
     y: -bh,
-    vy: speed / 60,   // px per frame (targeting 60fps)
+    vy: speed / 60,
     vx: (Math.random() - 0.5) * 0.4,
     bw, bh,
-    shot: false, collected: false, dead: false,
-    opacity: 1
+    shot: false, fading: false, dead: false,
+    opacity: 1,
+    specialPulse: 0  // phase for rainbow pulse animation
   });
 }
 
@@ -547,17 +438,18 @@ function spawnWord() {
 function fire(tx, ty) {
   if (phase !== 'playing') return;
   const SPEED = 1800;
-  const angle = Math.atan2(ty - planetCY, tx - planetCX);
-  const clampedAngle = Math.max(-Math.PI + 0.25, Math.min(-0.25, angle));
+  // Angle from cannon pivot point
+  const angle = Math.atan2(ty - cannonPY, tx - cannonPX);
+  const clampedAngle = Math.max(-Math.PI + 0.15, Math.min(-0.15, angle));
   cannonAngle = clampedAngle;
-  const tipX = planetCX + Math.cos(clampedAngle) * (PLANET_R + 12);
-  const tipY = planetCY + Math.sin(clampedAngle) * (PLANET_R + 12);
+  const tipX = cannonPX + Math.cos(clampedAngle) * 40;
+  const tipY = cannonPY + Math.sin(clampedAngle) * 40;
   const dist = Math.hypot(tx - tipX, ty - tipY);
-  const nx = (tx - tipX) / dist;
-  const ny = (ty - tipY) / dist;
+  const nx = (tx - tipX) / (dist || 1);
+  const ny = (ty - tipY) / (dist || 1);
   lasers.push({
     x: tipX, y: tipY, vx: nx * SPEED / 60, vy: ny * SPEED / 60,
-    startX: tipX, startY: tipY, age: 0, maxAge: 0.3, hit: false
+    age: 0, maxAge: 0.35, hit: false
   });
 }
 
@@ -567,19 +459,16 @@ function fire(tx, ty) {
 canvas.addEventListener('pointerdown', e => {
   e.preventDefault();
   const r = canvas.getBoundingClientRect();
-  const sx = canvas.width  / r.width;
-  const sy = canvas.height / r.height;
+  const sx = canvas.width / r.width, sy = canvas.height / r.height;
   fire((e.clientX - r.left) * sx, (e.clientY - r.top) * sy);
 }, { passive: false });
 
 canvas.addEventListener('pointermove', e => {
   if (phase !== 'playing') return;
   const r = canvas.getBoundingClientRect();
-  const sx = canvas.width  / r.width;
-  const sy = canvas.height / r.height;
-  const tx = (e.clientX - r.left) * sx;
-  const ty = (e.clientY - r.top)  * sy;
-  cannonAngle = Math.max(-Math.PI + 0.25, Math.min(-0.25, Math.atan2(ty - planetCY, tx - planetCX)));
+  const sx = canvas.width / r.width, sy = canvas.height / r.height;
+  const tx = (e.clientX - r.left) * sx, ty = (e.clientY - r.top) * sy;
+  cannonAngle = Math.max(-Math.PI + 0.15, Math.min(-0.15, Math.atan2(ty - cannonPY, tx - cannonPX)));
 }, { passive: true });
 
 /* ============================================================
@@ -590,10 +479,7 @@ function gameLoop(ts = 0) {
   animId = requestAnimationFrame(gameLoop);
   const dt = Math.min((ts - lastTs) / 1000, 0.05);
   lastTs = ts;
-
-  if (phase === 'playing' || phase === 'announcing') {
-    update(dt);
-  }
+  if (phase === 'playing' || phase === 'announcing') update(dt);
   draw(ts);
 }
 
@@ -603,21 +489,27 @@ function gameLoop(ts = 0) {
 function update(dt) {
   if (phase !== 'playing') { updateParticles(dt); return; }
 
+  gameTime += dt;
   const slow = slowActive ? 0.38 : 1.0;
 
-  // Update timers
+  // Timers
   if (slowActive)  { slowTimer  -= dt; if (slowTimer  <= 0) { slowActive  = false; updatePowerupBar(); } }
   if (multiActive) { multiTimer -= dt; if (multiTimer <= 0) { multiActive = false; multiplier = 1; updatePowerupBar(); } }
-  if (shieldActive && shieldTimer > 0) { shieldTimer -= dt; }
+  if (shieldActive && shieldTimer > 0) shieldTimer -= dt;
 
   // Words
   words.forEach(w => {
     if (w.dead) return;
+    if (w.fading) {
+      w.opacity -= dt * 6;  // fade out in ~0.17s
+      if (w.opacity <= 0) w.dead = true;
+      return;
+    }
     w.x += w.vx;
     w.y += w.vy * slow;
-    // Bounce walls
-    if (w.x - w.bw/2 < 0)  { w.x = w.bw/2; w.vx = Math.abs(w.vx); }
+    if (w.x - w.bw/2 < 0)  { w.x = w.bw/2;     w.vx =  Math.abs(w.vx); }
     if (w.x + w.bw/2 > W)  { w.x = W - w.bw/2; w.vx = -Math.abs(w.vx); }
+    if (w.isSpecial) w.specialPulse += dt * 3;
   });
 
   // Lasers
@@ -627,50 +519,39 @@ function update(dt) {
   floatTexts.forEach(f => { f.y -= 55 * dt; f.age += dt; });
   floatTexts = floatTexts.filter(f => f.age < 0.9);
 
-  // Collision: laser vs word
+  // Laser ↔ word collision
   lasers.forEach(laser => {
     if (laser.hit || laser.age > laser.maxAge) return;
     words.forEach(word => {
-      if (word.shot || word.collected || word.dead) return;
+      if (word.fading || word.dead) return;
       if (laser.x >= word.x - word.bw/2 && laser.x <= word.x + word.bw/2 &&
           laser.y >= word.y - word.bh/2 && laser.y <= word.y + word.bh/2) {
         laser.hit = true;
-        word.shot = true;
-        word.dead = true;
-        if (word.type === currentTarget) {
-          onCorrectHit(word);
-        } else {
-          onWrongHit(word);
-        }
+        word.fading = true;
+        if (word.type === currentTarget) onCorrectHit(word);
+        else                              onWrongHit(word);
       }
     });
   });
   lasers = lasers.filter(l => !l.hit && l.age < l.maxAge && l.y > -50 && l.y < H + 50 && l.x > -50 && l.x < W + 50);
 
-  // Words reaching planet
+  // Words reaching planet bottom
   words.forEach(word => {
-    if (word.dead || word.shot || word.collected) return;
-    if (word.y + word.bh / 2 > planetCY - PLANET_R + 20) {
-      word.collected = true;
-      word.dead = true;
-      if (word.type === currentTarget) {
-        onMissedTarget(word);
-      } else {
-        onCollectedWrong(word);
-      }
+    if (word.fading || word.dead) return;
+    if (word.y + word.bh / 2 > cannonPY - 10) {
+      word.fading = true;
+      if (word.type === currentTarget) onMissedTarget(word);
+      else                              onWordLanded(word);
     }
   });
 
-  words = words.filter(w => !w.dead || w.opacity > 0);
+  words = words.filter(w => !w.dead);
 }
 
 function updateParticles(dt) {
   particles.forEach(p => {
-    p.x += p.vx * dt;
-    p.y += p.vy * dt;
-    p.vy += 80 * dt; // gravity
-    p.vx *= 0.96;
-    p.age += dt;
+    p.x += p.vx * dt; p.y += p.vy * dt;
+    p.vy += 80 * dt; p.vx *= 0.96; p.age += dt;
   });
   particles = particles.filter(p => p.age < p.life);
 }
@@ -680,13 +561,11 @@ function updateParticles(dt) {
 ============================================================ */
 function onCorrectHit(word) {
   const pts = 10 * multiplier;
-  score += pts;
-  totalCorrect++;
-  targetKilled++;
-  burst(word.x, word.y, word.vis.border, 18);
-  floatText(`+${pts}`, word.x, word.y - 20, word.vis.border);
+  score += pts; totalCorrect++; targetKilled++;
+  burst(word.x, word.y, word.isSpecial ? '#f7c948' : 'rgba(160,150,255,0.9)', word.isSpecial ? 22 : 18);
+  floatText(`+${pts}`, word.x, word.y - 20, word.isSpecial ? '#f7c948' : '#c8c4ff');
+  if (word.isSpecial) applySpecialBonus(word.type, word.x);
   updateHUD();
-
   if (targetKilled >= cfg.goal) {
     phase = 'roundEnding';
     clearTimeout(spawnTimer);
@@ -706,58 +585,53 @@ function onWrongHit(word) {
 
 function onMissedTarget(word) {
   if (shieldActive) {
-    shieldActive = false;
-    updatePowerupBar();
-    floatText('🛡️ BLOCKED!', word.x, planetCY - PLANET_R - 30, '#4a90d9');
+    shieldActive = false; updatePowerupBar();
+    floatText('🛡️ BLOCKED!', word.x, cannonPY - 30, '#4a90d9');
     return;
   }
   lives = Math.max(0, lives - 1);
-  floatText('MISSED! ❌', word.x, planetCY - PLANET_R - 30, '#ff6060');
-  screenShake();
-  updateHUD();
+  floatText('MISSED! ❌', word.x, cannonPY - 30, '#ff6060');
+  screenShake(); updateHUD();
   if (lives <= 0) { phase = 'over'; setTimeout(showResults, 800); }
 }
 
-function onCollectedWrong(word) {
-  powerupsCollected++;
-  const roll = Math.random();
-  if (roll < 0.28) {
-    // Shield
-    shieldActive = true; shieldTimer = 999;
-    floatText('🛡️ SHIELD!', word.x, planetCY - PLANET_R - 40, '#4a90d9');
-    activatePowerup('shield');
-  } else if (roll < 0.52) {
-    // Slow
-    slowActive = true; slowTimer = 8;
-    floatText('⏱️ SLOW!', word.x, planetCY - PLANET_R - 40, '#9b6fda');
-    activatePowerup('slow');
-  } else if (roll < 0.72) {
-    // Double points
-    multiActive = true; multiTimer = 10; multiplier = 2;
-    floatText('💰 2× POINTS!', word.x, planetCY - PLANET_R - 40, '#f7c948');
-    activatePowerup('multi');
-  } else if (roll < 0.85) {
-    // BLAST ALL — destroy all words
-    activatePowerup('blast');
-    floatText('💥 BLAST ALL!', W / 2, H / 2, '#f5832a');
-    words.forEach(w => {
-      if (!w.dead) {
-        w.dead = true;
-        burst(w.x, w.y, w.type === currentTarget ? w.vis.border : '#f5832a', 10);
-      }
-    });
-  } else {
-    // Bonus points silently
-    score += 5;
-    floatText('+5 ⭐', word.x, planetCY - PLANET_R - 35, '#f7c948');
+// Wrong words land at planet = free points (same as a correct hit)
+function onWordLanded(word) {
+  const pts = 5 * multiplier;
+  score += pts;
+  floatText(`+${pts}`, word.x, cannonPY - 25, '#9898ee');
+  if (word.isSpecial) applySpecialBonus(word.type, word.x);
+  updateHUD();
+}
+
+// Special glowing word bonus (based on word's POS type)
+function applySpecialBonus(type, x) {
+  bonusesCollected++;
+  const bonus = SPECIAL_BONUS[type];
+  if (!bonus) return;
+  const y = cannonPY - 50;
+  if (bonus.type === 'heart') {
+    lives = Math.min(5, lives + 1);
+    floatText(bonus.text, x, y, bonus.color, 17);
     updateHUD();
+  } else if (bonus.type === 'slow') {
+    slowActive = true; slowTimer = 10;
+    floatText(bonus.text, x, y, bonus.color, 17);
+    activatePowerup('slow');
+  } else if (bonus.type === 'multi') {
+    multiActive = true; multiTimer = 10; multiplier = 2;
+    floatText(bonus.text, x, y, bonus.color, 17);
+    activatePowerup('multi');
+  } else if (bonus.type === 'shield') {
+    shieldActive = true; shieldTimer = 999;
+    floatText(bonus.text, x, y, bonus.color, 17);
+    activatePowerup('shield');
   }
 }
 
 function activatePowerup(type) {
   updatePowerupBar();
-  // Flash the badge
-  const map = { shield:'pwShield', slow:'pwSlow', multi:'pwMulti', blast:'pwBlast' };
+  const map = { shield:'pwShield', slow:'pwSlow', multi:'pwMulti' };
   const el = document.getElementById(map[type]);
   if (el) { el.style.transform = 'scale(1.3)'; setTimeout(() => el.style.transform = '', 300); }
 }
@@ -768,17 +642,12 @@ function activatePowerup(type) {
 function endRound() {
   if (phase === 'over') return;
   round++;
-  if (round >= 5 || lives <= 0) {
-    showResults();
-  } else {
-    startRound();
-  }
+  if (round >= 5 || lives <= 0) showResults();
+  else startRound();
 }
 
 function showResults() {
-  stopGame();
-  showScreen('resultsScreen');
-
+  stopGame(); showScreen('resultsScreen');
   const maxScore = 5 * cfg.goal * 10 + 50;
   const pct = score / maxScore;
   let grade, icon, label;
@@ -787,7 +656,6 @@ function showResults() {
   else if (pct >= 0.62) { grade = 'B';  icon = '😊'; label = 'Great Job!'; }
   else if (pct >= 0.45) { grade = 'C';  icon = '👍'; label = 'Good Effort!'; }
   else                  { grade = 'D';  icon = '💪'; label = 'Keep Practicing!'; }
-
   const gc = pct >= 0.78 ? '#5cbb6f' : pct >= 0.45 ? '#f5832a' : '#e8453c';
   document.getElementById('resIcon').textContent   = icon;
   document.getElementById('resGrade').textContent  = grade;
@@ -796,7 +664,7 @@ function showResults() {
   document.getElementById('resScore').textContent  = score + ' pts';
   document.getElementById('stCorrect').textContent = totalCorrect;
   document.getElementById('stWrong').textContent   = wrongShots;
-  document.getElementById('stPowerup').textContent = powerupsCollected;
+  document.getElementById('stBonus').textContent   = bonusesCollected;
   document.getElementById('stRound').textContent   = round;
 }
 
@@ -805,20 +673,15 @@ function showResults() {
 ============================================================ */
 function updateHUD() {
   document.getElementById('hudScore').textContent = score;
-  const hearts = '❤️'.repeat(lives) + '🖤'.repeat(Math.max(0, 3 - lives));
+  const hearts = '❤️'.repeat(Math.max(0, lives)) + '🖤'.repeat(Math.max(0, 3 - lives));
   document.getElementById('hudLives').textContent = hearts;
-  const vis = POS_VIS[currentTarget];
-  const tgt = document.getElementById('hudTarget');
-  tgt.textContent    = `BLAST THE ${vis.label}!`;
-  tgt.style.color    = vis.hudColor;
-  tgt.style.borderColor = vis.hudBorder;
+  const lbl = POS_LABELS[currentTarget];
+  document.getElementById('hudTarget').textContent = `BLAST THE ${lbl.label}!`;
 }
-
 function updatePowerupBar() {
   document.getElementById('pwShield').classList.toggle('active', shieldActive);
   document.getElementById('pwSlow').classList.toggle('active', slowActive);
   document.getElementById('pwMulti').classList.toggle('active', multiActive);
-  // blast is just a flash, not persistent
 }
 
 /* ============================================================
@@ -832,44 +695,18 @@ function screenShake() { shakeUntil = performance.now() + 300; }
 ============================================================ */
 function draw(ts) {
   ctx.save();
-  // Screen shake
   if (performance.now() < shakeUntil) {
-    const intensity = 6;
-    ctx.translate(
-      (Math.random() - 0.5) * intensity,
-      (Math.random() - 0.5) * intensity
-    );
+    ctx.translate((Math.random()-0.5)*6, (Math.random()-0.5)*6);
   }
 
   // Background
   const bgGrad = ctx.createLinearGradient(0, 0, 0, H);
-  bgGrad.addColorStop(0, '#080820');
-  bgGrad.addColorStop(1, '#0f0f35');
-  ctx.fillStyle = bgGrad;
-  ctx.fillRect(0, 0, W, H);
+  bgGrad.addColorStop(0, '#080820'); bgGrad.addColorStop(1, '#0f0f35');
+  ctx.fillStyle = bgGrad; ctx.fillRect(0, 0, W, H);
 
-  // Nebula hints
-  drawNebula(ts);
-
-  // Stars
-  drawStars(ts);
-
-  // Words (behind planet/cannon)
-  drawWords();
-
-  // Lasers
-  drawLasers();
-
-  // Particles
-  drawParticles();
-
-  // Float texts
-  drawFloatTexts();
-
-  // Planet + cannon on top
-  drawPlanet(ts);
-  drawCannon();
-
+  drawNebula(ts); drawStars(ts); drawWords(ts);
+  drawLasers(); drawParticles(); drawFloatTexts();
+  drawPlanet(ts); drawCannon();
   ctx.restore();
 }
 
@@ -879,7 +716,7 @@ function drawNebula(ts) {
    [0.8, 0.15, 60, 'rgba(20,60,100,0.05)'],
    [0.5, 0.5, 100, 'rgba(60,20,80,0.03)']
   ].forEach(([rx, ry, r, c]) => {
-    const g = ctx.createRadialGradient(W*rx + Math.sin(t)*20, H*ry + Math.cos(t)*15, 0, W*rx, H*ry, r + Math.sin(t)*20);
+    const g = ctx.createRadialGradient(W*rx+Math.sin(t)*20, H*ry+Math.cos(t)*15, 0, W*rx, H*ry, r+Math.sin(t)*20);
     g.addColorStop(0, c); g.addColorStop(1, 'transparent');
     ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
   });
@@ -889,32 +726,52 @@ function drawStars(ts) {
   const t = ts * 0.001;
   stars.forEach(s => {
     const op = s.baseOpacity * (0.6 + 0.4 * Math.sin(t * s.twinkleSpeed + s.twinkleOff));
-    ctx.beginPath();
-    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(255,255,255,${op.toFixed(3)})`;
-    ctx.fill();
+    ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(255,255,255,${op.toFixed(3)})`; ctx.fill();
   });
 }
 
-function drawWords() {
+function drawWords(ts) {
   words.forEach(w => {
     if (w.opacity <= 0) return;
-    const vis = w.vis;
     ctx.save();
     ctx.globalAlpha = w.opacity;
-    ctx.shadowColor  = vis.glow;
-    ctx.shadowBlur   = 14;
-    // Background
-    roundRectFill(ctx, w.x - w.bw/2, w.y - w.bh/2, w.bw, w.bh, 12, vis.fill);
-    // Border
-    ctx.shadowBlur = 8;
-    roundRectStroke(ctx, w.x - w.bw/2, w.y - w.bh/2, w.bw, w.bh, 12, vis.border, 2.5);
-    // Text
+
+    let fill, border, text, glowColor, glowBlur;
+    if (w.isSpecial) {
+      // Rainbow/gold shimmer border
+      const pulse = Math.abs(Math.sin(w.specialPulse));
+      const hue = (w.specialPulse * 80) % 360;
+      fill = WORD_VIS.special.fill;
+      border = `hsla(${hue},100%,65%,${0.7 + pulse * 0.3})`;
+      text = WORD_VIS.special.text;
+      glowColor = `hsla(${hue},100%,65%,0.8)`;
+      glowBlur = 18 + pulse * 10;
+    } else {
+      fill = WORD_VIS.normal.fill;
+      border = WORD_VIS.normal.border;
+      text = WORD_VIS.normal.text;
+      glowColor = WORD_VIS.normal.glow;
+      glowBlur = 10;
+    }
+
+    ctx.shadowColor = glowColor; ctx.shadowBlur = glowBlur;
+    roundRectFill(ctx, w.x - w.bw/2, w.y - w.bh/2, w.bw, w.bh, 12, fill);
+    ctx.shadowBlur = 6;
+    roundRectStroke(ctx, w.x - w.bw/2, w.y - w.bh/2, w.bw, w.bh, 12, border, 2.5);
     ctx.shadowBlur = 0;
-    ctx.fillStyle = vis.text;
+
+    // ✨ indicator for special words
+    if (w.isSpecial) {
+      ctx.font = 'bold 10px Nunito';
+      ctx.fillStyle = '#f7c948';
+      ctx.textAlign = 'right'; ctx.textBaseline = 'top';
+      ctx.fillText('✨', w.x + w.bw/2 - 3, w.y - w.bh/2 + 2);
+    }
+
+    ctx.fillStyle = text;
     ctx.font = 'bold 16px Nunito';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText(w.text, w.x, w.y);
     ctx.restore();
   });
@@ -923,50 +780,35 @@ function drawWords() {
 function drawLasers() {
   lasers.forEach(l => {
     const frac = 1 - l.age / l.maxAge;
-    ctx.save();
-    ctx.globalAlpha = frac * 0.9;
-    ctx.strokeStyle = '#ffffa0';
-    ctx.lineWidth   = 3;
-    ctx.shadowColor = '#ffff60';
-    ctx.shadowBlur  = 18;
-    ctx.lineCap     = 'round';
+    ctx.save(); ctx.globalAlpha = frac * 0.9;
+    ctx.strokeStyle = '#ffffa0'; ctx.lineWidth = 3;
+    ctx.shadowColor = '#ffff60'; ctx.shadowBlur = 18; ctx.lineCap = 'round';
     ctx.beginPath();
-    const trailLen = 28;
-    const angle = Math.atan2(l.vy, l.vx);
-    ctx.moveTo(l.x - Math.cos(angle) * trailLen, l.y - Math.sin(angle) * trailLen);
+    const trailLen = 28, angle = Math.atan2(l.vy, l.vx);
+    ctx.moveTo(l.x - Math.cos(angle)*trailLen, l.y - Math.sin(angle)*trailLen);
     ctx.lineTo(l.x, l.y);
-    ctx.stroke();
-    ctx.restore();
+    ctx.stroke(); ctx.restore();
   });
 }
 
 function drawParticles() {
   particles.forEach(p => {
     const alpha = Math.max(0, 1 - p.age / p.life);
-    ctx.save();
-    ctx.globalAlpha = alpha;
-    ctx.fillStyle   = p.color;
-    ctx.shadowColor = p.color;
-    ctx.shadowBlur  = 6;
+    ctx.save(); ctx.globalAlpha = alpha;
+    ctx.fillStyle = p.color; ctx.shadowColor = p.color; ctx.shadowBlur = 6;
     ctx.beginPath();
-    const r = p.r * (1 - p.age / p.life * 0.5);
-    ctx.arc(p.x, p.y, Math.max(0.5, r), 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
+    ctx.arc(p.x, p.y, Math.max(0.5, p.r * (1 - p.age/p.life*0.5)), 0, Math.PI*2);
+    ctx.fill(); ctx.restore();
   });
 }
 
 function drawFloatTexts() {
   floatTexts.forEach(f => {
     const alpha = Math.max(0, 1 - f.age / 0.9);
-    ctx.save();
-    ctx.globalAlpha = alpha;
-    ctx.font      = `bold 800 ${f.size}px Nunito`;
-    ctx.fillStyle = f.color;
-    ctx.shadowColor = f.color;
-    ctx.shadowBlur = 12;
-    ctx.textAlign   = 'center';
-    ctx.textBaseline = 'middle';
+    ctx.save(); ctx.globalAlpha = alpha;
+    ctx.font = `bold ${f.size}px Nunito`;
+    ctx.fillStyle = f.color; ctx.shadowColor = f.color; ctx.shadowBlur = 12;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText(f.text, f.x, f.y);
     ctx.restore();
   });
@@ -976,136 +818,107 @@ function drawPlanet(ts) {
   ctx.save();
   const t = ts * 0.001;
 
-  // Atmosphere glow
-  const atmGrad = ctx.createRadialGradient(planetCX, planetCY, PLANET_R - 5, planetCX, planetCY, PLANET_R + 30);
-  atmGrad.addColorStop(0, 'rgba(80,160,255,0.18)');
-  atmGrad.addColorStop(1, 'transparent');
-  ctx.fillStyle = atmGrad; ctx.beginPath(); ctx.arc(planetCX, planetCY, PLANET_R + 30, 0, Math.PI * 2); ctx.fill();
+  // Atmosphere
+  const atm = ctx.createRadialGradient(planetCX, planetCY, PLANET_R - 5, planetCX, planetCY, PLANET_R + 40);
+  atm.addColorStop(0, 'rgba(80,160,255,0.16)'); atm.addColorStop(1, 'transparent');
+  ctx.fillStyle = atm; ctx.beginPath(); ctx.arc(planetCX, planetCY, PLANET_R+40, 0, Math.PI*2); ctx.fill();
 
-  // Planet body
-  const grad = ctx.createRadialGradient(planetCX - 22, planetCY - 22, 8, planetCX, planetCY, PLANET_R);
+  // Body
+  const grad = ctx.createRadialGradient(planetCX-28, planetCY-28, 10, planetCX, planetCY, PLANET_R);
   grad.addColorStop(0, '#6ab4f0'); grad.addColorStop(0.45, '#2a6aa0'); grad.addColorStop(1, '#0a2840');
-  ctx.beginPath(); ctx.arc(planetCX, planetCY, PLANET_R, 0, Math.PI * 2);
+  ctx.beginPath(); ctx.arc(planetCX, planetCY, PLANET_R, 0, Math.PI*2);
   ctx.fillStyle = grad; ctx.fill();
 
-  // Continent blobs
-  ctx.globalAlpha = 0.32;
-  ctx.fillStyle = '#5cbb6f';
-  [[-18, -28, 22, 13, -0.4], [28, -8, 14, 20, 0.3], [-30, 10, 10, 14, 0.8]].forEach(([dx, dy, rx, ry, rot]) => {
-    ctx.save(); ctx.translate(planetCX + dx, planetCY + dy); ctx.rotate(rot + Math.sin(t * 0.2) * 0.04);
-    ctx.beginPath(); ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+  // Continents
+  ctx.globalAlpha = 0.32; ctx.fillStyle = '#5cbb6f';
+  [[-22,-35,26,16,-0.4],[34,-10,17,24,0.3],[-38,14,12,17,0.8]].forEach(([dx,dy,rx,ry,rot]) => {
+    ctx.save(); ctx.translate(planetCX+dx, planetCY+dy); ctx.rotate(rot+Math.sin(t*0.2)*0.04);
+    ctx.beginPath(); ctx.ellipse(0,0,rx,ry,0,0,Math.PI*2); ctx.fill(); ctx.restore();
   });
   ctx.globalAlpha = 1;
 
-  // Powerup glow if any active
+  // Powerup glow rings
   if (slowActive) {
-    ctx.strokeStyle = '#9b6fda'; ctx.lineWidth = 3; ctx.globalAlpha = 0.5 + 0.2 * Math.sin(t * 5);
+    ctx.strokeStyle = '#9b6fda'; ctx.lineWidth = 3; ctx.globalAlpha = 0.5+0.2*Math.sin(t*5);
     ctx.shadowColor = '#9b6fda'; ctx.shadowBlur = 25;
-    ctx.beginPath(); ctx.arc(planetCX, planetCY, PLANET_R + 5, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(planetCX, planetCY, PLANET_R+6, 0, Math.PI*2); ctx.stroke();
   }
   if (shieldActive) {
-    ctx.strokeStyle = '#4a90d9'; ctx.lineWidth = 4; ctx.globalAlpha = 0.4 + 0.3 * Math.sin(t * 8);
+    ctx.strokeStyle = '#4a90d9'; ctx.lineWidth = 4; ctx.globalAlpha = 0.4+0.3*Math.sin(t*8);
     ctx.shadowColor = '#4a90d9'; ctx.shadowBlur = 30;
-    ctx.beginPath(); ctx.arc(planetCX, planetCY, PLANET_R + 12, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(planetCX, planetCY, PLANET_R+16, 0, Math.PI*2); ctx.stroke();
   }
   ctx.restore();
 }
 
 function drawCannon() {
-  const cx = planetCX;
-  const cy = planetCY - PLANET_R + 4;
-  const L  = 34;
+  // Cannon rotates around its pivot = top of planet (cannonPX, cannonPY)
+  const L = 38;
   ctx.save();
-  ctx.translate(cx, cy);
+  ctx.translate(cannonPX, cannonPY);
   ctx.rotate(cannonAngle);
-  // Barrel glow
-  ctx.shadowColor = POS_VIS[currentTarget || 'noun'].glow;
-  ctx.shadowBlur  = 20;
-  // Barrel
-  ctx.fillStyle   = '#6060a0';
-  roundRectFill(ctx, -6, -L, 12, L, 4, '#6060a0');
+
+  ctx.shadowColor = 'rgba(180,160,255,0.8)';
+  ctx.shadowBlur = 22;
+  ctx.fillStyle = '#6060a0';
+  roundRectFill(ctx, -7, -L, 14, L, 5, '#6060a0');
+  ctx.shadowBlur = 6;
   ctx.strokeStyle = 'rgba(200,200,255,0.6)'; ctx.lineWidth = 1.5;
-  roundRectStroke(ctx, -6, -L, 12, L, 4, 'rgba(200,200,255,0.6)', 1.5);
+  roundRectStroke(ctx, -7, -L, 14, L, 5, 'rgba(200,200,255,0.6)', 1.5);
+
   // Tip glow
-  ctx.fillStyle = POS_VIS[currentTarget || 'noun'].glow;
-  ctx.globalAlpha = 0.9;
-  ctx.beginPath(); ctx.arc(0, -L - 2, 7, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = 'rgba(200,190,255,0.85)'; ctx.globalAlpha = 0.9;
+  ctx.beginPath(); ctx.arc(0, -L-2, 8, 0, Math.PI*2); ctx.fill();
+
   // Base
-  ctx.globalAlpha = 1;
-  ctx.shadowBlur = 0;
+  ctx.globalAlpha = 1; ctx.shadowBlur = 0;
   ctx.fillStyle = '#505080';
-  ctx.beginPath(); ctx.arc(0, 0, 16, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(0, 0, 18, 0, Math.PI*2); ctx.fill();
   ctx.strokeStyle = 'rgba(200,200,255,0.5)'; ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.arc(0, 0, 16, 0, Math.PI * 2); ctx.stroke();
+  ctx.beginPath(); ctx.arc(0, 0, 18, 0, Math.PI*2); ctx.stroke();
   ctx.restore();
 }
 
 /* ============================================================
-   PARTICLE HELPERS
+   PARTICLES / FLOAT TEXT
 ============================================================ */
 function burst(x, y, color, count) {
   for (let i = 0; i < count; i++) {
-    const angle = (Math.random() * Math.PI * 2);
-    const speed = 80 + Math.random() * 160;
-    particles.push({
-      x, y,
-      vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed - 40,
-      r: 3 + Math.random() * 4,
-      color,
-      age: 0, life: 0.4 + Math.random() * 0.3
-    });
+    const angle = Math.random() * Math.PI * 2, speed = 80 + Math.random() * 160;
+    particles.push({ x, y, vx: Math.cos(angle)*speed, vy: Math.sin(angle)*speed-40, r: 3+Math.random()*4, color, age:0, life:0.4+Math.random()*0.3 });
   }
 }
-
-function floatText(text, x, y, color, size = 15) {
-  floatTexts.push({ text, x, y, color, size, age: 0 });
-}
+function floatText(text, x, y, color, size=15) { floatTexts.push({ text, x, y, color, size, age:0 }); }
 
 /* ============================================================
-   CANVAS SHAPE HELPERS
+   CANVAS HELPERS
 ============================================================ */
 function roundRectFill(ctx, x, y, w, h, r, fill) {
   ctx.beginPath();
-  ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y);
-  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-  ctx.lineTo(x + w, y + h - r);
-  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-  ctx.lineTo(x + r, y + h);
-  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-  ctx.lineTo(x, y + r);
-  ctx.quadraticCurveTo(x, y, x + r, y);
-  ctx.closePath();
-  ctx.fillStyle = fill;
-  ctx.fill();
+  ctx.moveTo(x+r, y); ctx.lineTo(x+w-r, y); ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+  ctx.lineTo(x+w, y+h-r); ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+  ctx.lineTo(x+r, y+h); ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+  ctx.lineTo(x, y+r); ctx.quadraticCurveTo(x, y, x+r, y);
+  ctx.closePath(); ctx.fillStyle = fill; ctx.fill();
 }
 function roundRectStroke(ctx, x, y, w, h, r, stroke, lw) {
   ctx.beginPath();
-  ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y);
-  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-  ctx.lineTo(x + w, y + h - r);
-  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-  ctx.lineTo(x + r, y + h);
-  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-  ctx.lineTo(x, y + r);
-  ctx.quadraticCurveTo(x, y, x + r, y);
-  ctx.closePath();
-  ctx.strokeStyle = stroke; ctx.lineWidth = lw; ctx.stroke();
+  ctx.moveTo(x+r, y); ctx.lineTo(x+w-r, y); ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+  ctx.lineTo(x+w, y+h-r); ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+  ctx.lineTo(x+r, y+h); ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+  ctx.lineTo(x, y+r); ctx.quadraticCurveTo(x, y, x+r, y);
+  ctx.closePath(); ctx.strokeStyle = stroke; ctx.lineWidth = lw; ctx.stroke();
 }
-
-/* ============================================================
-   UTILITIES
-============================================================ */
 function shuffle(arr) {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+  for (let i = arr.length-1; i > 0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
     [arr[i], arr[j]] = [arr[j], arr[i]];
   }
   return arr;
 }
 
 /* ============================================================
-   HOME SCREEN STAR BACKGROUND
+   HOME SCREEN STAR BG
 ============================================================ */
 (function() {
   const layer = document.getElementById('homeStars');
@@ -1113,26 +926,17 @@ function shuffle(arr) {
     const s = document.createElement('div');
     const size = 2 + Math.random() * 3;
     Object.assign(s.style, {
-      position: 'absolute',
-      width: size + 'px', height: size + 'px',
-      borderRadius: '50%',
-      background: '#fff',
-      opacity: (Math.random() * 0.5 + 0.1).toFixed(2),
-      left: Math.random() * 100 + '%',
-      top:  Math.random() * 100 + '%',
-      animation: `twinkle ${(2.5 + Math.random() * 3).toFixed(1)}s ease-in-out infinite`,
-      animationDelay: (Math.random() * 4).toFixed(1) + 's'
+      position:'absolute', width:size+'px', height:size+'px', borderRadius:'50%', background:'#fff',
+      opacity:(Math.random()*0.5+0.1).toFixed(2), left:Math.random()*100+'%', top:Math.random()*100+'%',
+      animation:`twinkle ${(2.5+Math.random()*3).toFixed(1)}s ease-in-out infinite`,
+      animationDelay:(Math.random()*4).toFixed(1)+'s'
     });
     layer.appendChild(s);
   }
 })();
-
-// Inject keyframe for home star twinkle
-const style = document.createElement('style');
-style.textContent = '@keyframes twinkle { 0%,100% { opacity: 0.1; } 50% { opacity: 0.5; } }';
-document.head.appendChild(style);
-
-// Hide game container initially
+const sty = document.createElement('style');
+sty.textContent = '@keyframes twinkle{0%,100%{opacity:0.1}50%{opacity:0.5}}';
+document.head.appendChild(sty);
 document.getElementById('gameContainer').style.display = 'none';
 </script>
 </body>

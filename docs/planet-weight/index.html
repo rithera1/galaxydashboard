@@ -3,471 +3,316 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>⚖️ Planet Weight Calculator</title>
+<title>⚖️ Planet Weight</title>
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
-<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&family=Orbitron:wght@700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --beige: #f5ead6;
-    --beige-dark: #ecdcc0;
-    --beige-darker: #e0c99a;
-    --cream: #fdf6e8;
-    --ink: #3b2f1e;
-    --ink-light: #7a5c3a;
-    --accent: #4a90d9;
-    --accent-dark: #1e5a99;
-    --accent-glow: rgba(74,144,217,0.35);
+    --bg: #07071a;
+    --bg2: #0f0f2e;
+    --card: rgba(255,255,255,0.05);
+    --card-border: rgba(160,140,255,0.25);
+    --accent: #8b6fff;
+    --accent2: #4adaff;
+    --accent3: #5cff88;
+    --text: #e8e8ff;
+    --text-muted: #8888bb;
+    --glow: rgba(139,111,255,0.4);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    background: var(--beige);
+    background: var(--bg);
     font-family: 'Nunito', sans-serif;
     min-height: 100vh;
-    color: var(--ink);
+    color: var(--text);
     overflow-x: hidden;
   }
 
   /* NAV */
   .site-nav {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
+    display: flex; align-items: center; gap: 1rem;
     padding: 0.7rem 1.25rem;
-    background: var(--cream);
-    border-bottom: 3px solid var(--ink);
-    position: sticky;
-    top: 0;
-    z-index: 100;
+    background: rgba(15,15,46,0.97);
+    border-bottom: 2px solid rgba(139,111,255,0.3);
+    position: sticky; top: 0; z-index: 100;
+    backdrop-filter: blur(10px);
   }
   .site-nav-back {
-    font-family: 'Fredoka One', cursive;
-    font-size: 0.95rem;
-    color: var(--ink);
-    text-decoration: none;
-    background: var(--beige);
-    border: 2.5px solid var(--ink);
-    border-radius: 10px;
-    padding: 0.28rem 0.75rem;
-    transition: transform 0.15s ease, background 0.15s ease;
+    font-family: 'Fredoka One', cursive; font-size: 0.9rem;
+    color: var(--text); text-decoration: none;
+    background: rgba(139,111,255,0.15);
+    border: 2px solid rgba(139,111,255,0.4);
+    border-radius: 10px; padding: 0.25rem 0.7rem;
+    transition: background 0.15s;
   }
-  .site-nav-back:hover { background: var(--beige-dark); transform: scale(1.05); }
-  .site-nav-title {
-    font-family: 'Fredoka One', cursive;
-    font-size: 1.15rem;
-    color: var(--ink);
-  }
+  .site-nav-back:hover { background: rgba(139,111,255,0.3); }
+  .site-nav-title { font-family: 'Fredoka One', cursive; font-size: 1.1rem; }
 
-  /* STARS (background) */
-  .stars-layer {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 0;
-    overflow: hidden;
-  }
-  .star {
-    position: absolute;
-    border-radius: 50%;
-    background: var(--ink);
-    opacity: 0.1;
-    animation: twinkle 3s ease-in-out infinite;
-  }
-  @keyframes twinkle {
-    0%,100% { opacity: 0.06; transform: scale(1); }
-    50%      { opacity: 0.18; transform: scale(1.4); }
-  }
+  /* STARS */
+  .stars-layer { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+  .star { position: absolute; border-radius: 50%; background: #fff; animation: twinkle 3s ease-in-out infinite; }
+  @keyframes twinkle { 0%,100%{ opacity:0.05 } 50%{ opacity:0.35 } }
 
   /* PAGE */
-  .page {
-    position: relative;
-    z-index: 1;
-    max-width: 840px;
-    margin: 0 auto;
-    padding: 2rem 1.25rem 4rem;
-  }
+  .page { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
 
   /* INTRO */
-  .intro {
-    text-align: center;
-    margin-bottom: 2rem;
-  }
+  .intro { text-align: center; margin-bottom: 2rem; }
   .intro-icon {
-    font-size: 4.5rem;
-    display: inline-block;
+    font-size: 4.5rem; display: inline-block;
     animation: planetBob 3s ease-in-out infinite;
-    filter: drop-shadow(0 6px 14px rgba(0,0,0,0.15));
+    filter: drop-shadow(0 0 20px rgba(139,111,255,0.8));
   }
-  @keyframes planetBob {
-    0%,100% { transform: translateY(0) rotate(-5deg); }
-    50%      { transform: translateY(-14px) rotate(5deg); }
-  }
+  @keyframes planetBob { 0%,100%{ transform:translateY(0) rotate(-5deg) } 50%{ transform:translateY(-14px) rotate(5deg) } }
   .intro h1 {
     font-family: 'Fredoka One', cursive;
     font-size: clamp(2rem, 6vw, 3rem);
-    color: var(--ink);
-    text-shadow: 3px 3px 0 var(--beige-darker);
-    margin-top: 0.4rem;
-    line-height: 1.15;
+    text-shadow: 0 0 30px var(--glow);
+    margin-top: 0.4rem; line-height: 1.15;
   }
-  .intro p {
-    color: var(--ink-light);
-    font-size: 1rem;
-    font-weight: 700;
-    margin-top: 0.4rem;
-  }
+  .intro p { color: var(--text-muted); font-size: 1rem; font-weight: 700; margin-top: 0.4rem; }
 
   /* INPUT CARD */
   .input-card {
-    background: var(--cream);
-    border: 3px solid var(--ink);
+    background: var(--card);
+    border: 2px solid var(--card-border);
     border-radius: 22px;
-    box-shadow: 5px 5px 0 var(--ink);
+    box-shadow: 0 0 30px rgba(139,111,255,0.15);
     padding: 1.75rem 1.5rem;
-    max-width: 400px;
-    margin: 0 auto 2.5rem;
-    text-align: center;
+    max-width: 400px; margin: 0 auto 2.5rem;
+    text-align: center; backdrop-filter: blur(8px);
   }
-  .input-label {
-    font-family: 'Fredoka One', cursive;
-    font-size: 1.05rem;
-    color: var(--ink-light);
-    margin-bottom: 0.75rem;
-  }
-  .input-row {
-    display: flex;
-    gap: 0.6rem;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 1rem;
-  }
+  .input-label { font-family: 'Fredoka One', cursive; font-size: 1.05rem; color: var(--text-muted); margin-bottom: 0.75rem; }
+  .input-row { display: flex; gap: 0.6rem; align-items: center; justify-content: center; margin-bottom: 1rem; }
   .weight-field {
-    font-family: 'Fredoka One', cursive;
-    font-size: 2rem;
-    width: 140px;
+    font-family: 'Fredoka One', cursive; font-size: 2rem; width: 140px;
     padding: 0.5rem 0.75rem;
-    border: 3px solid var(--ink);
+    border: 2px solid rgba(139,111,255,0.4);
     border-radius: 14px;
-    background: var(--beige);
-    color: var(--ink);
-    text-align: center;
-    outline: none;
+    background: rgba(139,111,255,0.1);
+    color: var(--text); text-align: center; outline: none;
     transition: border-color 0.2s, box-shadow 0.2s;
     -moz-appearance: textfield;
   }
-  .weight-field::-webkit-inner-spin-button,
-  .weight-field::-webkit-outer-spin-button { -webkit-appearance: none; }
-  .weight-field:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--accent-glow);
-  }
-  .weight-field.error {
-    border-color: #e8453c;
-    animation: shake 0.4s ease;
-  }
-  @keyframes shake {
-    0%,100% { transform: translateX(0); }
-    20%,60%  { transform: translateX(-6px); }
-    40%,80%  { transform: translateX(6px); }
-  }
-  .weight-field::placeholder { color: var(--beige-darker); }
+  .weight-field::-webkit-inner-spin-button, .weight-field::-webkit-outer-spin-button { -webkit-appearance: none; }
+  .weight-field:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--glow); }
+  .weight-field.error { border-color: #ff5555; animation: shake 0.4s ease; }
+  @keyframes shake { 0%,100%{ transform:translateX(0) } 20%,60%{ transform:translateX(-6px) } 40%,80%{ transform:translateX(6px) } }
+  .weight-field::placeholder { color: rgba(139,111,255,0.35); }
 
-  .unit-toggle {
-    display: flex;
-    border: 3px solid var(--ink);
-    border-radius: 12px;
-    overflow: hidden;
-  }
+  .unit-toggle { display: flex; border: 2px solid rgba(139,111,255,0.4); border-radius: 12px; overflow: hidden; }
   .unit-btn {
-    font-family: 'Fredoka One', cursive;
-    font-size: 1rem;
-    padding: 0.45rem 0.85rem;
-    border: none;
-    background: var(--beige);
-    color: var(--ink-light);
-    cursor: pointer;
+    font-family: 'Fredoka One', cursive; font-size: 1rem;
+    padding: 0.45rem 0.85rem; border: none;
+    background: transparent; color: var(--text-muted); cursor: pointer;
     transition: background 0.15s, color 0.15s;
   }
-  .unit-btn.active { background: var(--ink); color: #fff; }
+  .unit-btn.active { background: var(--accent); color: #fff; }
 
   .calc-btn {
-    font-family: 'Fredoka One', cursive;
-    font-size: 1.25rem;
+    font-family: 'Fredoka One', cursive; font-size: 1.25rem;
     padding: 0.7rem 1.5rem;
-    background: var(--accent);
-    color: #fff;
-    border: 3px solid var(--ink);
-    border-radius: 14px;
-    box-shadow: 4px 4px 0 var(--ink);
-    cursor: pointer;
+    background: linear-gradient(135deg, var(--accent), #5030e0);
+    color: #fff; border: none; border-radius: 14px;
+    box-shadow: 0 4px 20px var(--glow); cursor: pointer; width: 100%;
     transition: transform 0.18s cubic-bezier(.34,1.56,.64,1), box-shadow 0.15s;
-    width: 100%;
   }
-  .calc-btn:hover { transform: translateY(-3px); box-shadow: 4px 7px 0 var(--ink); }
-  .calc-btn:active { transform: translateY(1px); box-shadow: 2px 2px 0 var(--ink); }
+  .calc-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 30px var(--glow); }
+  .calc-btn:active { transform: translateY(1px); }
 
   /* RESULTS */
-  .results-section { animation: fadeUp 0.35s ease both; }
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(18px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  .results-title {
+  .section-title {
     font-family: 'Fredoka One', cursive;
-    font-size: clamp(1.2rem, 3.5vw, 1.6rem);
-    text-align: center;
-    margin-bottom: 1.5rem;
-    color: var(--ink);
-    line-height: 1.3;
+    font-size: clamp(1.1rem, 3vw, 1.5rem);
+    text-align: center; margin-bottom: 1.5rem; color: var(--text);
+    animation: fadeUp 0.35s ease both;
   }
+  @keyframes fadeUp { from{ opacity:0; transform:translateY(18px) } to{ opacity:1; transform:translateY(0) } }
 
   /* PLANET GRID */
   .planet-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+    gap: 0.7rem; margin-bottom: 1.5rem;
+    animation: fadeUp 0.4s ease both;
   }
-  .planet-card {
-    background: var(--cream);
-    border: 3px solid var(--ink);
-    border-radius: 18px;
-    padding: 1.2rem 0.9rem 1rem;
-    text-align: center;
-    box-shadow: 4px 4px 0 var(--ink);
-    animation: cardPop 0.45s cubic-bezier(.34,1.56,.64,1) both;
-    transition: transform 0.2s cubic-bezier(.34,1.56,.64,1);
-    cursor: default;
+  .planet-btn {
+    background: var(--card);
+    border: 2px solid var(--card-border);
+    border-radius: 16px; padding: 0.8rem 0.4rem 0.65rem;
+    text-align: center; cursor: pointer;
+    transition: transform 0.18s cubic-bezier(.34,1.56,.64,1), border-color 0.2s, box-shadow 0.2s;
+    animation: cardPop 0.4s cubic-bezier(.34,1.56,.64,1) both;
   }
-  .planet-card:hover { transform: translateY(-4px) scale(1.02); }
-  @keyframes cardPop {
-    from { opacity: 0; transform: scale(0.75); }
-    to   { opacity: 1; transform: scale(1); }
+  @keyframes cardPop { from{ opacity:0; transform:scale(0.7) } to{ opacity:1; transform:scale(1) } }
+  .planet-btn:nth-child(1){animation-delay:.03s} .planet-btn:nth-child(2){animation-delay:.06s}
+  .planet-btn:nth-child(3){animation-delay:.09s} .planet-btn:nth-child(4){animation-delay:.12s}
+  .planet-btn:nth-child(5){animation-delay:.15s} .planet-btn:nth-child(6){animation-delay:.18s}
+  .planet-btn:nth-child(7){animation-delay:.21s} .planet-btn:nth-child(8){animation-delay:.24s}
+  .planet-btn:nth-child(9){animation-delay:.27s} .planet-btn:nth-child(10){animation-delay:.30s}
+  .planet-btn:nth-child(11){animation-delay:.33s}
+  .planet-btn:hover { transform: translateY(-4px) scale(1.06); border-color: rgba(139,111,255,0.6); }
+  .planet-btn.selected {
+    border-color: var(--accent); box-shadow: 0 0 22px var(--glow);
+    transform: translateY(-4px) scale(1.06);
   }
-  /* Staggered delays */
-  .planet-card:nth-child(1)  { animation-delay: 0.04s; }
-  .planet-card:nth-child(2)  { animation-delay: 0.08s; }
-  .planet-card:nth-child(3)  { animation-delay: 0.12s; }
-  .planet-card:nth-child(4)  { animation-delay: 0.16s; }
-  .planet-card:nth-child(5)  { animation-delay: 0.20s; }
-  .planet-card:nth-child(6)  { animation-delay: 0.24s; }
-  .planet-card:nth-child(7)  { animation-delay: 0.28s; }
-  .planet-card:nth-child(8)  { animation-delay: 0.32s; }
-  .planet-card:nth-child(9)  { animation-delay: 0.36s; }
-  .planet-card:nth-child(10) { animation-delay: 0.40s; }
-  .planet-card:nth-child(11) { animation-delay: 0.44s; }
-
-  .planet-card.is-earth {
-    border-color: var(--accent);
-    box-shadow: 4px 4px 0 var(--accent);
-    background: #f0f7ff;
-  }
-
-  /* 3D planet sphere */
   .planet-sphere {
-    width: 64px;
-    height: 64px;
+    width: 50px; height: 50px; border-radius: 50%; margin: 0 auto 0.45rem;
+    border: 2px solid rgba(255,255,255,0.15);
+    box-shadow: inset -8px -8px 16px rgba(0,0,0,0.4), inset 3px 3px 8px rgba(255,255,255,0.22), 2px 3px 10px rgba(0,0,0,0.4);
+    position: relative; overflow: visible;
+  }
+  .planet-btn.has-ring .planet-sphere::before,
+  .planet-btn.has-ring-uranus .planet-sphere::before {
+    content: ''; position: absolute;
+    width: 148%; height: 28%; top: 36%; left: -24%;
     border-radius: 50%;
-    margin: 0 auto 0.75rem;
-    border: 2.5px solid rgba(0,0,0,0.2);
-    box-shadow:
-      inset -10px -10px 20px rgba(0,0,0,0.3),
-      inset 4px 4px 10px rgba(255,255,255,0.4),
-      3px 4px 12px rgba(0,0,0,0.2);
-    position: relative;
-    overflow: visible;
+    pointer-events: none; z-index: -1;
   }
+  .planet-btn.has-ring .planet-sphere::before { border: 3px solid rgba(180,140,60,0.55); transform: rotate(-18deg); }
+  .planet-btn.has-ring-uranus .planet-sphere::before { border: 2.5px solid rgba(100,200,210,0.5); transform: rotate(-8deg); }
 
-  /* Saturn rings */
-  .planet-card.has-ring .planet-sphere::before {
-    content: '';
-    position: absolute;
-    width: 148%;
-    height: 28%;
-    top: 36%;
-    left: -24%;
-    border-radius: 50%;
-    border: 4px solid rgba(180,140,60,0.55);
-    transform: rotate(-18deg);
-    pointer-events: none;
-    z-index: -1;
-  }
-  .planet-card.has-ring-uranus .planet-sphere::before {
-    content: '';
-    position: absolute;
-    width: 148%;
-    height: 28%;
-    top: 36%;
-    left: -24%;
-    border-radius: 50%;
-    border: 3px solid rgba(100,200,210,0.45);
-    transform: rotate(-8deg);
-    pointer-events: none;
-    z-index: -1;
-  }
+  .planet-btn-name { font-family: 'Fredoka One', cursive; font-size: 0.75rem; color: var(--text); }
 
-  .planet-name {
-    font-family: 'Fredoka One', cursive;
-    font-size: 1.05rem;
-    color: var(--ink);
-    margin-bottom: 0.2rem;
+  /* DETAIL PANEL */
+  .detail-panel {
+    background: rgba(10,10,36,0.85);
+    border: 2px solid rgba(139,111,255,0.35);
+    border-radius: 22px; backdrop-filter: blur(12px);
+    padding: 1.5rem; margin-bottom: 2rem;
+    display: none;
+    box-shadow: 0 0 40px rgba(139,111,255,0.15);
   }
-  .planet-weight-num {
-    font-family: 'Fredoka One', cursive;
-    font-size: 1.65rem;
-    line-height: 1.1;
-    margin-bottom: 0.05rem;
-  }
-  .planet-weight-unit {
-    font-size: 0.72rem;
-    font-weight: 800;
-    color: var(--ink-light);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    margin-bottom: 0.55rem;
-  }
-  .gravity-bar-wrap {
-    background: var(--beige-dark);
-    border-radius: 6px;
-    height: 7px;
-    overflow: hidden;
-    margin-bottom: 0.65rem;
-    border: 1.5px solid var(--beige-darker);
-  }
-  .gravity-bar-fill {
-    height: 100%;
-    border-radius: 6px;
-    transition: width 0.7s ease 0.3s;
-    min-width: 3px;
-  }
-  .planet-fact {
-    font-size: 0.7rem;
-    font-weight: 700;
-    color: var(--ink-light);
-    line-height: 1.45;
-  }
+  .detail-panel.visible { display: block; animation: fadeUp 0.3s ease both; }
 
-  @media (max-width: 500px) {
-    .planet-grid { grid-template-columns: repeat(2, 1fr); }
-    .planet-card { padding: 1rem 0.65rem 0.85rem; }
+  .detail-header {
+    display: flex; align-items: center; gap: 1.1rem;
+    margin-bottom: 1.5rem; flex-wrap: wrap;
   }
+  .detail-sphere-wrap { position: relative; flex-shrink: 0; }
+  .detail-sphere {
+    width: 84px; height: 84px; border-radius: 50%;
+    border: 2.5px solid rgba(255,255,255,0.2);
+    box-shadow: inset -14px -14px 28px rgba(0,0,0,0.5), inset 5px 5px 12px rgba(255,255,255,0.25), 0 0 35px rgba(139,111,255,0.3);
+    position: relative; overflow: visible;
+  }
+  .detail-sphere-wrap.has-ring .detail-sphere::before,
+  .detail-sphere-wrap.has-ring-uranus .detail-sphere::before {
+    content: ''; position: absolute;
+    width: 148%; height: 28%; top: 36%; left: -24%;
+    border-radius: 50%; pointer-events: none; z-index: -1;
+  }
+  .detail-sphere-wrap.has-ring .detail-sphere::before { border: 5px solid rgba(180,140,60,0.6); transform: rotate(-18deg); }
+  .detail-sphere-wrap.has-ring-uranus .detail-sphere::before { border: 4px solid rgba(100,200,210,0.5); transform: rotate(-8deg); }
 
-  /* ---- FUN PHYSICS SECTION ---- */
-  .fun-section { margin-top: 2.5rem; animation: fadeUp 0.4s ease both; }
-  .fun-divider {
-    display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;
+  .detail-info { flex: 1; min-width: 0; }
+  .detail-name { font-family: 'Fredoka One', cursive; font-size: 1.9rem; margin-bottom: 0.3rem; }
+  .detail-weight-display {
+    font-family: 'Orbitron', monospace; font-size: 2.4rem; font-weight: 700;
+    line-height: 1; margin-bottom: 0.2rem;
   }
-  .fun-divider .fdl {
-    flex: 1; height: 3px; border-radius: 2px;
-    background: repeating-linear-gradient(
-      90deg, var(--beige-darker) 0, var(--beige-darker) 8px,
-      transparent 8px, transparent 16px
-    );
+  .detail-weight-label { font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+  .gravity-bar-wrap { margin-top: 0.75rem; background: rgba(255,255,255,0.08); border-radius: 6px; height: 8px; overflow: hidden; }
+  .gravity-bar-fill { height: 100%; border-radius: 6px; transition: width 0.8s ease 0.2s; min-width: 4px; }
+
+  /* PHYSICS GRID */
+  .physics-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+    gap: 0.85rem; margin-bottom: 1.25rem;
   }
-  .fun-title {
-    font-family: 'Fredoka One', cursive;
-    font-size: 1.6rem; text-align: center; color: var(--ink); margin-bottom: 0.3rem;
+  .physics-card {
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(160,140,255,0.2);
+    border-radius: 14px; padding: 0.85rem; text-align: center;
   }
-  .fun-sub {
-    text-align: center; font-size: 0.92rem; font-weight: 700;
-    color: var(--ink-light); margin-bottom: 1.25rem;
-  }
-  .world-selector { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; margin-bottom: 1.5rem; }
-  .world-btn {
-    font-family: 'Fredoka One', cursive; font-size: 0.85rem;
-    padding: 0.3rem 0.8rem;
-    border: 2.5px solid var(--ink); border-radius: 10px;
-    background: var(--cream); color: var(--ink);
-    cursor: pointer; box-shadow: 2px 2px 0 var(--ink);
-    transition: transform 0.15s cubic-bezier(.34,1.56,.64,1), background 0.15s;
-  }
-  .world-btn:hover { transform: translateY(-2px) scale(1.06); }
-  .world-btn.active { background: var(--ink); color: var(--cream); box-shadow: 2px 4px 0 var(--accent-dark); }
-  .movement-grid {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;
-  }
-  .move-card {
-    background: var(--cream); border: 3px solid var(--ink); border-radius: 18px;
-    padding: 1.1rem 1rem 1rem; text-align: center;
-    box-shadow: 4px 4px 0 var(--ink);
-    animation: cardPop 0.35s cubic-bezier(.34,1.56,.64,1) both;
-  }
-  .move-card-title { font-family: 'Fredoka One', cursive; font-size: 1rem; margin-bottom: 0.75rem; }
-  /* Jump arena */
+  .physics-card-title { font-family: 'Fredoka One', cursive; font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+
+  /* JUMP ARENA */
   .jump-arena {
-    position: relative; height: 160px; overflow: hidden; border-radius: 10px;
-    background: linear-gradient(180deg, #e8f2fc 50%, #c8ddf2 100%); margin-bottom: 0.7rem;
+    position: relative; height: 95px; border-radius: 8px; overflow: hidden;
+    background: linear-gradient(180deg, rgba(139,111,255,0.08) 0%, rgba(74,218,255,0.04) 100%);
+    margin-bottom: 0.6rem;
   }
   .jump-fig {
-    font-size: 2.2rem; position: absolute; bottom: 30px; left: 50%;
+    font-size: 2rem; position: absolute; bottom: 14px; left: 50%;
     transform: translateX(-50%);
     animation: jump-bounce var(--jdur, 0.9s) cubic-bezier(.25,.46,.45,.94) infinite;
   }
   @keyframes jump-bounce {
-    0%   { transform: translateX(-50%) translateY(0) scaleX(1.15) scaleY(0.85); }
-    12%  { transform: translateX(-50%) translateY(0) scaleX(1.15) scaleY(0.85); }
-    40%  { transform: translateX(-50%) translateY(var(--jhpx,-30px)) scaleX(0.9) scaleY(1.1); }
-    60%  { transform: translateX(-50%) translateY(var(--jhpx,-30px)) scaleX(0.9) scaleY(1.1); }
-    88%  { transform: translateX(-50%) translateY(0) scaleX(1.15) scaleY(0.85); }
-    100% { transform: translateX(-50%) translateY(0) scaleX(1.15) scaleY(0.85); }
+    0%  { transform:translateX(-50%) translateY(0) scaleX(1.15) scaleY(0.85) }
+    12% { transform:translateX(-50%) translateY(0) scaleX(1.15) scaleY(0.85) }
+    40% { transform:translateX(-50%) translateY(var(--jhpx,-30px)) scaleX(0.9) scaleY(1.1) }
+    60% { transform:translateX(-50%) translateY(var(--jhpx,-30px)) scaleX(0.9) scaleY(1.1) }
+    88% { transform:translateX(-50%) translateY(0) scaleX(1.15) scaleY(0.85) }
+    100%{ transform:translateX(-50%) translateY(0) scaleX(1.15) scaleY(0.85) }
   }
   .jump-height-label {
-    position: absolute; right: 8px; font-family: 'Fredoka One', cursive;
-    font-size: 0.78rem; color: var(--accent); transition: bottom 0.5s ease;
+    position: absolute; right: 6px;
+    font-family: 'Fredoka One', cursive; font-size: 0.72rem; color: var(--accent2);
+    transition: bottom 0.5s ease;
   }
-  .jump-ground-line {
-    position: absolute; bottom: 28px; left: 8%; right: 8%;
-    height: 3px; background: var(--beige-darker); border-radius: 2px;
-  }
-  /* Run arena */
+  .jump-ground-line { position: absolute; bottom: 12px; left: 10%; right: 10%; height: 2px; background: rgba(139,111,255,0.3); border-radius: 2px; }
+
+  /* RUN ARENA */
   .run-arena {
-    position: relative; height: 80px; overflow: hidden; border-radius: 10px;
-    background: linear-gradient(180deg, #fef9e8 60%, #fef3c2 100%); margin-bottom: 0.7rem;
+    position: relative; height: 58px; border-radius: 8px; overflow: hidden;
+    background: linear-gradient(180deg, rgba(74,218,255,0.06) 0%, rgba(74,218,255,0.02) 100%);
+    margin-bottom: 0.6rem;
   }
   .run-track {
-    position: absolute; bottom: 10px; left: 5%; right: 5%; height: 3px;
-    background: repeating-linear-gradient(
-      90deg, var(--beige-darker) 0, var(--beige-darker) 10px,
-      transparent 10px, transparent 20px
-    );
+    position: absolute; bottom: 8px; left: 5%; right: 5%; height: 2px;
+    background: repeating-linear-gradient(90deg, rgba(74,218,255,0.35) 0, rgba(74,218,255,0.35) 10px, transparent 10px, transparent 20px);
   }
-  .run-fig {
-    font-size: 2.2rem; position: absolute; bottom: 10px;
-    animation: run-cross var(--rdur, 2s) linear infinite;
-  }
-  @keyframes run-cross {
-    from { left: -38px; }
-    to   { left: calc(100% + 12px); }
-  }
-  /* Throw arena */
-  .throw-arena {
-    border-radius: 10px; overflow: hidden; background: #e8f5e9;
-    margin-bottom: 0.7rem; display: flex; align-items: center; justify-content: center;
-  }
+  .run-fig { font-size: 1.9rem; position: absolute; bottom: 8px; animation: run-cross var(--rdur, 2s) linear infinite; }
+  @keyframes run-cross { from{ left:-35px } to{ left:calc(100% + 10px) } }
+
+  /* THROW ARENA */
+  .throw-arena { border-radius: 8px; overflow: hidden; background: rgba(92,255,136,0.04); margin-bottom: 0.6rem; }
   .throw-arena canvas { display: block; }
-  .move-value {
-    font-family: 'Fredoka One', cursive; font-size: 1.45rem;
-    color: var(--accent); margin-bottom: 0.15rem;
+
+  .physics-value { font-family: 'Orbitron', monospace; font-size: 1.2rem; font-weight: 700; margin-bottom: 0.2rem; }
+  .physics-compare { font-size: 0.72rem; font-weight: 800; color: var(--text-muted); line-height: 1.35; }
+
+  /* SECTION DIVIDER */
+  .detail-divider {
+    display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1rem;
   }
-  .move-compare { font-size: 0.75rem; font-weight: 800; color: var(--ink-light); line-height: 1.35; }
-  @media (max-width: 500px) {
-    .movement-grid { grid-template-columns: 1fr; }
+  .detail-divider-line { flex: 1; height: 1px; background: rgba(139,111,255,0.25); }
+  .detail-divider-label { font-family: 'Fredoka One', cursive; font-size: 0.85rem; color: var(--text-muted); }
+
+  /* FACTS GRID */
+  .facts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+  .fact-item {
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(160,140,255,0.2);
+    border-radius: 12px; padding: 0.65rem 0.75rem;
+  }
+  .fact-item.full-width { grid-column: 1 / -1; }
+  .fact-label { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 0.25rem; }
+  .fact-value { font-family: 'Fredoka One', cursive; font-size: 0.9rem; color: var(--text); line-height: 1.35; }
+
+  @media (max-width: 520px) {
+    .planet-grid { grid-template-columns: repeat(4, 1fr); }
+    .physics-grid { grid-template-columns: 1fr; }
+    .facts-grid { grid-template-columns: 1fr; }
+    .fact-item.full-width { grid-column: 1; }
+    .detail-sphere { width: 68px; height: 68px; }
   }
 </style>
 </head>
 <body>
-
 <div class="stars-layer" id="starsLayer"></div>
 
 <nav class="site-nav">
   <a href="../" class="site-nav-back">← Home</a>
-  <span class="site-nav-title">⚖️ Planet Weight Calculator</span>
+  <span class="site-nav-title">⚖️ Planet Weight</span>
 </nav>
 
 <div class="page">
-
   <div class="intro">
     <div class="intro-icon">🪐</div>
-    <h1>How much would<br>you weigh?</h1>
-    <p>Enter your weight and explore every world in the solar system!</p>
+    <h1>How Heavy Are You<br>in Space?</h1>
+    <p>Enter your weight, then tap any world to explore!</p>
   </div>
 
   <div class="input-card">
@@ -480,354 +325,397 @@
         <button class="unit-btn" id="kgBtn">kg</button>
       </div>
     </div>
-    <button class="calc-btn" id="calcBtn">🚀 Launch Calculator!</button>
+    <button class="calc-btn" id="calcBtn">🚀 Explore the Solar System!</button>
   </div>
 
-  <div class="results-section" id="resultsSection" style="display:none">
-    <h2 class="results-title" id="resultsTitle"></h2>
+  <div id="resultsSection" style="display:none">
+    <h2 class="section-title" id="sectionTitle">Tap a world to discover your weight!</h2>
     <div class="planet-grid" id="planetGrid"></div>
 
-    <!-- Fun Physics Section -->
-    <div class="fun-section" id="funSection">
-      <div class="fun-divider">
-        <div class="fdl"></div>
-        <span style="font-size:1.4rem">🔬</span>
-        <div class="fdl"></div>
+    <div class="detail-panel" id="detailPanel">
+      <div class="detail-header">
+        <div class="detail-sphere-wrap" id="detailSphereWrap">
+          <div class="detail-sphere" id="detailSphere"></div>
+        </div>
+        <div class="detail-info">
+          <div class="detail-name" id="detailName">Earth</div>
+          <div class="detail-weight-display" id="detailWeight">—</div>
+          <div class="detail-weight-label" id="detailWeightLabel">lbs</div>
+          <div class="gravity-bar-wrap">
+            <div class="gravity-bar-fill" id="detailGravityBar" style="width:0%"></div>
+          </div>
+        </div>
       </div>
-      <h2 class="fun-title">How would you move?</h2>
-      <p class="fun-sub">Pick a world and see what changes about your body!</p>
-      <div class="world-selector" id="worldSelector"></div>
-      <div class="movement-grid" id="movementGrid" style="display:none">
-        <div class="move-card">
-          <div class="move-card-title">🦘 Jump Height</div>
+
+      <div class="detail-divider">
+        <div class="detail-divider-line"></div>
+        <span class="detail-divider-label">🔬 HOW WOULD YOU MOVE?</span>
+        <div class="detail-divider-line"></div>
+      </div>
+
+      <div class="physics-grid">
+        <div class="physics-card">
+          <div class="physics-card-title">🦘 Jump Height</div>
           <div class="jump-arena">
             <div class="jump-fig" id="jumpFig">🧑‍🚀</div>
             <div class="jump-height-label" id="jumpHeightLabel"></div>
             <div class="jump-ground-line"></div>
           </div>
-          <div class="move-value" id="jumpValue">—</div>
-          <div class="move-compare" id="jumpCompare">—</div>
+          <div class="physics-value" id="jumpValue" style="color:#8b6fff">—</div>
+          <div class="physics-compare" id="jumpCompare">—</div>
         </div>
-        <div class="move-card">
-          <div class="move-card-title">🏃 Top Running Speed</div>
+        <div class="physics-card">
+          <div class="physics-card-title">🏃 Running Speed</div>
           <div class="run-arena">
             <div class="run-fig" id="runFig">🏃</div>
             <div class="run-track"></div>
           </div>
-          <div class="move-value" id="runValue">—</div>
-          <div class="move-compare" id="runCompare">—</div>
+          <div class="physics-value" id="runValue" style="color:#4adaff">—</div>
+          <div class="physics-compare" id="runCompare">—</div>
         </div>
-        <div class="move-card">
-          <div class="move-card-title">⚾ Ball Throw Distance</div>
+        <div class="physics-card">
+          <div class="physics-card-title">⚾ Throw Distance</div>
           <div class="throw-arena">
-            <canvas id="throwCanvas" width="200" height="90"></canvas>
+            <canvas id="throwCanvas" width="196" height="78"></canvas>
           </div>
-          <div class="move-value" id="throwValue">—</div>
-          <div class="move-compare" id="throwCompare">—</div>
+          <div class="physics-value" id="throwValue" style="color:#5cff88">—</div>
+          <div class="physics-compare" id="throwCompare">—</div>
         </div>
       </div>
+
+      <div class="detail-divider">
+        <div class="detail-divider-line"></div>
+        <span class="detail-divider-label">🪐 WORLD FACTS</span>
+        <div class="detail-divider-line"></div>
+      </div>
+
+      <div class="facts-grid" id="factsGrid"></div>
     </div>
   </div>
-
 </div>
 
 <script>
 const BODIES = [
   {
-    id: 'mercury', name: 'Mercury', gravity: 0.38,
-    gradient: 'radial-gradient(circle at 35% 30%, #d8d8d8, #888)',
-    barColor: '#aaa',
-    fact: 'A day on Mercury lasts 59 Earth days!'
+    id:'mercury', name:'Mercury', gravity:0.38,
+    gradient:'radial-gradient(circle at 35% 30%, #d8d8d8, #888)',
+    barColor:'#aabbcc',
+    temp:'−180°C to 430°C',
+    atmosphere:'Essentially none (trace exosphere)',
+    survival:'Seconds — no air, extreme heat swings, intense radiation',
+    dayLength:'59 Earth days', moons:0,
+    funFact:'Mercury is actually CLOSER to Earth\'s average temperature than Venus!'
   },
   {
-    id: 'venus', name: 'Venus', gravity: 0.91,
-    gradient: 'radial-gradient(circle at 35% 30%, #f0d890, #c09020)',
-    barColor: '#d4a820',
-    fact: 'Venus is hotter than Mercury — it has a thick toxic atmosphere!'
+    id:'venus', name:'Venus', gravity:0.91,
+    gradient:'radial-gradient(circle at 35% 30%, #f0d890, #c09020)',
+    barColor:'#d4a820',
+    temp:'465°C average — the hottest planet!',
+    atmosphere:'Thick CO₂ + sulfuric acid clouds',
+    survival:'About 1 second — instantly crushed, cooked, and dissolved',
+    dayLength:'243 Earth days (longer than its year!)', moons:0,
+    funFact:'Venus rotates backwards — the Sun rises in the west on Venus!'
   },
   {
-    id: 'earth', name: 'Earth', gravity: 1.00,
-    gradient: 'radial-gradient(circle at 35% 30%, #6ab4f0, #1a5a99)',
-    barColor: '#4a90d9',
-    isEarth: true,
-    fact: 'This is your normal weight — home sweet home! 🏠'
+    id:'earth', name:'Earth', gravity:1.00,
+    gradient:'radial-gradient(circle at 35% 30%, #6ab4f0, #1a5a99)',
+    barColor:'#4adaff', isEarth:true,
+    temp:'Average 15°C',
+    atmosphere:'78% nitrogen, 21% oxygen — perfect for us!',
+    survival:'This is home — you\'re already thriving here!',
+    dayLength:'24 hours', moons:1,
+    funFact:'Earth is the only planet not named after a Greek or Roman god!'
   },
   {
-    id: 'moon', name: 'Moon', gravity: 0.166,
-    gradient: 'radial-gradient(circle at 35% 30%, #e8e8e8, #999)',
-    barColor: '#bbb',
-    fact: 'Astronauts can jump 6× higher on the Moon!'
+    id:'moon', name:'Moon', gravity:0.166,
+    gradient:'radial-gradient(circle at 35% 30%, #e8e8e8, #999)',
+    barColor:'#ccccee',
+    temp:'−173°C to 127°C',
+    atmosphere:'Trace exosphere only (essentially vacuum)',
+    survival:'Seconds without a spacesuit',
+    dayLength:'29.5 Earth days', moons:0,
+    funFact:'Footprints on the Moon will last millions of years — no wind to erase them!'
   },
   {
-    id: 'mars', name: 'Mars', gravity: 0.38,
-    gradient: 'radial-gradient(circle at 35% 30%, #f08060, #a03010)',
-    barColor: '#d9603c',
-    fact: 'Mars has Olympus Mons — the tallest volcano in the solar system!'
+    id:'mars', name:'Mars', gravity:0.38,
+    gradient:'radial-gradient(circle at 35% 30%, #f08060, #a03010)',
+    barColor:'#d9603c',
+    temp:'−125°C to 20°C',
+    atmosphere:'Thin CO₂ (only 1% of Earth\'s pressure)',
+    survival:'Minutes — suffocation and intense radiation',
+    dayLength:'24.6 hours (similar to Earth!)', moons:2,
+    funFact:'Olympus Mons on Mars is 3× taller than Mount Everest!'
   },
   {
-    id: 'jupiter', name: 'Jupiter', gravity: 2.34,
-    gradient: 'radial-gradient(circle at 35% 30%, #e8c090, #a06030)',
-    barColor: '#c8936c',
-    fact: "Jupiter's Great Red Spot is a storm bigger than Earth!"
+    id:'jupiter', name:'Jupiter', gravity:2.34,
+    gradient:'radial-gradient(circle at 35% 30%, #e8c090, #a06030)',
+    barColor:'#c8936c',
+    temp:'−110°C at cloud tops',
+    atmosphere:'90% hydrogen, 10% helium — no solid surface!',
+    survival:'Instantly crushed — pressure 1,000× Earth at depth',
+    dayLength:'9.9 hours (fastest rotation!)', moons:95,
+    funFact:'Jupiter\'s Great Red Spot storm has raged for over 350 years!'
   },
   {
-    id: 'saturn', name: 'Saturn', gravity: 0.92,
-    gradient: 'radial-gradient(circle at 35% 30%, #f0e8a0, #b0a040)',
-    barColor: '#d4b830',
-    hasRing: true,
-    fact: "Saturn's rings are made mostly of ice and rock!"
+    id:'saturn', name:'Saturn', gravity:0.92,
+    gradient:'radial-gradient(circle at 35% 30%, #f0e8a0, #b0a040)',
+    barColor:'#d4b830', hasRing:true,
+    temp:'−178°C at cloud tops',
+    atmosphere:'96% hydrogen, 3% helium — no solid surface!',
+    survival:'No solid ground — you\'d slowly sink into gas',
+    dayLength:'10.7 hours', moons:146,
+    funFact:'Saturn is so low-density it could float on water!'
   },
   {
-    id: 'uranus', name: 'Uranus', gravity: 0.89,
-    gradient: 'radial-gradient(circle at 35% 30%, #b0f0f0, #4090a0)',
-    barColor: '#60c8d0',
-    hasRingUranus: true,
-    fact: 'Uranus spins on its side — it literally rolls around the Sun!'
+    id:'uranus', name:'Uranus', gravity:0.89,
+    gradient:'radial-gradient(circle at 35% 30%, #b0f0f0, #4090a0)',
+    barColor:'#60c8d0', hasRingUranus:true,
+    temp:'−224°C — the coldest planet!',
+    atmosphere:'Hydrogen, helium & methane (gives its blue-green color)',
+    survival:'Instantly frozen and crushed — extreme cold and pressure',
+    dayLength:'17.2 hours', moons:28,
+    funFact:'Uranus rotates on its side — it was knocked over by a giant impact!'
   },
   {
-    id: 'neptune', name: 'Neptune', gravity: 1.12,
-    gradient: 'radial-gradient(circle at 35% 30%, #6080f0, #2030b0)',
-    barColor: '#4060d9',
-    fact: 'Neptune has the fastest winds in the solar system — 2,100 km/h!'
+    id:'neptune', name:'Neptune', gravity:1.12,
+    gradient:'radial-gradient(circle at 35% 30%, #6080f0, #2030b0)',
+    barColor:'#4060d9',
+    temp:'−218°C at cloud tops',
+    atmosphere:'Hydrogen, helium & methane',
+    survival:'Winds of 2,100 km/h would shred you in an instant',
+    dayLength:'16.1 hours', moons:16,
+    funFact:'Neptune has the fastest winds in the solar system — supersonic!'
   },
   {
-    id: 'pluto', name: 'Pluto', gravity: 0.063,
-    gradient: 'radial-gradient(circle at 35% 30%, #d8c0a8, #907050)',
-    barColor: '#b09070',
-    fact: 'Pluto has a heart-shaped glacier called Tombaugh Regio!'
+    id:'pluto', name:'Pluto', gravity:0.063,
+    gradient:'radial-gradient(circle at 35% 30%, #d8c0a8, #907050)',
+    barColor:'#b09070',
+    temp:'−233°C to −223°C',
+    atmosphere:'Thin nitrogen & methane',
+    survival:'Instantly frozen — colder than liquid nitrogen',
+    dayLength:'6.4 Earth days', moons:5,
+    funFact:'Pluto has a heart-shaped glacier 1,600 km wide called Tombaugh Regio!'
   },
   {
-    id: 'sun', name: 'Sun ☀️', gravity: 27.9,
-    gradient: 'radial-gradient(circle at 35% 30%, #fff090, #f07000)',
-    barColor: '#f7c030',
-    fact: 'The Sun contains 99.8% of all the mass in our solar system!'
+    id:'sun', name:'Sun ☀️', gravity:27.9,
+    gradient:'radial-gradient(circle at 35% 30%, #fff090, #f07000)',
+    barColor:'#f7c030',
+    temp:'5,500°C surface · 15 million°C core!',
+    atmosphere:'Plasma — 74% hydrogen, 24% helium',
+    survival:'Vaporized before you got within 1 million km',
+    dayLength:'~25 Earth days (equator)', moons:0,
+    funFact:'The Sun contains 99.86% of all the mass in our solar system!'
   }
 ];
 
 let unitIsLbs = true;
+let weightKg = 70;
+
+const LOG_MAX = Math.log(27.9 * 10 + 1);
+function gravityToBar(g) { return Math.min(100, Math.log(g * 10 + 1) / LOG_MAX * 100); }
 
 const weightInput = document.getElementById('weightInput');
-const lbsBtn     = document.getElementById('lbsBtn');
-const kgBtn      = document.getElementById('kgBtn');
-const calcBtn    = document.getElementById('calcBtn');
-const resultsSection = document.getElementById('resultsSection');
-const resultsTitle   = document.getElementById('resultsTitle');
-const planetGrid     = document.getElementById('planetGrid');
+const lbsBtn = document.getElementById('lbsBtn');
+const kgBtn  = document.getElementById('kgBtn');
 
 lbsBtn.addEventListener('click', () => {
   if (unitIsLbs) return;
   const v = parseFloat(weightInput.value);
   if (!isNaN(v)) weightInput.value = (v * 2.20462).toFixed(1);
-  unitIsLbs = true;
-  lbsBtn.classList.add('active');
-  kgBtn.classList.remove('active');
+  unitIsLbs = true; lbsBtn.classList.add('active'); kgBtn.classList.remove('active');
 });
 kgBtn.addEventListener('click', () => {
   if (!unitIsLbs) return;
   const v = parseFloat(weightInput.value);
   if (!isNaN(v)) weightInput.value = (v / 2.20462).toFixed(1);
-  unitIsLbs = false;
-  kgBtn.classList.add('active');
-  lbsBtn.classList.remove('active');
+  unitIsLbs = false; kgBtn.classList.add('active'); lbsBtn.classList.remove('active');
 });
 
-calcBtn.addEventListener('click', calculate);
+document.getElementById('calcBtn').addEventListener('click', calculate);
 weightInput.addEventListener('keydown', e => { if (e.key === 'Enter') calculate(); });
-
-// Log scale for bar (so Sun doesn't dwarf everything)
-const LOG_MAX = Math.log(27.9 * 10 + 1); // Sun's gravity
-function gravityToBar(g) {
-  return Math.min(100, Math.log(g * 10 + 1) / LOG_MAX * 100);
-}
 
 function calculate() {
   const val = parseFloat(weightInput.value);
   if (isNaN(val) || val <= 0) {
     weightInput.classList.add('error');
     setTimeout(() => weightInput.classList.remove('error'), 600);
-    weightInput.focus();
     return;
   }
+  weightKg = unitIsLbs ? val / 2.20462 : val;
+  const displayVal = val % 1 === 0 ? val : parseFloat(val.toFixed(1));
+  document.getElementById('sectionTitle').textContent =
+    `You weigh ${displayVal} ${unitIsLbs ? 'lbs' : 'kg'} on Earth — tap a world!`;
 
-  const weightKg = unitIsLbs ? val / 2.20462 : val;
-  const unitLabel = unitIsLbs ? 'lbs' : 'kg';
-  const displayVal = val % 1 === 0 ? val : val.toFixed(1);
-
-  resultsTitle.textContent = `🌌 You weigh ${displayVal} ${unitLabel} on Earth — here's every other world!`;
-
-  planetGrid.innerHTML = '';
-
-  BODIES.forEach(body => {
-    const weightOnBody = weightKg * body.gravity;
-    const displayWeight = unitIsLbs ? weightOnBody * 2.20462 : weightOnBody;
-    const barPct = gravityToBar(body.gravity);
-
-    let cardClass = 'planet-card';
-    if (body.isEarth)      cardClass += ' is-earth';
-    if (body.hasRing)      cardClass += ' has-ring';
-    if (body.hasRingUranus) cardClass += ' has-ring-uranus';
-
-    const weightStr = displayWeight < 10
-      ? displayWeight.toFixed(2)
-      : displayWeight < 100
-        ? displayWeight.toFixed(1)
-        : Math.round(displayWeight).toLocaleString();
-
-    const card = document.createElement('div');
-    card.className = cardClass;
-    card.innerHTML = `
-      <div class="planet-sphere" style="background:${body.gradient}"></div>
-      <div class="planet-name">${body.name}</div>
-      <div class="planet-weight-num" style="color:${body.barColor}">${weightStr}</div>
-      <div class="planet-weight-unit">${unitLabel}</div>
-      <div class="gravity-bar-wrap">
-        <div class="gravity-bar-fill" style="width:${barPct}%;background:${body.barColor}"></div>
-      </div>
-      <div class="planet-fact">${body.fact}</div>
-    `;
-    planetGrid.appendChild(card);
-  });
-
-  resultsSection.style.display = '';
-  // Re-trigger animation
-  resultsSection.style.animation = 'none';
-  void resultsSection.offsetWidth;
-  resultsSection.style.animation = '';
-
-  setTimeout(() => resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+  buildPlanetGrid();
+  const rs = document.getElementById('resultsSection');
+  rs.style.display = '';
+  rs.style.animation = 'none'; void rs.offsetWidth; rs.style.animation = '';
+  document.getElementById('detailPanel').classList.remove('visible');
+  setTimeout(() => rs.scrollIntoView({ behavior:'smooth', block:'start' }), 50);
 }
 
-/* ============================================================
-   FUN PHYSICS SIMULATOR
-============================================================ */
-function buildWorldSelector() {
-  const sel = document.getElementById('worldSelector');
-  sel.innerHTML = '';
+function buildPlanetGrid() {
+  const grid = document.getElementById('planetGrid');
+  grid.innerHTML = '';
   BODIES.forEach(body => {
-    const btn = document.createElement('button');
-    btn.className = 'world-btn';
-    btn.textContent = body.name.replace(' ☀️', '');
+    const btn = document.createElement('div');
+    btn.className = 'planet-btn'
+      + (body.hasRing ? ' has-ring' : '')
+      + (body.hasRingUranus ? ' has-ring-uranus' : '');
     btn.dataset.id = body.id;
-    btn.addEventListener('click', () => selectWorld(body, btn));
-    sel.appendChild(btn);
+    btn.innerHTML = `
+      <div class="planet-sphere" style="background:${body.gradient}"></div>
+      <div class="planet-btn-name">${body.name.replace(' ☀️','')}</div>
+    `;
+    btn.addEventListener('click', () => selectPlanet(body, btn));
+    grid.appendChild(btn);
   });
 }
 
-function selectWorld(body, btn) {
-  document.querySelectorAll('.world-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
+function selectPlanet(body, btn) {
+  document.querySelectorAll('.planet-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
 
-  // ---- JUMP ----
+  const unitLabel = unitIsLbs ? 'lbs' : 'kg';
+  const weightOnBody = weightKg * body.gravity;
+  const displayWeight = unitIsLbs ? weightOnBody * 2.20462 : weightOnBody;
+  const weightStr = displayWeight < 10
+    ? displayWeight.toFixed(2)
+    : displayWeight < 100 ? displayWeight.toFixed(1)
+    : Math.round(displayWeight).toLocaleString();
+
+  // Sphere
+  const wrap = document.getElementById('detailSphereWrap');
+  wrap.className = 'detail-sphere-wrap'
+    + (body.hasRing ? ' has-ring' : '')
+    + (body.hasRingUranus ? ' has-ring-uranus' : '');
+  document.getElementById('detailSphere').style.background = body.gradient;
+  document.getElementById('detailName').textContent = body.name;
+
+  // Weight
+  const dw = document.getElementById('detailWeight');
+  dw.textContent = weightStr;
+  dw.style.color = body.barColor;
+  dw.style.textShadow = `0 0 20px ${body.barColor}99`;
+  document.getElementById('detailWeightLabel').textContent = unitLabel + ' on ' + body.name.replace(' ☀️','');
+
+  const bar = document.getElementById('detailGravityBar');
+  bar.style.background = `linear-gradient(90deg, ${body.barColor}, ${body.barColor}aa)`;
+  bar.style.boxShadow = `0 0 10px ${body.barColor}80`;
+  bar.style.width = '0%';
+  setTimeout(() => { bar.style.width = gravityToBar(body.gravity) + '%'; }, 80);
+
+  updatePhysics(body);
+  buildFacts(body);
+
+  const panel = document.getElementById('detailPanel');
+  panel.style.animation = 'none';
+  panel.classList.add('visible');
+  void panel.offsetWidth;
+  panel.style.animation = '';
+  setTimeout(() => panel.scrollIntoView({ behavior:'smooth', block:'nearest' }), 80);
+}
+
+function updatePhysics(body) {
+  // Jump
   const earthJumpM = 0.5;
   const jumpM = earthJumpM / body.gravity;
-  const jumpPx = Math.min(128, Math.max(2, (jumpM / 3.0) * 128));
+  const jumpPx = Math.min(72, Math.max(2, (jumpM / 3.0) * 72));
   const jumpDurS = Math.max(0.28, 0.85 * Math.sqrt(1 / body.gravity)).toFixed(2);
 
   const jf = document.getElementById('jumpFig');
   jf.style.setProperty('--jhpx', `-${jumpPx.toFixed(1)}px`);
   jf.style.setProperty('--jdur', jumpDurS + 's');
-  jf.style.animation = 'none';
-  void jf.offsetWidth;
-  jf.style.animation = '';
+  jf.style.animation = 'none'; void jf.offsetWidth; jf.style.animation = '';
 
-  const jumpLabel = document.getElementById('jumpHeightLabel');
-  jumpLabel.textContent = jumpM < 100 ? jumpM.toFixed(1) + ' m' : Math.round(jumpM) + ' m';
-  jumpLabel.style.bottom = (jumpPx + 36) + 'px';
+  const jLabel = document.getElementById('jumpHeightLabel');
+  jLabel.textContent = jumpM < 100 ? jumpM.toFixed(1) + 'm' : Math.round(jumpM) + 'm';
+  jLabel.style.bottom = (jumpPx + 18) + 'px';
 
-  const jumpDisp = jumpM < 10 ? jumpM.toFixed(2) + ' m' : jumpM < 1000 ? jumpM.toFixed(1) + ' m' : (jumpM / 1000).toFixed(2) + ' km';
+  const jumpDisp = jumpM < 1000 ? jumpM.toFixed(1) + ' m' : (jumpM/1000).toFixed(1) + ' km';
   document.getElementById('jumpValue').textContent = jumpDisp;
   const jr = jumpM / earthJumpM;
   document.getElementById('jumpCompare').textContent = body.isEarth
     ? '← your normal jump height'
-    : jr > 1 ? `${jr.toFixed(1)}× higher than on Earth!`
-    : `${(1/jr).toFixed(1)}× lower than on Earth`;
+    : jr > 1 ? `${jr.toFixed(1)}× higher than on Earth!` : `${(1/jr).toFixed(1)}× lower than on Earth`;
 
-  // ---- RUN ----
+  // Run
   const earthSpeedMs = 10;
   const runMs = earthSpeedMs * Math.sqrt(1 / body.gravity);
-  const runDurS = Math.max(0.35, Math.min(6, 2.0 / Math.sqrt(1 / body.gravity))).toFixed(2);
-
+  const runDurS = Math.max(0.35, Math.min(6, 2.0 / Math.sqrt(1/body.gravity))).toFixed(2);
   const rf = document.getElementById('runFig');
   rf.style.setProperty('--rdur', runDurS + 's');
-  rf.style.animation = 'none';
-  void rf.offsetWidth;
-  rf.style.animation = '';
-
+  rf.style.animation = 'none'; void rf.offsetWidth; rf.style.animation = '';
   document.getElementById('runValue').textContent = runMs.toFixed(1) + ' m/s';
-  document.getElementById('runCompare').textContent =
-    `${(runMs * 3.6).toFixed(0)} km/h · ${(runMs * 2.237).toFixed(0)} mph`;
+  document.getElementById('runCompare').textContent = `${(runMs*3.6).toFixed(0)} km/h · ${(runMs*2.237).toFixed(0)} mph`;
 
-  // ---- THROW ----
+  // Throw
   const earthThrowM = 50;
   const throwM = earthThrowM / body.gravity;
   drawThrowArc(throwM / earthThrowM);
-  const throwDisp = throwM < 1000 ? Math.round(throwM) + ' m' : (throwM / 1000).toFixed(1) + ' km';
+  const throwDisp = throwM < 1000 ? Math.round(throwM) + ' m' : (throwM/1000).toFixed(1) + ' km';
   document.getElementById('throwValue').textContent = throwDisp;
   const tr = throwM / earthThrowM;
   document.getElementById('throwCompare').textContent = body.isEarth
     ? '← your normal throw distance'
-    : `${tr.toFixed(1)}× farther than on Earth`;
-
-  document.getElementById('movementGrid').style.display = '';
+    : `${tr.toFixed(1)}× farther than on Earth!`;
 }
 
 function drawThrowArc(ratio) {
   const canvas = document.getElementById('throwCanvas');
-  if (!canvas) return;
   const ctx = canvas.getContext('2d');
   const w = canvas.width, h = canvas.height;
   ctx.clearRect(0, 0, w, h);
-
-  // Ground
-  ctx.strokeStyle = '#b09070';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(8, h - 10); ctx.lineTo(w - 8, h - 10);
-  ctx.stroke();
-
-  // Thrower
-  ctx.font = '20px serif';
-  ctx.textAlign = 'left';
-  ctx.fillText('🧍', 4, h - 10);
-
-  // Arc
-  const landX = Math.min(w - 18, Math.max(52, 26 + ratio * 62));
-  const peakY = Math.max(6, h - 10 - (landX - 26) * 0.6);
-  ctx.strokeStyle = '#4a90d9';
-  ctx.lineWidth = 2.5;
-  ctx.shadowColor = '#4a90d9';
-  ctx.shadowBlur = 6;
-  ctx.beginPath();
-  ctx.moveTo(30, h - 28);
-  ctx.quadraticCurveTo((30 + landX) / 2, peakY, landX, h - 10);
-  ctx.stroke();
-  ctx.shadowBlur = 0;
-
-  // Landing dot
-  ctx.fillStyle = '#e8453c';
-  ctx.beginPath();
-  ctx.arc(landX, h - 10, 5, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Ball emoji
-  ctx.font = '14px serif';
-  ctx.fillText('⚾', landX - 7, h - 12);
+  ctx.strokeStyle = 'rgba(92,255,136,0.18)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(8, h-6); ctx.lineTo(w-8, h-6); ctx.stroke();
+  ctx.font = '16px serif'; ctx.textAlign = 'left';
+  ctx.fillText('🧍', 2, h-4);
+  const landX = Math.min(w-18, Math.max(46, 26 + ratio * 52));
+  const peakY = Math.max(5, h-6 - (landX-26) * 0.52);
+  ctx.strokeStyle = '#5cff88';
+  ctx.lineWidth = 2.5; ctx.shadowColor = '#5cff88'; ctx.shadowBlur = 8;
+  ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(28, h-20);
+  ctx.quadraticCurveTo((28+landX)/2, peakY, landX, h-6);
+  ctx.stroke(); ctx.shadowBlur = 0;
+  ctx.fillStyle = '#ff5555';
+  ctx.beginPath(); ctx.arc(landX, h-6, 4, 0, Math.PI*2); ctx.fill();
+  ctx.font = '12px serif'; ctx.fillText('⚾', landX-6, h-8);
 }
 
-buildWorldSelector();
+function buildFacts(body) {
+  const grid = document.getElementById('factsGrid');
+  const facts = [
+    { label:'🌡️ Temperature',   value: body.temp },
+    { label:'🌬️ Atmosphere',    value: body.atmosphere },
+    { label:'⚠️ Survival Time', value: body.survival },
+    { label:'🌀 Day Length',    value: body.dayLength },
+    { label:'🌙 Moons',         value: body.moons + (body.moons === 1 ? ' moon' : ' moons') },
+    { label:'🪐 Fun Fact',      value: body.funFact, full: true }
+  ];
+  grid.innerHTML = '';
+  facts.forEach(f => {
+    const item = document.createElement('div');
+    item.className = 'fact-item' + (f.full ? ' full-width' : '');
+    item.innerHTML = `<div class="fact-label">${f.label}</div><div class="fact-value">${f.value}</div>`;
+    grid.appendChild(item);
+  });
+}
 
 // Background stars
 const starsLayer = document.getElementById('starsLayer');
-for (let i = 0; i < 45; i++) {
+for (let i = 0; i < 140; i++) {
   const s = document.createElement('div');
   s.className = 'star';
-  const size = [3,4,5][Math.floor(Math.random()*3)];
-  s.style.width  = size + 'px';
-  s.style.height = size + 'px';
-  s.style.left   = Math.random() * 100 + '%';
-  s.style.top    = Math.random() * 100 + '%';
-  s.style.animationDelay    = (Math.random() * 4).toFixed(2) + 's';
-  s.style.animationDuration = (2.5 + Math.random() * 3).toFixed(2) + 's';
+  const size = [1,1,2,2,3,3,4][Math.floor(Math.random()*7)];
+  Object.assign(s.style, {
+    width: size+'px', height: size+'px',
+    left: Math.random()*100+'%', top: Math.random()*100+'%',
+    opacity: (Math.random()*0.3+0.04).toFixed(2),
+    animationDelay: (Math.random()*5).toFixed(2)+'s',
+    animationDuration: (2.5+Math.random()*3).toFixed(2)+'s'
+  });
   starsLayer.appendChild(s);
 }
 </script>
