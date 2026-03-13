@@ -376,8 +376,21 @@ body {
 .choice-btn:hover:not(:disabled) { transform: translateY(-3px) scale(1.03); box-shadow: 0 8px 22px rgba(0,0,0,0.18); }
 .choice-btn:disabled { cursor: default; }
 .choice-btn .c-bar { width: 55%; height: 3px; background: var(--dark); border-radius: 2px; margin: 4px 0; }
-.choice-btn.correct { background: #1A8A48; border-color: #52C882; color: white; animation: popIn 0.35s; }
-.choice-btn.correct .c-bar { background: white; }
+.choice-btn.correct {
+  background: linear-gradient(145deg, #4EE88A 0%, #1A8A48 100%);
+  border-color: #7DFAAC;
+  color: white;
+  animation: correctPop 0.45s cubic-bezier(.34,1.56,.64,1) forwards;
+  box-shadow: 0 0 0 5px rgba(78,232,138,0.28), 0 0 22px rgba(78,232,138,0.5), 0 8px 22px rgba(26,138,72,0.35);
+  text-shadow: 0 1px 5px rgba(0,0,0,0.22);
+}
+.choice-btn.correct .c-bar { background: rgba(255,255,255,0.85); }
+@keyframes correctPop {
+  0%   { transform: scale(0.88); }
+  55%  { transform: scale(1.13); }
+  80%  { transform: scale(1.05); }
+  100% { transform: scale(1.06); }
+}
 .choice-btn.wrong { background: #E63946; border-color: #B0202E; color: white; animation: shakeX 0.45s; }
 .choice-btn.wrong .c-bar { background: white; }
 .choice-btn.reveal { background: #d4f7ee; border-color: #06D6A0; }
@@ -593,17 +606,17 @@ body {
       <button class="diff-btn selected" data-diff="easy"   onclick="selectDiff('easy')">
         <span class="diff-em">🟢</span>
         <span class="diff-name">Easy</span>
-        <span class="diff-sub">Halves &amp; Quarters</span>
+        <span class="diff-sub">Halves, Thirds &amp; Quarters</span>
       </button>
       <button class="diff-btn" data-diff="medium" onclick="selectDiff('medium')">
         <span class="diff-em">🟡</span>
         <span class="diff-name">Medium</span>
-        <span class="diff-sub">Thirds &amp; Sixths</span>
+        <span class="diff-sub">Up to Twelfths</span>
       </button>
       <button class="diff-btn" data-diff="hard" onclick="selectDiff('hard')">
         <span class="diff-em">🔴</span>
         <span class="diff-name">Hard</span>
-        <span class="diff-sub">Up to Twelfths</span>
+        <span class="diff-sub">Equivalence Challenges</span>
       </button>
     </div>
   </div>
@@ -713,24 +726,45 @@ body {
    GAME STATE
 ======================================================= */
 const DIFF = {
-  easy:   { denoms: [2, 4],       rounds: 8  },
-  medium: { denoms: [2, 3, 4, 6], rounds: 10 },
-  hard:   { denoms: [3, 4, 6, 8, 10, 12], rounds: 12 }
+  easy:   { denoms: [2, 3, 4],                  rounds: 8  },
+  medium: { denoms: [2, 3, 4, 6, 8, 10, 12],    rounds: 10 },
+  hard:   { denoms: [2, 3, 4, 6, 8, 10, 12],    rounds: 12 }
 };
+
+// Hard mode equivalence challenge pairs: [frac_n, frac_d, pizza_slices]
+// litCount = frac_n * pizza_slices / frac_d (always a positive integer)
+// Two patterns:
+//   A) Simple frac shown (e.g. 2/3), pizza has MORE slices (6) → tap 4
+//   B) Complex frac shown (e.g. 4/6), pizza has FEWER slices (3) → tap 2
+const HARD_EQUIV = [
+  // A: simplified fraction shown, pizza has more slices
+  [1,2,4], [1,2,6], [1,2,8], [1,2,12],
+  [1,3,6], [1,3,12],
+  [2,3,6], [2,3,12],
+  [1,4,8], [1,4,12],
+  [3,4,8], [3,4,12],
+  [1,6,12],
+  [5,6,12],
+  // B: non-simplified fraction shown, pizza has fewer slices
+  [2,4,2],  [3,6,2],  [4,6,3],  [2,6,3],
+  [4,8,2],  [6,8,4],  [2,8,4],
+  [8,12,6], [6,12,4], [4,12,3], [3,12,4],
+];
 
 const G = {
   mode: 'identify',
   diff: 'easy',
   score: 0, lives: 3, streak: 0, bestStreak: 0,
   round: 0, totalRounds: 8, correct: 0,
-  frac: null,        // { n, d }
-  litSlices: [],     // indices highlighted (identify mode)
+  frac: null,           // { n, d } — the fraction shown / the correct answer
+  pizzaDenom: 4,        // actual number of slices on the pizza (may differ from frac.d in hard)
+  litCount: 0,          // how many slices should be lit = frac.n * pizzaDenom / frac.d
+  litSlices: [],        // indices highlighted (identify mode)
   selSlices: new Set(), // clicked slices (build mode)
   answered: false,
   hoverSlice: -1,
   // pizza animation
   pScale: 1, pShakeAmt: 0, pShakeTimer: 0,
-  spinStartAngle: 0, spinning: false, spinProgress: 0,
 };
 
 /* =======================================================
@@ -768,7 +802,7 @@ function drawPizza() {
 
   ctx.clearRect(0, 0, W, H);
   if (!G.frac) return;
-  const { n, d } = G.frac;
+  const d = G.pizzaDenom;
 
   // -- Shake offset --
   let sx = 0, sy = 0;
@@ -980,7 +1014,7 @@ function sliceAt(ex, ey) {
   // angle from top, clockwise
   let ang = Math.atan2(dy, dx) + Math.PI / 2;
   if (ang < 0) ang += Math.PI * 2;
-  return Math.floor(ang / (Math.PI * 2) * G.frac.d) % G.frac.d;
+  return Math.floor(ang / (Math.PI * 2) * G.pizzaDenom) % G.pizzaDenom;
 }
 
 /* =======================================================
@@ -1050,13 +1084,13 @@ function updateHUD() {
 function updateCounter() {
   const el = document.getElementById('selectedCounter');
   if (G.mode !== 'build') return;
-  const { d } = G.frac;
+  const pd = G.pizzaDenom;
   const sel = G.selSlices.size;
   if (sel === 0) {
     el.textContent = `Tap slices to build your fraction, then hit Check!`;
     el.style.color = 'rgba(255,255,255,0.75)';
   } else {
-    el.textContent = `${sel} of ${d} slice${d === 1 ? '' : 's'} selected`;
+    el.textContent = `${sel} of ${pd} slice${pd === 1 ? '' : 's'} selected`;
     el.style.color = 'rgba(255,255,255,0.88)';
   }
 }
@@ -1064,11 +1098,18 @@ function updateCounter() {
 /* =======================================================
    FRACTION LOGIC
 ======================================================= */
-function randFrac(diff) {
+// Returns { frac: {n,d}, pizzaDenom }
+// In hard mode, ~55% of rounds are equivalence challenges where
+// pizzaDenom ≠ frac.d so the player must match equivalent fractions.
+function randFracForDiff(diff) {
+  if (diff === 'hard' && Math.random() < 0.55) {
+    const p = HARD_EQUIV[Math.floor(Math.random() * HARD_EQUIV.length)];
+    return { frac: { n: p[0], d: p[1] }, pizzaDenom: p[2] };
+  }
   const denoms = DIFF[diff].denoms;
   const d = denoms[Math.floor(Math.random() * denoms.length)];
-  const n = Math.floor(Math.random() * (d - 1)) + 1; // 1 to d-1
-  return { n, d };
+  const n = Math.floor(Math.random() * (d - 1)) + 1;
+  return { frac: { n, d }, pizzaDenom: d };
 }
 
 function wrongChoices(correct, diff) {
@@ -1111,8 +1152,7 @@ function shuffle(arr) {
   return arr;
 }
 
-function litSlicesFor(n, d) {
-  // Consecutive from top; slightly randomize starting offset for variety
+function litSlicesFor(n) {
   const out = [];
   for (let i = 0; i < n; i++) out.push(i);
   return out;
@@ -1150,8 +1190,11 @@ function nextRound() {
   G.round++;
   if (G.lives <= 0 || G.round > G.totalRounds) { showResults(); return; }
 
-  G.frac = randFrac(G.diff);
-  G.litSlices  = litSlicesFor(G.frac.n, G.frac.d);
+  const rf     = randFracForDiff(G.diff);
+  G.frac       = rf.frac;
+  G.pizzaDenom = rf.pizzaDenom;
+  G.litCount   = G.frac.n * G.pizzaDenom / G.frac.d;
+  G.litSlices  = litSlicesFor(G.litCount);
   G.selSlices  = new Set();
   G.answered   = false;
   G.hoverSlice = -1;
@@ -1245,14 +1288,15 @@ function checkBuild() {
   const checkBtn = document.getElementById('checkBtn');
   checkBtn.disabled = true;
 
-  const ok = G.selSlices.size === G.frac.n;
+  const ok = G.selSlices.size === G.litCount;
   if (ok) {
     checkBtn.textContent = '✅ Correct!';
     checkBtn.style.background = '#06D6A0';
     checkBtn.style.color = 'white';
     onCorrect();
   } else {
-    checkBtn.textContent = `❌ You had ${G.selSlices.size}/${G.frac.d} — needed ${G.frac.n}/${G.frac.d}`;
+    const eq = G.pizzaDenom !== G.frac.d ? ` (= ${G.frac.n}/${G.frac.d})` : '';
+    checkBtn.textContent = `❌ You had ${G.selSlices.size}/${G.pizzaDenom} — needed ${G.litCount}/${G.pizzaDenom}${eq}`;
     checkBtn.style.background = '#E63946';
     checkBtn.style.color = 'white';
     onWrong();
