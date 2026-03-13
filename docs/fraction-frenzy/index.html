@@ -1,0 +1,1388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>🍕 Fraction Frenzy</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg1: #FF6B35;
+  --bg2: #E63946;
+  --cream: #FFF8EE;
+  --dark: #2D1810;
+  --cheese: #F5D060;
+  --crust: #C4956A;
+  --sauce: #C0392B;
+  --green: #06D6A0;
+  --yellow: #FFD166;
+  --shadow: rgba(0,0,0,0.18);
+}
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: linear-gradient(160deg, #FF9A3C 0%, #FF6B35 40%, #E63946 100%);
+  min-height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* ---- NAV ---- */
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 18px;
+  background: rgba(0,0,0,0.18);
+  backdrop-filter: blur(6px);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+.site-nav-back {
+  color: white;
+  text-decoration: none;
+  font-weight: 800;
+  font-size: 0.9rem;
+  opacity: 0.85;
+  transition: opacity 0.15s;
+}
+.site-nav-back:hover { opacity: 1; }
+.site-nav-title {
+  color: white;
+  font-weight: 800;
+  font-size: 1rem;
+  flex: 1;
+}
+
+/* ---- SCREENS ---- */
+.screen { display: none; }
+.screen.active {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ==============================
+   HOME SCREEN
+============================== */
+#homeScreen {
+  padding: 24px 20px 40px;
+  gap: 22px;
+  min-height: calc(100vh - 46px);
+  justify-content: center;
+}
+
+.home-pizza {
+  font-size: 5.5rem;
+  animation: pizzaBob 2.8s ease-in-out infinite;
+  filter: drop-shadow(0 8px 16px rgba(0,0,0,0.25));
+  line-height: 1;
+}
+@keyframes pizzaBob {
+  0%, 100% { transform: translateY(0) rotate(-6deg); }
+  30%       { transform: translateY(-14px) rotate(5deg); }
+  60%       { transform: translateY(-6px) rotate(-3deg); }
+}
+
+.home-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(2.4rem, 8vw, 3.6rem);
+  color: white;
+  text-shadow: 0 4px 16px rgba(0,0,0,0.3), 3px 3px 0 rgba(0,0,0,0.12);
+  text-align: center;
+  line-height: 1.1;
+}
+
+.home-sub {
+  color: rgba(255,255,255,0.88);
+  font-size: 1rem;
+  font-weight: 700;
+  text-align: center;
+  max-width: 320px;
+  line-height: 1.4;
+}
+
+/* Mode cards */
+.mode-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  max-width: 380px;
+}
+
+.mode-card {
+  background: white;
+  border-radius: 20px;
+  padding: 18px 20px;
+  cursor: pointer;
+  transition: transform 0.18s cubic-bezier(.34,1.56,.64,1), box-shadow 0.18s;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.14), 0 2px 6px rgba(0,0,0,0.08);
+  border: 3px solid transparent;
+  text-align: left;
+  user-select: none;
+}
+.mode-card:hover  { transform: translateY(-4px); box-shadow: 0 12px 28px rgba(0,0,0,0.2); }
+.mode-card:active { transform: translateY(0); }
+.mode-card.selected { border-color: #FF6B35; box-shadow: 0 0 0 4px rgba(255,107,53,0.2), 0 8px 24px rgba(0,0,0,0.15); }
+
+.mode-header { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+.mode-icon { font-size: 1.9rem; line-height: 1; }
+.mode-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.2rem;
+  color: var(--dark);
+}
+.mode-desc { color: #666; font-size: 0.82rem; font-weight: 700; line-height: 1.4; padding-left: 46px; }
+
+/* Difficulty */
+.diff-section { width: 100%; max-width: 380px; }
+.diff-label { color: rgba(255,255,255,0.8); font-size: 0.75rem; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; text-align: center; }
+.diff-row { display: flex; gap: 10px; }
+.diff-btn {
+  flex: 1;
+  padding: 10px 4px;
+  border: 2.5px solid rgba(255,255,255,0.4);
+  background: rgba(255,255,255,0.14);
+  border-radius: 14px;
+  color: white;
+  font-family: 'Fredoka One', cursive;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.18s;
+  line-height: 1.3;
+}
+.diff-btn:hover { background: rgba(255,255,255,0.25); border-color: rgba(255,255,255,0.7); }
+.diff-btn.selected { background: white; color: #E63946; border-color: white; }
+
+/* Start button */
+.start-btn {
+  background: white;
+  color: #E63946;
+  border: none;
+  border-radius: 50px;
+  padding: 16px 44px;
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.4rem;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  transition: all 0.2s;
+  letter-spacing: 0.02em;
+}
+.start-btn:hover { transform: scale(1.06) translateY(-2px); box-shadow: 0 14px 32px rgba(0,0,0,0.25); }
+.start-btn:active { transform: scale(1.01); }
+
+/* ==============================
+   GAME SCREEN
+============================== */
+#gameScreen {
+  min-height: calc(100vh - 46px);
+  padding: 14px 16px 28px;
+  gap: 14px;
+  justify-content: flex-start;
+}
+
+/* HUD */
+.hud {
+  display: flex;
+  width: 100%;
+  max-width: 440px;
+  background: rgba(0,0,0,0.18);
+  border-radius: 16px;
+  padding: 10px 16px;
+  gap: 4px;
+}
+.hud-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+.hud-label {
+  color: rgba(255,255,255,0.65);
+  font-size: 0.6rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.hud-val {
+  color: white;
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+.lives-row { display: flex; gap: 3px; align-items: center; }
+.life-pip { font-size: 1rem; transition: all 0.3s; }
+.life-pip.lost { filter: grayscale(1); opacity: 0.28; transform: scale(0.85); }
+
+/* Progress */
+.progress-wrap {
+  width: 100%;
+  max-width: 440px;
+  height: 7px;
+  background: rgba(0,0,0,0.18);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: white;
+  border-radius: 4px;
+  transition: width 0.4s ease;
+  will-change: width;
+}
+
+/* Fraction target (build mode) */
+.frac-target-box {
+  background: rgba(0,0,0,0.18);
+  border-radius: 18px;
+  padding: 14px 28px;
+  text-align: center;
+  display: none;
+}
+.frac-target-label {
+  color: rgba(255,255,255,0.78);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+.frac-big {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: 'Fredoka One', cursive;
+  font-size: 2.6rem;
+  color: white;
+  line-height: 1;
+  gap: 4px;
+}
+.frac-line { width: 100%; height: 4px; background: white; border-radius: 2px; min-width: 40px; }
+
+/* Identify hint */
+.identify-hint {
+  color: rgba(255,255,255,0.88);
+  font-size: 0.92rem;
+  font-weight: 800;
+  text-align: center;
+  display: none;
+}
+
+/* Pizza canvas wrapper */
+.pizza-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#pizzaCanvas {
+  cursor: pointer;
+  border-radius: 50%;
+  display: block;
+  touch-action: none;
+}
+
+/* Selected counter (build mode) */
+.selected-counter {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1rem;
+  color: rgba(255,255,255,0.9);
+  text-align: center;
+  display: none;
+  min-height: 1.4em;
+}
+
+/* Choice grid (identify mode) */
+.choices-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+  max-width: 400px;
+  display: none;
+}
+
+.choice-btn {
+  background: white;
+  border: 3px solid transparent;
+  border-radius: 18px;
+  padding: 16px 12px;
+  cursor: pointer;
+  transition: transform 0.18s cubic-bezier(.34,1.56,.64,1), box-shadow 0.18s;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  font-family: 'Fredoka One', cursive;
+  color: var(--dark);
+  font-size: 1.7rem;
+  line-height: 1;
+}
+.choice-btn:hover:not(:disabled) { transform: translateY(-3px) scale(1.03); box-shadow: 0 8px 22px rgba(0,0,0,0.18); }
+.choice-btn:disabled { cursor: default; }
+.choice-btn .c-bar { width: 55%; height: 3px; background: var(--dark); border-radius: 2px; margin: 4px 0; }
+.choice-btn.correct { background: #06D6A0; border-color: #04A07A; animation: popIn 0.35s; }
+.choice-btn.correct .c-bar { background: #04A07A; }
+.choice-btn.wrong { background: #E63946; border-color: #B0202E; color: white; animation: shakeX 0.45s; }
+.choice-btn.wrong .c-bar { background: white; }
+.choice-btn.reveal { background: #d4f7ee; border-color: #06D6A0; }
+
+/* Check button (build mode) */
+.check-btn {
+  background: white;
+  color: #E63946;
+  border: none;
+  border-radius: 50px;
+  padding: 13px 36px;
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.25rem;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  transition: all 0.2s;
+  display: none;
+}
+.check-btn:hover:not(:disabled) { transform: scale(1.05); }
+.check-btn:disabled { opacity: 0.55; cursor: default; transform: none; }
+
+/* Next button */
+.next-btn {
+  background: var(--yellow);
+  color: var(--dark);
+  border: none;
+  border-radius: 50px;
+  padding: 13px 36px;
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.2rem;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.16);
+  transition: all 0.2s;
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.85);
+}
+.next-btn.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1);
+  animation: popIn 0.3s;
+}
+.next-btn:hover { transform: scale(1.05); }
+
+/* ==============================
+   RESULTS SCREEN
+============================== */
+#resultsScreen {
+  min-height: calc(100vh - 46px);
+  padding: 28px 20px 40px;
+  gap: 20px;
+  justify-content: center;
+  text-align: center;
+}
+.results-pizza { font-size: 5rem; animation: pizzaBob 2s ease-in-out infinite; filter: drop-shadow(0 6px 14px rgba(0,0,0,0.22)); }
+.results-title { font-family: 'Fredoka One', cursive; font-size: 2.3rem; color: white; text-shadow: 0 4px 12px rgba(0,0,0,0.25); }
+.stars-row { display: flex; gap: 10px; justify-content: center; font-size: 2.6rem; }
+.star-em { opacity: 0.25; transition: all 0.4s; filter: grayscale(1); }
+.star-em.lit { opacity: 1; filter: none; animation: starPop 0.5s; }
+
+.results-stats {
+  display: flex;
+  gap: 0;
+  background: rgba(0,0,0,0.18);
+  border-radius: 20px;
+  overflow: hidden;
+  width: 100%;
+  max-width: 360px;
+}
+.stat-cell {
+  flex: 1;
+  padding: 16px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  border-right: 1px solid rgba(255,255,255,0.12);
+}
+.stat-cell:last-child { border-right: none; }
+.stat-val { font-family: 'Fredoka One', cursive; font-size: 1.8rem; color: white; }
+.stat-label { color: rgba(255,255,255,0.65); font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+
+.result-btns { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+.result-btn {
+  background: white;
+  color: #E63946;
+  border: none;
+  border-radius: 50px;
+  padding: 12px 28px;
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.1rem;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+  transition: all 0.2s;
+}
+.result-btn:hover { transform: scale(1.05); box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
+
+/* ==============================
+   OVERLAYS
+============================== */
+/* Confetti canvas */
+#confettiCanvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 80;
+}
+
+/* Feedback pop */
+#feedbackPop {
+  position: fixed;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  font-family: 'Fredoka One', cursive;
+  font-size: 2.4rem;
+  color: white;
+  text-shadow: 0 3px 12px rgba(0,0,0,0.35);
+  pointer-events: none;
+  z-index: 90;
+  white-space: nowrap;
+  opacity: 0;
+}
+#feedbackPop.pop-correct { animation: feedCorrect 0.85s forwards; }
+#feedbackPop.pop-wrong   { animation: feedWrong 0.85s forwards; }
+
+/* ==============================
+   KEYFRAMES
+============================== */
+@keyframes popIn {
+  0%   { transform: scale(0.7); }
+  60%  { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+@keyframes shakeX {
+  0%, 100% { transform: translateX(0); }
+  18%  { transform: translateX(-9px); }
+  36%  { transform: translateX(9px); }
+  54%  { transform: translateX(-6px); }
+  72%  { transform: translateX(6px); }
+  90%  { transform: translateX(-3px); }
+}
+
+@keyframes feedCorrect {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+  25%  { opacity: 1; transform: translate(-50%, -50%) scale(1.15); }
+  65%  { opacity: 1; transform: translate(-50%, -80%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -120%) scale(0.85); }
+}
+@keyframes feedWrong {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+  25%  { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+  65%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; }
+}
+
+@keyframes starPop {
+  0%   { transform: scale(0) rotate(-20deg); }
+  60%  { transform: scale(1.3) rotate(10deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+
+@keyframes pizzaSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <a href="../" class="site-nav-back">← Home</a>
+  <span class="site-nav-title">🍕 Fraction Frenzy</span>
+</nav>
+
+<!-- Global overlays -->
+<canvas id="confettiCanvas"></canvas>
+<div id="feedbackPop"></div>
+
+<!-- ==============================
+     HOME SCREEN
+============================== -->
+<div id="homeScreen" class="screen active">
+  <div class="home-pizza">🍕</div>
+  <h1 class="home-title">Fraction Frenzy!</h1>
+  <p class="home-sub">Learn fractions with pizza — the most delicious way to do math! 🧮</p>
+
+  <div class="mode-cards">
+    <div class="mode-card selected" data-mode="identify" onclick="selectMode('identify')">
+      <div class="mode-header">
+        <span class="mode-icon">🤔</span>
+        <span class="mode-title">What's the Fraction?</span>
+      </div>
+      <div class="mode-desc">Look at the highlighted pizza slices and pick the right fraction!</div>
+    </div>
+    <div class="mode-card" data-mode="build" onclick="selectMode('build')">
+      <div class="mode-header">
+        <span class="mode-icon">🍕</span>
+        <span class="mode-title">Make the Fraction!</span>
+      </div>
+      <div class="mode-desc">Tap slices to build exactly the fraction shown — then check your work!</div>
+    </div>
+  </div>
+
+  <div class="diff-section">
+    <div class="diff-label">Choose Difficulty</div>
+    <div class="diff-row">
+      <button class="diff-btn selected" data-diff="easy"   onclick="selectDiff('easy')">🟢<br>Easy</button>
+      <button class="diff-btn"          data-diff="medium" onclick="selectDiff('medium')">🟡<br>Medium</button>
+      <button class="diff-btn"          data-diff="hard"   onclick="selectDiff('hard')">🔴<br>Hard</button>
+    </div>
+  </div>
+
+  <button class="start-btn" onclick="startGame()">🍕 Let's Play!</button>
+</div>
+
+<!-- ==============================
+     GAME SCREEN
+============================== -->
+<div id="gameScreen" class="screen">
+
+  <div class="hud">
+    <div class="hud-item">
+      <div class="hud-label">Score</div>
+      <div class="hud-val" id="hudScore">0</div>
+    </div>
+    <div class="hud-item">
+      <div class="hud-label">Lives</div>
+      <div class="lives-row" id="hudLives">
+        <span class="life-pip">🍕</span>
+        <span class="life-pip">🍕</span>
+        <span class="life-pip">🍕</span>
+      </div>
+    </div>
+    <div class="hud-item">
+      <div class="hud-label">Streak</div>
+      <div class="hud-val" id="hudStreak">—</div>
+    </div>
+    <div class="hud-item">
+      <div class="hud-label">Round</div>
+      <div class="hud-val" id="hudRound">1/8</div>
+    </div>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-fill" id="progressFill" style="width:0%"></div>
+  </div>
+
+  <!-- BUILD MODE: show target fraction -->
+  <div class="frac-target-box" id="fracTargetBox">
+    <div class="frac-target-label">Make this fraction:</div>
+    <div class="frac-big">
+      <span id="fracNum">3</span>
+      <div class="frac-line"></div>
+      <span id="fracDen">4</span>
+    </div>
+  </div>
+
+  <!-- IDENTIFY MODE: hint text -->
+  <div class="identify-hint" id="identifyHint">
+    🍕 What fraction of the pizza is highlighted?
+  </div>
+
+  <!-- Pizza -->
+  <div class="pizza-wrap">
+    <canvas id="pizzaCanvas"></canvas>
+  </div>
+
+  <!-- BUILD MODE: live counter -->
+  <div class="selected-counter" id="selectedCounter"></div>
+
+  <!-- IDENTIFY MODE: 4 fraction choices -->
+  <div class="choices-grid" id="choicesGrid"></div>
+
+  <!-- BUILD MODE: check button -->
+  <button class="check-btn" id="checkBtn" onclick="checkBuild()">✅ Check Answer!</button>
+
+  <!-- Next button (shows after answering) -->
+  <button class="next-btn" id="nextBtn" onclick="nextRound()">Next Question ➡️</button>
+
+</div>
+
+<!-- ==============================
+     RESULTS SCREEN
+============================== -->
+<div id="resultsScreen" class="screen">
+  <div class="results-pizza">🍕</div>
+  <h2 class="results-title" id="resultsTitle">Pizza Master!</h2>
+  <div class="stars-row">
+    <span class="star-em" id="star1">⭐</span>
+    <span class="star-em" id="star2">⭐</span>
+    <span class="star-em" id="star3">⭐</span>
+  </div>
+  <div class="results-stats">
+    <div class="stat-cell">
+      <div class="stat-val" id="resFinalScore">0</div>
+      <div class="stat-label">Score</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-val" id="resCorrect">0/8</div>
+      <div class="stat-label">Correct</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-val" id="resBestStreak">0🔥</div>
+      <div class="stat-label">Best Streak</div>
+    </div>
+  </div>
+  <div class="result-btns">
+    <button class="result-btn" onclick="playAgain()">🔄 Play Again</button>
+    <button class="result-btn" onclick="goHome()">🏠 Change Mode</button>
+  </div>
+</div>
+
+<script>
+/* =======================================================
+   GAME STATE
+======================================================= */
+const DIFF = {
+  easy:   { denoms: [2, 4],       rounds: 8  },
+  medium: { denoms: [2, 3, 4, 6], rounds: 10 },
+  hard:   { denoms: [3, 4, 6, 8, 10, 12], rounds: 12 }
+};
+
+const G = {
+  mode: 'identify',
+  diff: 'easy',
+  score: 0, lives: 3, streak: 0, bestStreak: 0,
+  round: 0, totalRounds: 8, correct: 0,
+  frac: null,        // { n, d }
+  litSlices: [],     // indices highlighted (identify mode)
+  selSlices: new Set(), // clicked slices (build mode)
+  answered: false,
+  hoverSlice: -1,
+  // pizza animation
+  pScale: 1, pShakeAmt: 0, pShakeTimer: 0,
+  spinStartAngle: 0, spinning: false, spinProgress: 0,
+};
+
+/* =======================================================
+   CANVAS SETUP
+======================================================= */
+const pizzaCanvas = document.getElementById('pizzaCanvas');
+const pizzaCtx    = pizzaCanvas.getContext('2d');
+const confCanvas  = document.getElementById('confettiCanvas');
+const confCtx     = confCanvas.getContext('2d');
+
+function sizePizzaCanvas() {
+  const s = Math.min(window.innerWidth - 48, 300);
+  pizzaCanvas.width  = s;
+  pizzaCanvas.height = s;
+}
+function sizeConfCanvas() {
+  confCanvas.width  = window.innerWidth;
+  confCanvas.height = window.innerHeight;
+}
+sizePizzaCanvas();
+sizeConfCanvas();
+window.addEventListener('resize', () => { sizePizzaCanvas(); sizeConfCanvas(); });
+
+/* =======================================================
+   PIZZA DRAWING
+======================================================= */
+function drawPizza() {
+  const ctx = pizzaCtx;
+  const W = pizzaCanvas.width, H = pizzaCanvas.height;
+  const cx = W / 2, cy = H / 2;
+  const R  = W * 0.46;   // outer crust radius
+  const PR = R * 0.86;   // cheese/sauce radius
+
+  ctx.clearRect(0, 0, W, H);
+
+  if (!G.frac) return;
+  const { n, d } = G.frac;
+
+  // -- Shake offset --
+  let sx = 0, sy = 0;
+  if (G.pShakeTimer > 0) {
+    sx = (Math.random() - 0.5) * G.pShakeAmt;
+    sy = (Math.random() - 0.5) * G.pShakeAmt * 0.5;
+  }
+
+  ctx.save();
+  ctx.translate(cx + sx, cy + sy);
+  ctx.scale(G.pScale, G.pScale);
+  ctx.translate(-cx, -cy);
+
+  // Determine which slices are highlighted
+  const lit = G.mode === 'identify' ? new Set(G.litSlices) : G.selSlices;
+  const START = -Math.PI / 2; // top
+
+  // ---- Drop shadow ----
+  ctx.save();
+  ctx.shadowColor = 'rgba(0,0,0,0.28)';
+  ctx.shadowBlur  = 18;
+  ctx.shadowOffsetY = 6;
+  ctx.beginPath();
+  ctx.arc(cx, cy, R, 0, Math.PI * 2);
+  ctx.fillStyle = '#A0522D';
+  ctx.fill();
+  ctx.restore();
+
+  // ---- Crust ----
+  const crustGrad = ctx.createRadialGradient(cx, cy - R * 0.1, R * 0.35, cx, cy, R);
+  crustGrad.addColorStop(0,   '#F4C27A');
+  crustGrad.addColorStop(0.72,'#DEB07A');
+  crustGrad.addColorStop(1,   '#C48050');
+  ctx.beginPath();
+  ctx.arc(cx, cy, R, 0, Math.PI * 2);
+  ctx.fillStyle = crustGrad;
+  ctx.fill();
+
+  // ---- Sauce base ----
+  const sauceGrad = ctx.createRadialGradient(cx - PR * 0.15, cy - PR * 0.15, PR * 0.05, cx, cy, PR);
+  sauceGrad.addColorStop(0,   '#E84040');
+  sauceGrad.addColorStop(0.65,'#C02828');
+  sauceGrad.addColorStop(1,   '#901818');
+  ctx.beginPath();
+  ctx.arc(cx, cy, PR, 0, Math.PI * 2);
+  ctx.fillStyle = sauceGrad;
+  ctx.fill();
+
+  // ---- Cheese layer (full, then slices over it) ----
+  const cheeseGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, PR);
+  cheeseGrad.addColorStop(0,   '#FFF4A0');
+  cheeseGrad.addColorStop(0.55,'#F8D840');
+  cheeseGrad.addColorStop(0.9, '#EDBC20');
+  cheeseGrad.addColorStop(1,   'rgba(237,180,20,0)');
+
+  // ---- Draw each slice ----
+  for (let i = 0; i < d; i++) {
+    const a1 = START + (i / d) * Math.PI * 2;
+    const a2 = START + ((i + 1) / d) * Math.PI * 2;
+    const mid = (a1 + a2) / 2;
+    const isLit     = lit.has(i);
+    const isHover   = (G.mode === 'build' && !G.answered && G.hoverSlice === i && !isLit);
+
+    ctx.save();
+    // Slight push-out for lit/hover slices
+    if (isLit || isHover) {
+      const push = isLit ? 5 : 3;
+      ctx.translate(cx + Math.cos(mid) * push, cy + Math.sin(mid) * push);
+      ctx.translate(-cx, -cy);
+    }
+
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, PR, a1, a2);
+    ctx.closePath();
+
+    if (isLit) {
+      // Topped slice: warm orange-red with cheese highlights
+      const tg = ctx.createRadialGradient(cx, cy, 0, cx, cy, PR);
+      tg.addColorStop(0,   '#FDE080');
+      tg.addColorStop(0.4, '#F0A030');
+      tg.addColorStop(0.82,'#D04010');
+      tg.addColorStop(1,   '#B02808');
+      ctx.fillStyle = tg;
+    } else if (isHover) {
+      const hg = ctx.createRadialGradient(cx, cy, 0, cx, cy, PR);
+      hg.addColorStop(0,   '#FFF4B0');
+      hg.addColorStop(0.5, '#F8DC50');
+      hg.addColorStop(0.9, '#F0C030');
+      ctx.fillStyle = hg;
+    } else {
+      ctx.fillStyle = cheeseGrad;
+    }
+    ctx.fill();
+
+    // Cheese bubbles on unlit slices
+    if (!isLit) {
+      ctx.save();
+      ctx.clip();
+      const bubbleSeeds = [0.38, 0.55, 0.68, 0.45, 0.62];
+      bubbleSeeds.forEach((frac, bi) => {
+        const br  = PR * frac;
+        const bAngle = mid + (bi % 3 - 1) * 0.22;
+        const bx  = cx + Math.cos(bAngle) * br;
+        const by  = cy + Math.sin(bAngle) * br;
+        const bRad = PR * 0.06;
+        ctx.beginPath();
+        ctx.arc(bx, by, bRad, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,255,200,0.35)';
+        ctx.fill();
+      });
+      ctx.restore();
+    }
+
+    // Toppings on lit slices
+    if (isLit) {
+      // Pepperoni
+      const pepDist = PR * 0.54;
+      const pepX = cx + Math.cos(mid) * pepDist;
+      const pepY = cy + Math.sin(mid) * pepDist;
+      const pepR = PR * 0.10;
+      // shadow
+      ctx.beginPath(); ctx.arc(pepX + 1, pepY + 2, pepR, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(0,0,0,0.15)'; ctx.fill();
+      // body
+      const pepGrad = ctx.createRadialGradient(pepX - pepR*0.3, pepY - pepR*0.3, pepR*0.1, pepX, pepY, pepR);
+      pepGrad.addColorStop(0, '#EE4444');
+      pepGrad.addColorStop(1, '#AA1111');
+      ctx.beginPath(); ctx.arc(pepX, pepY, pepR, 0, Math.PI*2);
+      ctx.fillStyle = pepGrad; ctx.fill();
+      // highlight
+      ctx.beginPath(); ctx.arc(pepX - pepR*0.28, pepY - pepR*0.28, pepR*0.28, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(255,160,140,0.55)'; ctx.fill();
+
+      // Extra toppings for larger pizzas
+      if (d >= 6) {
+        const offa = (a2 - a1) * 0.35;
+        const offAngles = [mid - offa, mid + offa];
+        offAngles.forEach(oa => {
+          const od = PR * 0.72;
+          const ox = cx + Math.cos(oa) * od;
+          const oy = cy + Math.sin(oa) * od;
+          // olive / mushroom
+          ctx.beginPath(); ctx.arc(ox, oy, PR * 0.055, 0, Math.PI*2);
+          ctx.fillStyle = '#5D4037'; ctx.fill();
+          ctx.beginPath(); ctx.arc(ox - PR*0.015, oy - PR*0.015, PR*0.02, 0, Math.PI*2);
+          ctx.fillStyle = 'rgba(200,160,140,0.5)'; ctx.fill();
+        });
+      }
+
+      // Cheese drip edge highlights
+      ctx.beginPath();
+      ctx.arc(cx, cy, PR, a1, a2);
+      ctx.strokeStyle = 'rgba(255,220,80,0.55)';
+      ctx.lineWidth = 4;
+      ctx.stroke();
+    }
+
+    ctx.restore();
+  }
+
+  // ---- Slice cut lines ----
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = 'rgba(100, 50, 10, 0.6)';
+  for (let i = 0; i < d; i++) {
+    const angle = START + (i / d) * Math.PI * 2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + Math.cos(angle) * PR, cy + Math.sin(angle) * PR);
+    ctx.stroke();
+  }
+
+  // ---- Crust ring outline ----
+  ctx.beginPath();
+  ctx.arc(cx, cy, R, 0, Math.PI * 2);
+  ctx.strokeStyle = '#8B4513';
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+
+  // ---- Inner crust edge ----
+  ctx.beginPath();
+  ctx.arc(cx, cy, PR, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(100,50,10,0.35)';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  // ---- Center dot ----
+  ctx.beginPath();
+  ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+  ctx.fillStyle = '#7A3B10';
+  ctx.fill();
+
+  ctx.restore();
+}
+
+/* =======================================================
+   PIZZA HIT DETECTION
+======================================================= */
+function sliceAt(ex, ey) {
+  const rect = pizzaCanvas.getBoundingClientRect();
+  const scaleX = pizzaCanvas.width  / rect.width;
+  const scaleY = pizzaCanvas.height / rect.height;
+  const x = (ex - rect.left) * scaleX;
+  const y = (ey - rect.top)  * scaleY;
+
+  const cx = pizzaCanvas.width  / 2;
+  const cy = pizzaCanvas.height / 2;
+  const PR = pizzaCanvas.width * 0.46 * 0.86;
+  const dx = x - cx, dy = y - cy;
+  if (Math.sqrt(dx*dx + dy*dy) > PR) return -1;
+
+  // angle from top, clockwise
+  let ang = Math.atan2(dy, dx) + Math.PI / 2;
+  if (ang < 0) ang += Math.PI * 2;
+  return Math.floor(ang / (Math.PI * 2) * G.frac.d) % G.frac.d;
+}
+
+/* =======================================================
+   PIZZA INPUT EVENTS
+======================================================= */
+pizzaCanvas.addEventListener('mousemove', e => {
+  if (G.mode !== 'build' || G.answered) { G.hoverSlice = -1; return; }
+  G.hoverSlice = sliceAt(e.clientX, e.clientY);
+});
+pizzaCanvas.addEventListener('mouseleave', () => { G.hoverSlice = -1; });
+
+pizzaCanvas.addEventListener('click', e => {
+  if (G.mode !== 'build' || G.answered) return;
+  const s = sliceAt(e.clientX, e.clientY);
+  if (s < 0) return;
+  if (G.selSlices.has(s)) G.selSlices.delete(s);
+  else G.selSlices.add(s);
+  updateCounter();
+});
+
+pizzaCanvas.addEventListener('touchstart', e => {
+  e.preventDefault();
+  if (G.mode !== 'build' || G.answered) return;
+  const t = e.touches[0];
+  const s = sliceAt(t.clientX, t.clientY);
+  if (s < 0) return;
+  if (G.selSlices.has(s)) G.selSlices.delete(s);
+  else G.selSlices.add(s);
+  updateCounter();
+}, { passive: false });
+
+/* =======================================================
+   UI HELPERS
+======================================================= */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function updateHUD() {
+  document.getElementById('hudScore').textContent = G.score;
+  document.getElementById('hudRound').textContent = `${G.round}/${G.totalRounds}`;
+
+  // Streak
+  const sEl = document.getElementById('hudStreak');
+  if (G.streak === 0) { sEl.textContent = '—'; sEl.style.color = ''; }
+  else {
+    sEl.textContent = G.streak >= 3 ? G.streak + '🔥' : G.streak;
+    sEl.style.color = G.streak >= 3 ? '#FFD166' : '';
+  }
+
+  // Lives
+  const lEl = document.getElementById('hudLives');
+  lEl.innerHTML = '';
+  for (let i = 0; i < 3; i++) {
+    const sp = document.createElement('span');
+    sp.className = 'life-pip' + (i >= G.lives ? ' lost' : '');
+    sp.textContent = '🍕';
+    lEl.appendChild(sp);
+  }
+
+  // Progress
+  const pct = Math.max(0, ((G.round - 1) / G.totalRounds) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
+function updateCounter() {
+  const el = document.getElementById('selectedCounter');
+  if (G.mode !== 'build') return;
+  const { n, d } = G.frac;
+  const sel = G.selSlices.size;
+  if (sel === 0) {
+    el.textContent = `Tap ${n} slice${n === 1 ? '' : 's'} to build ${n}/${d}`;
+    el.style.color = 'rgba(255,255,255,0.75)';
+  } else if (sel === n) {
+    el.textContent = `✅ Looks good! Hit Check!`;
+    el.style.color = '#C8F7E8';
+  } else if (sel > n) {
+    el.textContent = `⚠️ Too many! You picked ${sel}/${d}`;
+    el.style.color = '#FFD166';
+  } else {
+    el.textContent = `${sel} selected — need ${n} total`;
+    el.style.color = 'rgba(255,255,255,0.82)';
+  }
+}
+
+/* =======================================================
+   FRACTION LOGIC
+======================================================= */
+function randFrac(diff) {
+  const denoms = DIFF[diff].denoms;
+  const d = denoms[Math.floor(Math.random() * denoms.length)];
+  const n = Math.floor(Math.random() * (d - 1)) + 1; // 1 to d-1
+  return { n, d };
+}
+
+function wrongChoices(correct, diff) {
+  const key = `${correct.n}/${correct.d}`;
+  const pool = [];
+  for (const d of DIFF[diff].denoms) {
+    for (let n = 1; n < d; n++) {
+      if (`${n}/${d}` !== key) pool.push({ n, d });
+    }
+  }
+  // Also mix in nearby fractions for plausibility
+  const extras = [];
+  if (correct.n > 1) extras.push({ n: correct.n - 1, d: correct.d });
+  if (correct.n < correct.d - 1) extras.push({ n: correct.n + 1, d: correct.d });
+  extras.forEach(e => { if (`${e.n}/${e.d}` !== key) pool.unshift(e); }); // prioritize nearby
+
+  shuffle(pool);
+  // Deduplicate by key
+  const seen = new Set([key]);
+  const out = [];
+  for (const f of pool) {
+    const k = `${f.n}/${f.d}`;
+    if (!seen.has(k)) { seen.add(k); out.push(f); }
+    if (out.length === 3) break;
+  }
+  // Pad if needed
+  while (out.length < 3) out.push({ n: Math.floor(Math.random() * 3) + 1, d: 6 });
+  return out;
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function litSlicesFor(n, d) {
+  // Consecutive from top; slightly randomize starting offset for variety
+  const out = [];
+  for (let i = 0; i < n; i++) out.push(i);
+  return out;
+}
+
+/* =======================================================
+   HOME / SETUP
+======================================================= */
+function selectMode(m) {
+  G.mode = m;
+  document.querySelectorAll('.mode-card').forEach(c => {
+    c.classList.toggle('selected', c.dataset.mode === m);
+  });
+}
+
+function selectDiff(d) {
+  G.diff = d;
+  document.querySelectorAll('.diff-btn').forEach(b => {
+    b.classList.toggle('selected', b.dataset.diff === d);
+  });
+}
+
+function startGame() {
+  const cfg = DIFF[G.diff];
+  G.score = 0; G.lives = 3; G.streak = 0; G.bestStreak = 0;
+  G.round = 0; G.totalRounds = cfg.rounds; G.correct = 0;
+  showScreen('gameScreen');
+  nextRound();
+}
+
+/* =======================================================
+   ROUND FLOW
+======================================================= */
+function nextRound() {
+  G.round++;
+  if (G.lives <= 0 || G.round > G.totalRounds) { showResults(); return; }
+
+  G.frac = randFrac(G.diff);
+  G.litSlices  = litSlicesFor(G.frac.n, G.frac.d);
+  G.selSlices  = new Set();
+  G.answered   = false;
+  G.hoverSlice = -1;
+  G.pShakeAmt  = 0;
+  G.pShakeTimer = 0;
+
+  updateHUD();
+
+  // Animate pizza entrance
+  animatePizzaIn();
+
+  if (G.mode === 'identify') setupIdentify();
+  else                        setupBuild();
+}
+
+function setupIdentify() {
+  document.getElementById('fracTargetBox').style.display = 'none';
+  document.getElementById('identifyHint').style.display  = 'block';
+  document.getElementById('selectedCounter').style.display = 'none';
+  document.getElementById('checkBtn').style.display      = 'none';
+  document.getElementById('nextBtn').classList.remove('visible');
+
+  const grid = document.getElementById('choicesGrid');
+  grid.style.display = 'grid';
+  grid.innerHTML = '';
+
+  const choices = shuffle([G.frac, ...wrongChoices(G.frac, G.diff)]);
+  choices.forEach(f => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.innerHTML = `<span>${f.n}</span><div class="c-bar"></div><span>${f.d}</span>`;
+    btn.addEventListener('click',    () => handleIdentify(f, btn));
+    btn.addEventListener('touchend', e => { e.preventDefault(); handleIdentify(f, btn); }, { passive: false });
+    grid.appendChild(btn);
+  });
+}
+
+function setupBuild() {
+  document.getElementById('fracTargetBox').style.display  = 'block';
+  document.getElementById('identifyHint').style.display   = 'none';
+  document.getElementById('selectedCounter').style.display = 'block';
+  document.getElementById('checkBtn').style.display       = 'block';
+  document.getElementById('choicesGrid').style.display    = 'none';
+  document.getElementById('nextBtn').classList.remove('visible');
+
+  const checkBtn = document.getElementById('checkBtn');
+  checkBtn.disabled = false;
+  checkBtn.textContent = '✅ Check Answer!';
+  checkBtn.style.background = '';
+  checkBtn.style.color = '';
+
+  document.getElementById('fracNum').textContent = G.frac.n;
+  document.getElementById('fracDen').textContent = G.frac.d;
+
+  updateCounter();
+}
+
+/* =======================================================
+   IDENTIFY MODE ANSWER
+======================================================= */
+function handleIdentify(chosen, btn) {
+  if (G.answered) return;
+  G.answered = true;
+  document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
+
+  const ok = chosen.n === G.frac.n && chosen.d === G.frac.d;
+  if (ok) {
+    btn.classList.add('correct');
+    onCorrect();
+  } else {
+    btn.classList.add('wrong');
+    // Reveal correct answer
+    document.querySelectorAll('.choice-btn').forEach(b => {
+      const spans = b.querySelectorAll('span');
+      if (+spans[0].textContent === G.frac.n && +spans[1].textContent === G.frac.d) {
+        b.classList.add('reveal');
+      }
+    });
+    onWrong();
+  }
+  document.getElementById('nextBtn').classList.add('visible');
+}
+
+/* =======================================================
+   BUILD MODE ANSWER
+======================================================= */
+function checkBuild() {
+  if (G.answered) return;
+  G.answered = true;
+
+  const checkBtn = document.getElementById('checkBtn');
+  checkBtn.disabled = true;
+
+  const ok = G.selSlices.size === G.frac.n;
+  if (ok) {
+    checkBtn.textContent = '✅ Correct!';
+    checkBtn.style.background = '#06D6A0';
+    checkBtn.style.color = 'white';
+    onCorrect();
+  } else {
+    checkBtn.textContent = `❌ You had ${G.selSlices.size}/${G.frac.d} — needed ${G.frac.n}/${G.frac.d}`;
+    checkBtn.style.background = '#E63946';
+    checkBtn.style.color = 'white';
+    onWrong();
+    // Show correct answer on pizza after brief pause
+    setTimeout(() => {
+      G.selSlices = new Set(G.litSlices);
+    }, 350);
+  }
+  document.getElementById('nextBtn').classList.add('visible');
+}
+
+/* =======================================================
+   CORRECT / WRONG HANDLING
+======================================================= */
+function onCorrect() {
+  G.correct++;
+  G.streak++;
+  if (G.streak > G.bestStreak) G.bestStreak = G.streak;
+
+  const bonus = Math.min((G.streak - 1) * 3, 15);
+  const pts   = 10 + bonus;
+  G.score += pts;
+  updateHUD();
+
+  const msg = G.streak >= 4 ? `🔥 x${G.streak}! +${pts}` :
+              G.streak >= 2  ? `🌟 Streak! +${pts}` : `✅ +${pts}`;
+  showFeedback(msg, true);
+  bouncePizza();
+  spawnConfetti(G.streak >= 3 ? 35 : 20);
+}
+
+function onWrong() {
+  G.lives--;
+  G.streak = 0;
+  updateHUD();
+  showFeedback('❌ Not quite!', false);
+  shakePizza();
+}
+
+/* =======================================================
+   PIZZA ANIMATIONS
+======================================================= */
+function animatePizzaIn() {
+  G.pScale = 0.05;
+  const t0 = performance.now();
+  const dur = 480;
+  function step(t) {
+    const p = Math.min((t - t0) / dur, 1);
+    G.pScale = easeOutBack(p);
+    if (p < 1) requestAnimationFrame(step);
+    else G.pScale = 1;
+  }
+  requestAnimationFrame(step);
+}
+
+function bouncePizza() {
+  const t0 = performance.now();
+  const dur = 420;
+  function step(t) {
+    const p = Math.min((t - t0) / dur, 1);
+    G.pScale = 1 + Math.sin(p * Math.PI) * 0.16;
+    if (p < 1) requestAnimationFrame(step);
+    else G.pScale = 1;
+  }
+  requestAnimationFrame(step);
+}
+
+function shakePizza() {
+  G.pShakeAmt   = 14;
+  G.pShakeTimer = 1;
+  const t0 = performance.now();
+  const dur = 480;
+  function step(t) {
+    const p = Math.min((t - t0) / dur, 1);
+    G.pShakeAmt   = 14 * (1 - p);
+    G.pShakeTimer = 1 - p;
+    if (p < 1) requestAnimationFrame(step);
+    else { G.pShakeAmt = 0; G.pShakeTimer = 0; }
+  }
+  requestAnimationFrame(step);
+}
+
+function easeOutBack(t) {
+  const c1 = 1.70158, c3 = c1 + 1;
+  return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+}
+
+/* =======================================================
+   FEEDBACK POP
+======================================================= */
+function showFeedback(text, ok) {
+  const el = document.getElementById('feedbackPop');
+  el.textContent = text;
+  el.className = '';
+  void el.offsetWidth; // reflow
+  el.className = ok ? 'pop-correct' : 'pop-wrong';
+}
+
+/* =======================================================
+   CONFETTI
+======================================================= */
+const CONF_COLORS = ['#FF6B35','#FFD166','#06D6A0','#118AB2','#EF476F','#FFF4A0','#FF9A3C'];
+const confPieces  = [];
+
+function spawnConfetti(count) {
+  const rect = pizzaCanvas.getBoundingClientRect();
+  const ox = rect.left + rect.width  / 2;
+  const oy = rect.top  + rect.height / 2;
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = Math.random() * 8 + 4;
+    confPieces.push({
+      x: ox, y: oy,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - 4,
+      rot: Math.random() * Math.PI * 2,
+      vr: (Math.random() - 0.5) * 0.4,
+      w: Math.random() * 10 + 6,
+      h: Math.random() * 6  + 3,
+      color: CONF_COLORS[Math.floor(Math.random() * CONF_COLORS.length)],
+      life: 1 + Math.random() * 0.4,
+    });
+  }
+}
+
+function tickConfetti() {
+  confCtx.clearRect(0, 0, confCanvas.width, confCanvas.height);
+  for (let i = confPieces.length - 1; i >= 0; i--) {
+    const p = confPieces[i];
+    p.x  += p.vx;
+    p.y  += p.vy;
+    p.vy += 0.28; // gravity
+    p.vx *= 0.98; // drag
+    p.rot += p.vr;
+    p.life -= 0.022;
+    if (p.life <= 0 || p.y > confCanvas.height + 20) { confPieces.splice(i, 1); continue; }
+    confCtx.save();
+    confCtx.globalAlpha = Math.min(p.life, 1);
+    confCtx.translate(p.x, p.y);
+    confCtx.rotate(p.rot);
+    confCtx.fillStyle = p.color;
+    confCtx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+    confCtx.restore();
+  }
+}
+
+/* =======================================================
+   RESULTS
+======================================================= */
+function showResults() {
+  showScreen('resultsScreen');
+
+  const pct = G.correct / G.totalRounds;
+  const stars = pct >= 0.9 ? 3 : pct >= 0.65 ? 2 : pct >= 0.4 ? 1 : 0;
+  const titles = ['Keep Practicing! 🍕', 'Nice Try! 🍕', 'Great Job! 🌟', 'Pizza Master! 🏆'];
+  document.getElementById('resultsTitle').textContent  = titles[stars];
+  document.getElementById('resFinalScore').textContent = G.score;
+  document.getElementById('resCorrect').textContent    = `${G.correct}/${G.totalRounds}`;
+  document.getElementById('resBestStreak').textContent = `${G.bestStreak}🔥`;
+
+  ['star1','star2','star3'].forEach((id, i) => {
+    const el = document.getElementById(id);
+    el.classList.remove('lit');
+    if (i < stars) setTimeout(() => el.classList.add('lit'), 350 + i * 220);
+  });
+
+  if (stars >= 2) setTimeout(() => spawnConfetti(55), 500);
+}
+
+function playAgain() { startGame(); }
+function goHome()    { showScreen('homeScreen'); }
+
+/* =======================================================
+   MAIN LOOP
+======================================================= */
+function loop() {
+  if (document.getElementById('gameScreen').classList.contains('active')) {
+    drawPizza();
+  }
+  tickConfetti();
+  requestAnimationFrame(loop);
+}
+
+// Init default selections
+selectMode('identify');
+selectDiff('easy');
+loop();
+</script>
+</body>
+</html>

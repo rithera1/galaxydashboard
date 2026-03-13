@@ -95,6 +95,19 @@ A drag-and-drop history game — place events on the correct year before checkin
 
 ---
 
+## 🍕 Fraction Frenzy
+A pizza-slicing fraction game — identify or build fractions by working with delicious pizza!
+
+**Live:** [rithera1.github.io/galaxydashboard/fraction-frenzy](https://rithera1.github.io/galaxydashboard/fraction-frenzy/)
+
+- **Identify mode** — see a pizza with highlighted slices and pick the correct fraction from four choices
+- **Build mode** — tap pizza slices to construct the fraction shown, then check your answer
+- Three difficulty levels: Easy (halves & quarters), Medium (halves/thirds/quarters/sixths), Hard (up to twelfths)
+- Streak bonuses, confetti bursts, pizza bounce & shake animations
+- Responsive canvas pizza with crust, sauce, cheese, pepperoni, and olive toppings
+
+---
+
 ## 💬 Speech Blaster
 A fast-paced parts-of-speech arcade game — defend your planet by blasting the right words out of the sky.
 
