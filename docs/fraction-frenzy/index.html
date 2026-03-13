@@ -122,15 +122,13 @@ body {
   background: white;
   border-radius: 20px;
   padding: 18px 20px;
-  cursor: pointer;
-  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+  cursor: default;
+  transition: border-color 0.15s, box-shadow 0.15s;
   box-shadow: 0 6px 20px rgba(0,0,0,0.14), 0 2px 6px rgba(0,0,0,0.08);
   border: 3px solid transparent;
   text-align: left;
   user-select: none;
 }
-.mode-card:hover  { background: #FFF4EE; border-color: rgba(255,107,53,0.35); }
-.mode-card:active { background: #FFE8DC; }
 .mode-card.selected { border-color: #FF6B35; box-shadow: 0 0 0 4px rgba(255,107,53,0.2), 0 8px 24px rgba(0,0,0,0.15); background: #FFF8F4; }
 
 .mode-header { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
@@ -167,7 +165,7 @@ body {
 .diff-btn .diff-sub  { font-family: 'Nunito', sans-serif; font-size: 0.62rem; font-weight: 800; opacity: 0.78; line-height: 1.2; text-align: center; }
 .diff-btn:hover { background: rgba(255,255,255,0.22); border-color: rgba(255,255,255,0.6); }
 /* Each difficulty has its own selected color */
-.diff-btn[data-diff="easy"].selected   { background: #2ECC71; border-color: #1AA857; color: white; }
+.diff-btn[data-diff="easy"].selected   { background: #1A8A48; border-color: #136934; color: white; }
 .diff-btn[data-diff="medium"].selected { background: #F0C040; border-color: #C89A10; color: #3D2800; }
 .diff-btn[data-diff="hard"].selected   { background: #E63946; border-color: #B0202C; color: white; }
 
@@ -340,8 +338,8 @@ body {
 .choice-btn:hover:not(:disabled) { transform: translateY(-3px) scale(1.03); box-shadow: 0 8px 22px rgba(0,0,0,0.18); }
 .choice-btn:disabled { cursor: default; }
 .choice-btn .c-bar { width: 55%; height: 3px; background: var(--dark); border-radius: 2px; margin: 4px 0; }
-.choice-btn.correct { background: #06D6A0; border-color: #04A07A; animation: popIn 0.35s; }
-.choice-btn.correct .c-bar { background: #04A07A; }
+.choice-btn.correct { background: #1A8A48; border-color: #136934; color: white; animation: popIn 0.35s; }
+.choice-btn.correct .c-bar { background: white; }
 .choice-btn.wrong { background: #E63946; border-color: #B0202E; color: white; animation: shakeX 0.45s; }
 .choice-btn.wrong .c-bar { background: white; }
 .choice-btn.reveal { background: #d4f7ee; border-color: #06D6A0; }
@@ -779,25 +777,24 @@ function drawPizza() {
   ctx.fillStyle = sauceGrad;
   ctx.fill();
 
-  // ---- Plain cheese gradient (unlit slices) — pale yellow/cream ----
+  // ---- Cheese gradient — same base for ALL slices ----
   const cheeseGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, PR);
   cheeseGrad.addColorStop(0,   '#FFFEF0');
   cheeseGrad.addColorStop(0.45,'#FAF0A0');
-  cheeseGrad.addColorStop(0.82,'#EDD840');
+  cheeseGrad.addColorStop(0.82,'#EDDA40');
   cheeseGrad.addColorStop(1,   'rgba(220,190,20,0)');
 
-  // ---- Draw each slice ----
+  // ---- PASS 1: Fill all slices with cheese ----
   for (let i = 0; i < d; i++) {
-    const a1 = START + (i / d) * Math.PI * 2;
-    const a2 = START + ((i + 1) / d) * Math.PI * 2;
+    const a1  = START + (i / d) * Math.PI * 2;
+    const a2  = START + ((i + 1) / d) * Math.PI * 2;
     const mid = (a1 + a2) / 2;
     const isLit   = lit.has(i);
-    const isHover = (G.mode === 'build' && !G.answered && G.hoverSlice === i && !isLit);
+    const isHover = G.mode === 'build' && !G.answered && G.hoverSlice === i && !isLit;
 
     ctx.save();
-    // Push lit/hover slices outward slightly
     if (isLit || isHover) {
-      const push = isLit ? 6 : 3;
+      const push = isLit ? 5 : 3;
       ctx.translate(cx + Math.cos(mid) * push, cy + Math.sin(mid) * push);
       ctx.translate(-cx, -cy);
     }
@@ -806,112 +803,115 @@ function drawPizza() {
     ctx.moveTo(cx, cy);
     ctx.arc(cx, cy, PR, a1, a2);
     ctx.closePath();
-
-    if (isLit) {
-      // Topped: bold deep red-orange, clearly darker than plain cheese
-      const tg = ctx.createRadialGradient(cx, cy, 0, cx, cy, PR);
-      tg.addColorStop(0,    '#FFCC50');
-      tg.addColorStop(0.28, '#FF8020');
-      tg.addColorStop(0.65, '#D03008');
-      tg.addColorStop(1,    '#8A1800');
-      ctx.fillStyle = tg;
-    } else if (isHover) {
-      // Hover preview: warm golden
-      const hg = ctx.createRadialGradient(cx, cy, 0, cx, cy, PR);
-      hg.addColorStop(0,   '#FFFEF0');
-      hg.addColorStop(0.5, '#F5E870');
-      hg.addColorStop(0.9, '#EAC820');
-      ctx.fillStyle = hg;
-    } else {
-      ctx.fillStyle = cheeseGrad;
-    }
+    ctx.fillStyle = cheeseGrad;
     ctx.fill();
 
-    // Pale cheese bubbles on unlit slices
+    // Hover: faint warm tint preview
+    if (isHover) {
+      ctx.fillStyle = 'rgba(255, 200, 50, 0.28)';
+      ctx.fill();
+    }
+
+    // Cheese bubbles on plain (unlit) slices
     if (!isLit) {
       ctx.save();
       ctx.clip();
-      const bubbleSeeds = [0.38, 0.55, 0.68, 0.45, 0.62];
-      bubbleSeeds.forEach((frac, bi) => {
-        const br     = PR * frac;
-        const bAngle = mid + (bi % 3 - 1) * 0.22;
-        const bx     = cx + Math.cos(bAngle) * br;
-        const by     = cy + Math.sin(bAngle) * br;
+      [0.38, 0.55, 0.68, 0.45, 0.62].forEach((fr, bi) => {
+        const ba = mid + (bi % 3 - 1) * 0.22;
         ctx.beginPath();
-        ctx.arc(bx, by, PR * 0.065, 0, Math.PI * 2);
+        ctx.arc(cx + Math.cos(ba) * PR * fr, cy + Math.sin(ba) * PR * fr, PR * 0.065, 0, Math.PI * 2);
         ctx.fillStyle = 'rgba(255,255,230,0.5)';
         ctx.fill();
       });
       ctx.restore();
     }
 
-    // Bold outline on lit slices to really separate them
-    if (isLit) {
-      // Bright glowing ring along the arc edge
-      ctx.beginPath();
-      ctx.arc(cx, cy, PR * 0.97, a1, a2);
-      ctx.strokeStyle = 'rgba(255,200,50,0.8)';
-      ctx.lineWidth = 5;
-      ctx.stroke();
+    ctx.restore();
+  }
 
-      // Thin dark border around the entire wedge for crisp separation
+  // ---- PASS 2: Glowing border on lit slices (clipped inside wedge) ----
+  for (let i = 0; i < d; i++) {
+    if (!lit.has(i)) continue;
+    const a1  = START + (i / d) * Math.PI * 2;
+    const a2  = START + ((i + 1) / d) * Math.PI * 2;
+    const mid = (a1 + a2) / 2;
+
+    ctx.save();
+    ctx.translate(cx + Math.cos(mid) * 5, cy + Math.sin(mid) * 5);
+    ctx.translate(-cx, -cy);
+
+    // Clip to wedge so all glow stays inside
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, PR, a1, a2);
+    ctx.closePath();
+    ctx.clip();
+
+    // Three layers: wide/faint → medium → thin/bright
+    [
+      { color: 'rgba(255, 230, 20, 0.22)', lw: 32 },
+      { color: 'rgba(255, 210, 10, 0.55)', lw: 14 },
+      { color: 'rgba(255, 245, 60, 1.00)', lw: 4  },
+    ].forEach(g => {
       ctx.beginPath();
       ctx.moveTo(cx, cy);
       ctx.arc(cx, cy, PR, a1, a2);
       ctx.closePath();
-      ctx.strokeStyle = 'rgba(120,40,0,0.55)';
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = g.color;
+      ctx.lineWidth   = g.lw;
       ctx.stroke();
-    }
-
-    // Toppings on lit slices
-    if (isLit) {
-      // Large pepperoni in center
-      const pepDist = PR * 0.52;
-      const pepX = cx + Math.cos(mid) * pepDist;
-      const pepY = cy + Math.sin(mid) * pepDist;
-      const pepR = PR * 0.115;
-      // shadow
-      ctx.beginPath(); ctx.arc(pepX + 1.5, pepY + 2, pepR, 0, Math.PI*2);
-      ctx.fillStyle = 'rgba(0,0,0,0.2)'; ctx.fill();
-      // body
-      const pepGrad = ctx.createRadialGradient(pepX - pepR*0.3, pepY - pepR*0.3, pepR*0.1, pepX, pepY, pepR);
-      pepGrad.addColorStop(0, '#FF5050');
-      pepGrad.addColorStop(0.6,'#CC1818');
-      pepGrad.addColorStop(1, '#880808');
-      ctx.beginPath(); ctx.arc(pepX, pepY, pepR, 0, Math.PI*2);
-      ctx.fillStyle = pepGrad; ctx.fill();
-      // highlight glint
-      ctx.beginPath(); ctx.arc(pepX - pepR*0.3, pepY - pepR*0.3, pepR*0.32, 0, Math.PI*2);
-      ctx.fillStyle = 'rgba(255,180,160,0.6)'; ctx.fill();
-
-      // Extra toppings for larger pizzas
-      if (d >= 6) {
-        const offa = (a2 - a1) * 0.34;
-        [mid - offa, mid + offa].forEach(oa => {
-          const od = PR * 0.70;
-          const ox = cx + Math.cos(oa) * od;
-          const oy = cy + Math.sin(oa) * od;
-          ctx.beginPath(); ctx.arc(ox, oy, PR * 0.06, 0, Math.PI*2);
-          ctx.fillStyle = '#4A3028'; ctx.fill();
-          ctx.beginPath(); ctx.arc(ox - PR*0.015, oy - PR*0.015, PR*0.02, 0, Math.PI*2);
-          ctx.fillStyle = 'rgba(180,140,120,0.55)'; ctx.fill();
-        });
-      }
-    }
+    });
 
     ctx.restore();
   }
 
-  // ---- Slice cut lines ----
-  ctx.lineWidth = 2;
-  ctx.strokeStyle = 'rgba(100, 50, 10, 0.6)';
+  // ---- PASS 3: Slice cut lines (over glow, under toppings) ----
+  ctx.lineWidth   = 2.5;
+  ctx.strokeStyle = 'rgba(100, 50, 10, 0.75)';
   for (let i = 0; i < d; i++) {
     const angle = START + (i / d) * Math.PI * 2;
     ctx.beginPath();
     ctx.moveTo(cx, cy);
     ctx.lineTo(cx + Math.cos(angle) * PR, cy + Math.sin(angle) * PR);
     ctx.stroke();
+  }
+
+  // ---- PASS 4: Toppings on lit slices ----
+  for (let i = 0; i < d; i++) {
+    if (!lit.has(i)) continue;
+    const a1  = START + (i / d) * Math.PI * 2;
+    const a2  = START + ((i + 1) / d) * Math.PI * 2;
+    const mid = (a1 + a2) / 2;
+
+    ctx.save();
+    ctx.translate(cx + Math.cos(mid) * 5, cy + Math.sin(mid) * 5);
+    ctx.translate(-cx, -cy);
+
+    // Pepperoni
+    const pepX = cx + Math.cos(mid) * PR * 0.52;
+    const pepY = cy + Math.sin(mid) * PR * 0.52;
+    const pepR = PR * 0.11;
+    ctx.beginPath(); ctx.arc(pepX + 1.5, pepY + 2, pepR, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(0,0,0,0.18)'; ctx.fill();
+    const pepG = ctx.createRadialGradient(pepX - pepR * 0.3, pepY - pepR * 0.3, pepR * 0.1, pepX, pepY, pepR);
+    pepG.addColorStop(0, '#FF5050'); pepG.addColorStop(0.6, '#CC1818'); pepG.addColorStop(1, '#880808');
+    ctx.beginPath(); ctx.arc(pepX, pepY, pepR, 0, Math.PI * 2);
+    ctx.fillStyle = pepG; ctx.fill();
+    ctx.beginPath(); ctx.arc(pepX - pepR * 0.3, pepY - pepR * 0.3, pepR * 0.3, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,180,160,0.6)'; ctx.fill();
+
+    // Extra toppings on pizzas with more slices
+    if (d >= 6) {
+      const offa = (a2 - a1) * 0.34;
+      [mid - offa, mid + offa].forEach(oa => {
+        const ox = cx + Math.cos(oa) * PR * 0.70;
+        const oy = cy + Math.sin(oa) * PR * 0.70;
+        ctx.beginPath(); ctx.arc(ox, oy, PR * 0.06, 0, Math.PI * 2);
+        ctx.fillStyle = '#4A3028'; ctx.fill();
+      });
+    }
+
+    ctx.restore();
   }
 
   // ---- Crust ring outline ----
