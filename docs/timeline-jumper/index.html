@@ -1217,8 +1217,7 @@ function unplaceEvent(id, restoreCard) {
 }
 
 function updateCheckButton() {
-  const round  = selectedRounds[currentRoundIdx];
-  const allSet = round.events.every(e => placements[e.id] !== undefined);
+  const allSet = currentEvents.every(e => placements[e.id] !== undefined);
   document.getElementById('checkBtn').disabled = !allSet;
 }
 
@@ -1236,8 +1235,7 @@ function checkAnswers() {
   if (checked) return;
   checked = true;
 
-  const round  = selectedRounds[currentRoundIdx];
-  const events = round.events;
+  const events = currentEvents;
   const sortedYears = events.map(e => e.year).sort((a, b) => a - b);
 
   let roundPts = 0;
