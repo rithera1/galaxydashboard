@@ -526,39 +526,130 @@ const MODES = {
     name:'US History', emoji:'🇺🇸',
     rounds:[
       { title:'Colonial & Founding', events:[
-        { id:'jamestown',    year:1607, title:'Jamestown Founded',           desc:'English settlers establish the first permanent English settlement in America.',      wiki:'Jamestown, Virginia',                               emoji:'⛵' },
-        { id:'mayflower',    year:1620, title:'Mayflower Compact',           desc:'Pilgrims arrive and sign a self-governing agreement in Plymouth.',                    wiki:'Mayflower Compact',                                 emoji:'📜' },
-        { id:'declaration',  year:1776, title:'Declaration of Independence', desc:'Thirteen colonies declare independence from Britain.',                                wiki:'United States Declaration of Independence',         emoji:'🦅' },
-        { id:'constitution', year:1788, title:'US Constitution Ratified',    desc:'The states ratify the Constitution, the framework of US government.',                 wiki:'United States Constitution',                        emoji:'📋' },
-        { id:'louisiana',    year:1803, title:'Louisiana Purchase',          desc:"Jefferson doubles the nation's size by buying 828,000 sq miles from France.",         wiki:'Louisiana Purchase',                                emoji:'🗺️' }
+        { id:'jamestown',     year:1607, title:'Jamestown Founded',              desc:'English settlers establish the first permanent English settlement in America.',         wiki:'Jamestown, Virginia',                               emoji:'⛵' },
+        { id:'mayflower',     year:1620, title:'Mayflower Compact',              desc:'Pilgrims arrive and sign a self-governing agreement in Plymouth.',                      wiki:'Mayflower Compact',                                 emoji:'📜' },
+        { id:'declaration',   year:1776, title:'Declaration of Independence',    desc:'Thirteen colonies declare independence from Britain.',                                  wiki:'United States Declaration of Independence',         emoji:'🦅' },
+        { id:'constitution',  year:1788, title:'US Constitution Ratified',       desc:'The states ratify the Constitution, the framework of US government.',                   wiki:'United States Constitution',                        emoji:'📋' },
+        { id:'louisiana',     year:1803, title:'Louisiana Purchase',             desc:"Jefferson doubles the nation's size by buying 828,000 sq miles from France.",           wiki:'Louisiana Purchase',                                emoji:'🗺️' },
+        { id:'fr_indian_war', year:1754, title:'French and Indian War Begins',   desc:'Britain and France battle for control of North America in a 7-year conflict.',          wiki:'French and Indian War',                             emoji:'⚔️' },
+        { id:'stamp_act',     year:1765, title:'Stamp Act Passed',               desc:'Britain taxes the colonies, sparking the rallying cry "no taxation without representation."', wiki:'Stamp Act 1765',                            emoji:'📮' },
+        { id:'boston_mass',   year:1770, title:'Boston Massacre',                desc:'British soldiers kill five colonists in a clash that inflamed revolutionary sentiment.', wiki:'Boston Massacre',                                   emoji:'💥' },
+        { id:'lex_concord',   year:1775, title:'Shots at Lexington & Concord',   desc:'"The shot heard round the world" — the first battles of the American Revolution.',     wiki:'Battles of Lexington and Concord',                  emoji:'🔫' },
+        { id:'yorktown',      year:1781, title:'Battle of Yorktown',             desc:'Cornwallis surrenders to Washington, effectively ending the Revolutionary War.',         wiki:'Siege of Yorktown',                                 emoji:'🏳️' },
+        { id:'const_conv',    year:1787, title:'Constitutional Convention',      desc:'Delegates meet in Philadelphia to draft the US Constitution.',                          wiki:'Constitutional Convention',                         emoji:'🏛️' },
+        { id:'bill_rights_c', year:1791, title:'Bill of Rights Ratified',        desc:'The first 10 amendments protecting individual freedoms become law.',                    wiki:'United States Bill of Rights',                      emoji:'📜' },
+        { id:'dc_capital',    year:1800, title:'Capital Moves to Washington DC', desc:'The US government relocates from Philadelphia to the new city of Washington, DC.',      wiki:'Washington, D.C.',                                  emoji:'🏛️' },
+        { id:'lewis_clark',   year:1804, title:'Lewis & Clark Expedition',       desc:'Jefferson sends explorers west to map the vast Louisiana Territory.',                   wiki:'Lewis and Clark Expedition',                        emoji:'🗺️' }
       ]},
       { title:'Civil War Era', events:[
-        { id:'trail',        year:1838, title:'Trail of Tears',              desc:'Forced relocation of Native Americans under Andrew Jackson.',                         wiki:'Trail of Tears',                                    emoji:'😢' },
-        { id:'civil_war',    year:1861, title:'Civil War Begins',            desc:'Confederate forces attack Fort Sumter, starting the Civil War.',                      wiki:'American Civil War',                                emoji:'⚔️' },
-        { id:'emancipation', year:1863, title:'Emancipation Proclamation',   desc:'Lincoln declares enslaved people in Confederate states to be free.',                  wiki:'Emancipation Proclamation',                         emoji:'🕊️' },
-        { id:'railroad',     year:1869, title:'Transcontinental Railroad',   desc:'A railroad connecting East and West coasts is completed.',                            wiki:'First Transcontinental Railroad',                   emoji:'🚂' },
-        { id:'liberty',      year:1886, title:'Statue of Liberty Dedicated', desc:"France gifts the Statue of Liberty as a symbol of freedom.",                          wiki:'Statue of Liberty',                                 emoji:'🗽' }
+        { id:'trail',         year:1838, title:'Trail of Tears',                 desc:'Forced relocation of Native Americans under Andrew Jackson.',                           wiki:'Trail of Tears',                                    emoji:'😢' },
+        { id:'civil_war',     year:1861, title:'Civil War Begins',               desc:'Confederate forces attack Fort Sumter, starting the Civil War.',                        wiki:'American Civil War',                                emoji:'⚔️' },
+        { id:'emancipation',  year:1863, title:'Emancipation Proclamation',      desc:'Lincoln declares enslaved people in Confederate states to be free.',                    wiki:'Emancipation Proclamation',                         emoji:'🕊️' },
+        { id:'railroad',      year:1869, title:'Transcontinental Railroad',      desc:'A railroad connecting East and West coasts is completed.',                              wiki:'First Transcontinental Railroad',                   emoji:'🚂' },
+        { id:'liberty',       year:1886, title:'Statue of Liberty Dedicated',    desc:"France gifts the Statue of Liberty as a symbol of freedom.",                            wiki:'Statue of Liberty',                                 emoji:'🗽' },
+        { id:'fugitive',      year:1850, title:'Fugitive Slave Act',             desc:'A harsh law required Northern states to return escaped enslaved people to the South.',  wiki:'Fugitive Slave Act of 1850',                        emoji:'⛓️' },
+        { id:'kansas_neb',    year:1854, title:'Kansas-Nebraska Act',            desc:'New territories could vote on slavery, sparking bloody conflict in "Bleeding Kansas."', wiki:'Kansas–Nebraska Act',                               emoji:'📜' },
+        { id:'dred_scott',    year:1857, title:'Dred Scott Decision',            desc:'The Supreme Court rules that enslaved people are property with no rights.',             wiki:'Dred Scott v. Sandford',                            emoji:'⚖️' },
+        { id:'lincoln_elect', year:1860, title:'Lincoln Elected President',      desc:'Abraham Lincoln wins the presidency, prompting Southern states to secede.',             wiki:'1860 United States presidential election',          emoji:'🎩' },
+        { id:'shermans',      year:1864, title:"Sherman's March to the Sea",     desc:'Union General Sherman cuts a 300-mile path of destruction through Georgia.',            wiki:"Sherman's March to the Sea",                        emoji:'🔥' },
+        { id:'13th_amend',    year:1865, title:'13th Amendment Ratified',        desc:'Slavery is permanently abolished throughout the United States.',                         wiki:'Thirteenth Amendment to the United States Constitution', emoji:'🕊️' },
+        { id:'reconstruct',   year:1867, title:'Reconstruction Act',             desc:'Congress divides the South into military districts and enforces new terms for readmission.', wiki:'Reconstruction Acts',                           emoji:'🏗️' },
+        { id:'15th_amend',    year:1870, title:'15th Amendment',                 desc:'Black men are granted the right to vote, a landmark of Reconstruction.',               wiki:'Fifteenth Amendment to the United States Constitution', emoji:'🗳️' }
       ]},
       { title:'Modern America', events:[
-        { id:'wright',       year:1903, title:'Wright Brothers First Flight', desc:'Orville Wright makes the first powered airplane flight at Kitty Hawk, NC.',          wiki:'Wright Flyer',                                      emoji:'✈️' },
-        { id:'suffrage',     year:1920, title:"Women's Right to Vote",       desc:'The 19th Amendment grants women the right to vote.',                                  wiki:'Nineteenth Amendment to the United States Constitution',emoji:'🗳️' },
-        { id:'wwii',         year:1945, title:'World War II Ends',           desc:'Japan surrenders after atomic bombs, ending the deadliest war in history.',           wiki:'Victory over Japan Day',                            emoji:'✌️' },
-        { id:'civil_rights', year:1964, title:'Civil Rights Act Signed',     desc:'LBJ signs the Civil Rights Act, outlawing discrimination by race.',                   wiki:'Civil Rights Act of 1964',                          emoji:'✊' },
-        { id:'moon',         year:1969, title:'Moon Landing',                desc:"Neil Armstrong becomes the first human to walk on the Moon.",                         wiki:'Apollo 11',                                         emoji:'🌙' }
+        { id:'wright',        year:1903, title:'Wright Brothers First Flight',   desc:'Orville Wright makes the first powered airplane flight at Kitty Hawk, NC.',            wiki:'Wright Flyer',                                      emoji:'✈️' },
+        { id:'suffrage',      year:1920, title:"Women's Right to Vote",          desc:'The 19th Amendment grants women the right to vote.',                                   wiki:'Nineteenth Amendment to the United States Constitution', emoji:'🗳️' },
+        { id:'wwii',          year:1945, title:'World War II Ends',              desc:'Japan surrenders after atomic bombs, ending the deadliest war in history.',            wiki:'Victory over Japan Day',                            emoji:'✌️' },
+        { id:'civil_rights',  year:1964, title:'Civil Rights Act Signed',        desc:'LBJ signs the Civil Rights Act, outlawing discrimination by race.',                    wiki:'Civil Rights Act of 1964',                          emoji:'✊' },
+        { id:'moon',          year:1969, title:'Moon Landing',                   desc:"Neil Armstrong becomes the first human to walk on the Moon.",                          wiki:'Apollo 11',                                         emoji:'🌙' },
+        { id:'sf_quake',      year:1906, title:'San Francisco Earthquake',       desc:'A massive earthquake and fire destroy much of San Francisco, killing over 3,000.',     wiki:'1906 San Francisco earthquake',                     emoji:'🌋' },
+        { id:'titanic_us',    year:1912, title:'Titanic Sinks',                  desc:'The RMS Titanic strikes an iceberg and sinks on its maiden voyage.',                   wiki:'Sinking of the RMS Titanic',                        emoji:'🚢' },
+        { id:'depression',    year:1929, title:'Stock Market Crash',             desc:'The market collapses, triggering the Great Depression and years of hardship.',         wiki:'Wall Street Crash of 1929',                         emoji:'📉' },
+        { id:'new_deal_mod',  year:1933, title:'New Deal Begins',                desc:'FDR launches massive relief programs to pull the nation out of the Great Depression.',  wiki:'New Deal',                                          emoji:'💼' },
+        { id:'pearl_m',       year:1941, title:'Pearl Harbor Attack',            desc:"Japan's surprise attack on Hawaii draws the US into World War II.",                    wiki:'Attack on Pearl Harbor',                            emoji:'💥' },
+        { id:'dday_us',       year:1944, title:'D-Day Invasion',                 desc:'Allied forces storm Normandy beaches in the largest seaborne invasion in history.',    wiki:'Normandy landings',                                 emoji:'⚓' },
+        { id:'brown_v',       year:1954, title:'Brown v. Board of Education',    desc:'The Supreme Court rules racial segregation in public schools unconstitutional.',        wiki:'Brown v. Board of Education',                       emoji:'⚖️' },
+        { id:'jfk_us',        year:1963, title:'JFK Assassinated',               desc:'President Kennedy is shot in Dallas, Texas, shocking the nation.',                     wiki:'Assassination of John F. Kennedy',                  emoji:'🕯️' },
+        { id:'nixon_resign',  year:1974, title:'Nixon Resigns',                  desc:'Facing impeachment over Watergate, Nixon becomes the first president to resign.',      wiki:'Richard Nixon',                                     emoji:'🇺🇸' }
       ]},
       { title:'Progressive Era', events:[
-        { id:'seneca_falls', year:1848, title:"Seneca Falls Convention",     desc:"First women's rights convention held in Seneca Falls, NY.",                           wiki:'Seneca Falls Convention',                           emoji:'👩' },
-        { id:'homestead',    year:1862, title:'Homestead Act',              desc:'Lincoln signs the Homestead Act, offering 160 acres to settlers.',                    wiki:'Homestead Act',                                     emoji:'🏡' },
-        { id:'wounded_knee', year:1890, title:'Wounded Knee Massacre',       desc:'US Army kills nearly 300 Lakota Sioux in South Dakota.',                              wiki:'Wounded Knee Massacre',                             emoji:'💔' },
-        { id:'fed_reserve',  year:1913, title:'Federal Reserve Created',     desc:'Congress creates the Federal Reserve to stabilize US banking.',                       wiki:'Federal Reserve',                                   emoji:'🏦' },
-        { id:'new_deal',     year:1933, title:'New Deal Begins',             desc:'FDR launches programs to rescue the nation from the Great Depression.',               wiki:'New Deal',                                          emoji:'💼' }
+        { id:'seneca_falls',  year:1848, title:"Seneca Falls Convention",        desc:"First women's rights convention held in Seneca Falls, NY.",                            wiki:'Seneca Falls Convention',                           emoji:'👩' },
+        { id:'homestead',     year:1862, title:'Homestead Act',                  desc:'Lincoln signs the Homestead Act, offering 160 acres to settlers.',                     wiki:'Homestead Act',                                     emoji:'🏡' },
+        { id:'wounded_knee',  year:1890, title:'Wounded Knee Massacre',          desc:'US Army kills nearly 300 Lakota Sioux in South Dakota.',                               wiki:'Wounded Knee Massacre',                             emoji:'💔' },
+        { id:'fed_reserve',   year:1913, title:'Federal Reserve Created',        desc:'Congress creates the Federal Reserve to stabilize US banking.',                        wiki:'Federal Reserve',                                   emoji:'🏦' },
+        { id:'new_deal',      year:1933, title:'New Deal Begins',                desc:'FDR launches programs to rescue the nation from the Great Depression.',                wiki:'New Deal',                                          emoji:'💼' },
+        { id:'trans_rr',      year:1869, title:'Transcontinental Railroad Done', desc:'The last spike is driven, linking the East and West coasts by rail.',                 wiki:'First Transcontinental Railroad',                   emoji:'🚂' },
+        { id:'light_bulb_p',  year:1879, title:"Edison's Light Bulb",            desc:"Thomas Edison demonstrates a practical incandescent light bulb.",                     wiki:'Incandescent light bulb',                           emoji:'💡' },
+        { id:'span_am',       year:1898, title:'Spanish-American War',           desc:'The US defeats Spain, gaining Guam, Puerto Rico, and the Philippines.',               wiki:'Spanish–American War',                              emoji:'⚔️' },
+        { id:'tr_pres',       year:1901, title:'Teddy Roosevelt President',      desc:"After McKinley's assassination, trust-busting Teddy Roosevelt takes office.",          wiki:'Theodore Roosevelt',                                emoji:'🦁' },
+        { id:'food_drug',     year:1906, title:'Pure Food and Drug Act',         desc:'The first law protecting Americans from unsafe food and medicines.',                   wiki:'Pure Food and Drug Act',                            emoji:'🥫' },
+        { id:'naacp',         year:1909, title:'NAACP Founded',                  desc:'The NAACP is founded to fight racial discrimination and protect civil rights.',         wiki:'NAACP',                                             emoji:'✊' },
+        { id:'triangle',      year:1911, title:'Triangle Shirtwaist Fire',       desc:'146 workers die in a factory fire, leading to sweeping workplace safety reforms.',     wiki:'Triangle Shirtwaist Factory fire',                  emoji:'🔥' },
+        { id:'women_vote_p',  year:1920, title:"Women's Suffrage",               desc:'The 19th Amendment is ratified, giving women the right to vote.',                     wiki:'Nineteenth Amendment to the United States Constitution', emoji:'🗳️' }
       ]},
       { title:'Space Age & Beyond', events:[
-        { id:'sputnik',      year:1957, title:'Sputnik Launched',            desc:'Soviet Union launches the first artificial satellite, starting the Space Race.',      wiki:'Sputnik 1',                                         emoji:'🛸' },
-        { id:'jfk',          year:1963, title:'JFK Assassinated',            desc:'President Kennedy is shot in Dallas, Texas.',                                          wiki:'Assassination of John F. Kennedy',                  emoji:'🕯️' },
-        { id:'cold_war_end', year:1991, title:'Cold War Ends',               desc:'Soviet Union dissolves, ending decades of Cold War tension.',                         wiki:'Dissolution of the Soviet Union',                   emoji:'🏳️' },
-        { id:'nine_eleven',  year:2001, title:'9/11 Attacks',                desc:'Terrorists attack the World Trade Center and Pentagon.',                               wiki:'September 11 attacks',                              emoji:'🗽' },
-        { id:'obama',        year:2008, title:'First Black US President',    desc:'Barack Obama is elected the first African American President.',                       wiki:'Barack Obama',                                      emoji:'🇺🇸' }
+        { id:'sputnik',       year:1957, title:'Sputnik Launched',               desc:'Soviet Union launches the first artificial satellite, starting the Space Race.',       wiki:'Sputnik 1',                                         emoji:'🛸' },
+        { id:'jfk',           year:1963, title:'JFK Assassinated',               desc:'President Kennedy is shot in Dallas, Texas.',                                           wiki:'Assassination of John F. Kennedy',                  emoji:'🕯️' },
+        { id:'cold_war_end',  year:1991, title:'Cold War Ends',                  desc:'Soviet Union dissolves, ending decades of Cold War tension.',                          wiki:'Dissolution of the Soviet Union',                   emoji:'🏳️' },
+        { id:'nine_eleven',   year:2001, title:'9/11 Attacks',                   desc:'Terrorists attack the World Trade Center and Pentagon.',                               wiki:'September 11 attacks',                              emoji:'🗽' },
+        { id:'obama',         year:2008, title:'First Black US President',       desc:'Barack Obama is elected the first African American President.',                        wiki:'Barack Obama',                                      emoji:'🇺🇸' },
+        { id:'korean_s',      year:1950, title:'Korean War Begins',              desc:'North Korea invades South Korea, drawing the US into a three-year conflict.',          wiki:'Korean War',                                        emoji:'🪖' },
+        { id:'alan_shep',     year:1961, title:'First American in Space',        desc:'Alan Shepard becomes the first American to reach space aboard Freedom 7.',             wiki:'Alan Shepard',                                      emoji:'🚀' },
+        { id:'cuba_miss',     year:1962, title:'Cuban Missile Crisis',           desc:'Nuclear standoff between the US and USSR over Soviet missiles in Cuba.',               wiki:'Cuban Missile Crisis',                              emoji:'☢️' },
+        { id:'vra',           year:1965, title:'Voting Rights Act',              desc:'LBJ signs the Voting Rights Act, outlawing discriminatory voting practices.',          wiki:'Voting Rights Act of 1965',                         emoji:'✊' },
+        { id:'moon_s',        year:1969, title:'Moon Landing',                   desc:"Neil Armstrong walks on the Moon — 'one giant leap for mankind.'",                    wiki:'Apollo 11',                                         emoji:'🌙' },
+        { id:'roe_wade',      year:1973, title:'Roe v. Wade',                    desc:'The Supreme Court rules women have a constitutional right to abortion.',               wiki:'Roe v. Wade',                                       emoji:'⚖️' },
+        { id:'challenger',    year:1986, title:'Challenger Disaster',            desc:'The space shuttle Challenger explodes 73 seconds after launch, killing all 7 crew.',   wiki:'Space Shuttle Challenger disaster',                 emoji:'💥' },
+        { id:'berlin_s',      year:1989, title:'Berlin Wall Falls',              desc:'Joyous crowds tear down the Berlin Wall, symbolizing the end of the Cold War.',        wiki:'Fall of the Berlin Wall',                           emoji:'🧱' }
+      ]},
+      { title:'Revolution & Reform', events:[
+        { id:'boston_tea',    year:1773, title:'Boston Tea Party',               desc:'Colonists protest British taxes by dumping 342 chests of tea into Boston Harbor.',     wiki:'Boston Tea Party',                                  emoji:'🍵' },
+        { id:'bill_rights',   year:1791, title:'Bill of Rights Ratified',        desc:'First 10 amendments protecting individual freedoms are added to the Constitution.',    wiki:'United States Bill of Rights',                      emoji:'📜' },
+        { id:'war_of_1812',   year:1812, title:'War of 1812 Begins',             desc:'The US declares war on Britain, the second and last war between the two nations.',     wiki:'War of 1812',                                       emoji:'⚔️' },
+        { id:'abolition',     year:1865, title:'Slavery Abolished',              desc:'The 13th Amendment permanently abolishes slavery throughout the United States.',        wiki:'Thirteenth Amendment to the United States Constitution', emoji:'🕊️' },
+        { id:'prohibition',   year:1920, title:'Prohibition Begins',             desc:'The 18th Amendment bans alcohol, sparking the rise of speakeasies and gangsters.',     wiki:'Prohibition in the United States',                  emoji:'🚫' },
+        { id:'boston_mass_r', year:1770, title:'Boston Massacre',                desc:'British soldiers kill five colonists — the incident stokes revolutionary fever.',      wiki:'Boston Massacre',                                   emoji:'💥' },
+        { id:'decl_r',        year:1776, title:'Declaration of Independence',    desc:'The colonies formally break from Britain and declare their inalienable rights.',       wiki:'United States Declaration of Independence',         emoji:'🦅' },
+        { id:'paris_1783',    year:1783, title:'Treaty of Paris',                desc:'Britain recognizes American independence, ending the Revolutionary War.',              wiki:'Treaty of Paris (1783)',                            emoji:'🕊️' },
+        { id:'marbury',       year:1803, title:'Marbury v. Madison',             desc:'The Supreme Court establishes judicial review — its power to strike down laws.',       wiki:'Marbury v. Madison',                                emoji:'⚖️' },
+        { id:'mo_comp',       year:1820, title:'Missouri Compromise',            desc:'Congress draws a line dividing slave and free states to maintain balance.',             wiki:'Missouri Compromise',                               emoji:'📜' },
+        { id:'ind_removal',   year:1830, title:'Indian Removal Act',             desc:'Congress forces Native American tribes east of the Mississippi to relocate westward.',  wiki:'Indian Removal Act',                                emoji:'😢' },
+        { id:'sen_falls_r',   year:1848, title:'Seneca Falls Convention',        desc:"The first women's rights convention demands equality and the right to vote.",          wiki:'Seneca Falls Convention',                           emoji:'👩' },
+        { id:'14th_amend',    year:1868, title:'14th Amendment',                 desc:'Grants citizenship and equal protection to all persons born on US soil.',              wiki:'Fourteenth Amendment to the United States Constitution', emoji:'⚖️' },
+        { id:'plessy',        year:1896, title:'Plessy v. Ferguson',             desc:'The Supreme Court upholds "separate but equal," legalizing racial segregation.',       wiki:'Plessy v. Ferguson',                                emoji:'😔' }
+      ]},
+      { title:'World War Era', events:[
+        { id:'pearl_harbor',  year:1941, title:'Pearl Harbor Attack',            desc:'Japan attacks Pearl Harbor, drawing the United States into World War II.',             wiki:'Attack on Pearl Harbor',                            emoji:'💥' },
+        { id:'d_day',         year:1944, title:'D-Day Normandy Invasion',        desc:'Allied forces storm the beaches of Normandy in the largest seaborne invasion in history.', wiki:'Normandy landings',                             emoji:'⚓' },
+        { id:'hiroshima',     year:1945, title:'Atomic Bombs Dropped',           desc:'The US drops atomic bombs on Hiroshima and Nagasaki, ending World War II in the Pacific.', wiki:'Atomic bombings of Hiroshima and Nagasaki',  emoji:'☢️' },
+        { id:'korean_war',    year:1950, title:'Korean War Begins',              desc:'North Korea invades South Korea, drawing the US into a three-year conflict.',          wiki:'Korean War',                                        emoji:'🪖' },
+        { id:'vietnam_us',    year:1965, title:'US Combat Troops Enter Vietnam', desc:'The first US combat troops land in Vietnam, escalating American involvement.',         wiki:'Vietnam War',                                       emoji:'🌿' },
+        { id:'wwi_starts',    year:1914, title:'World War I Begins',             desc:'Europe erupts in war; the US remains neutral at first but enters in 1917.',           wiki:'World War I',                                       emoji:'💣' },
+        { id:'us_wwi',        year:1917, title:'US Enters World War I',          desc:'After German U-boats sink American ships, Congress declares war on Germany.',         wiki:'United States in World War I',                      emoji:'⚔️' },
+        { id:'armistice',     year:1918, title:'WWI Armistice Signed',           desc:'Fighting ends on the 11th hour of the 11th day of the 11th month.',                  wiki:'Armistice of 11 November 1918',                     emoji:'🕊️' },
+        { id:'versailles_us', year:1919, title:'Treaty of Versailles',           desc:'The peace treaty ends WWI but imposes harsh terms on Germany, planting seeds for WWII.', wiki:'Treaty of Versailles',                           emoji:'📜' },
+        { id:'great_dep',     year:1929, title:'Great Depression Begins',        desc:'The stock market crash triggers the worst economic crisis in American history.',        wiki:'Great Depression',                                  emoji:'📉' },
+        { id:'midway',        year:1942, title:'Battle of Midway',               desc:'US Navy defeats a superior Japanese force, turning the tide in the Pacific War.',      wiki:'Battle of Midway',                                  emoji:'⚓' },
+        { id:'marshall',      year:1947, title:'Marshall Plan',                  desc:'The US pledges billions to rebuild war-torn European economies.',                       wiki:'Marshall Plan',                                     emoji:'🌍' },
+        { id:'tet',           year:1968, title:'Tet Offensive',                  desc:'A massive Viet Cong offensive shocks Americans and turns public opinion against the war.', wiki:'Tet Offensive',                                  emoji:'🌿' }
+      ]},
+      { title:'Technology & Innovation', events:[
+        { id:'telephone_us',  year:1876, title:'Telephone Patented',             desc:'Alexander Graham Bell patents the telephone, revolutionizing communication.',          wiki:'Alexander Graham Bell',                             emoji:'📞' },
+        { id:'ford_model_t',  year:1908, title:'Ford Model T Launched',          desc:"Henry Ford's affordable Model T makes cars available to everyday Americans.",          wiki:'Ford Model T',                                      emoji:'🚗' },
+        { id:'tvd_day',       year:1939, title:"Television Debuts at World's Fair", desc:"RCA publicly demonstrates television at the New York World's Fair.",               wiki:"1939 New York World's Fair",                         emoji:'📺' },
+        { id:'www_us',        year:1991, title:'World Wide Web Goes Public',     desc:'The internet becomes publicly available, transforming how the world communicates.',    wiki:'History of the World Wide Web',                     emoji:'🌐' },
+        { id:'iphone',        year:2007, title:'iPhone Introduced',              desc:"Steve Jobs introduces the iPhone, ushering in the smartphone era.",                   wiki:'IPhone (1st generation)',                            emoji:'📱' },
+        { id:'telegraph',     year:1844, title:'Morse Telegraph Demonstrated',   desc:"Samuel Morse sends the first telegraph message: 'What hath God wrought?'",            wiki:'Electrical telegraph',                              emoji:'⚡' },
+        { id:'light_bulb_t',  year:1879, title:"Edison's Light Bulb",            desc:'Edison demonstrates a practical incandescent light bulb, lighting the future.',        wiki:'Incandescent light bulb',                           emoji:'💡' },
+        { id:'skyscraper',    year:1885, title:'First Skyscraper Built',         desc:"Chicago's Home Insurance Building rises 10 stories, beginning the skyscraper era.",   wiki:'Home Insurance Building',                           emoji:'🏙️' },
+        { id:'airplane_t',    year:1903, title:'First Powered Airplane',         desc:'The Wright Brothers achieve the first controlled powered flight at Kitty Hawk.',       wiki:'Wright Flyer',                                      emoji:'✈️' },
+        { id:'eniac',         year:1945, title:'ENIAC Computer Built',           desc:'The first general-purpose electronic computer is built at the University of Pennsylvania.', wiki:'ENIAC',                                        emoji:'💻' },
+        { id:'transistor_t',  year:1947, title:'Transistor Invented',            desc:'Bell Labs scientists invent the transistor, enabling all modern electronics.',         wiki:'Transistor',                                        emoji:'⚡' },
+        { id:'sputnik_t',     year:1957, title:'Sputnik Launched',               desc:'The Soviet satellite shocks the US into a frantic race to reach space first.',         wiki:'Sputnik 1',                                         emoji:'🛸' },
+        { id:'arpanet',       year:1969, title:'ARPANET Created',                desc:'The US military creates ARPANET — the network that later becomes the internet.',       wiki:'ARPANET',                                           emoji:'🌐' },
+        { id:'ms_found',      year:1975, title:'Microsoft Founded',              desc:'Bill Gates and Paul Allen found Microsoft, sparking the personal computer revolution.', wiki:'Microsoft',                                         emoji:'💻' },
+        { id:'mac_84',        year:1984, title:'Macintosh Computer Released',    desc:"Apple's Macintosh introduces a graphical interface, making computers user-friendly.",  wiki:'Macintosh 128K',                                    emoji:'🖥️' },
+        { id:'fb_found',      year:2004, title:'Facebook Founded',               desc:'Mark Zuckerberg launches Facebook from a Harvard dorm, reshaping social life.',        wiki:'Facebook',                                          emoji:'👥' }
       ]}
     ]
   },
@@ -567,39 +658,123 @@ const MODES = {
     name:'World History', emoji:'🌍',
     rounds:[
       { title:'Medieval World', events:[
-        { id:'crusades',     year:1096, title:'First Crusade Begins',        desc:'Pope Urban II calls on knights to recapture Jerusalem.',                              wiki:'First Crusade',                                     emoji:'⚔️' },
-        { id:'magna_carta',  year:1215, title:'Magna Carta Signed',          desc:'English barons force King John to limit royal power.',                                wiki:'Magna Carta',                                       emoji:'📜' },
-        { id:'black_death',  year:1347, title:'Black Death Strikes Europe',  desc:"The bubonic plague arrives, killing one-third of Europe's population.",              wiki:'Black Death',                                       emoji:'💀' },
-        { id:'gutenberg',    year:1455, title:'Gutenberg Bible Printed',     desc:'Gutenberg uses his press to produce the first mass-produced book.',                   wiki:'Gutenberg Bible',                                   emoji:'📖' },
-        { id:'columbus',     year:1492, title:'Columbus Reaches Americas',   desc:'Columbus lands in the Bahamas, beginning European contact with the Americas.',        wiki:'Christopher Columbus',                              emoji:'⛵' }
+        { id:'crusades',      year:1096, title:'First Crusade Begins',           desc:'Pope Urban II calls on knights to recapture Jerusalem.',                              wiki:'First Crusade',                                     emoji:'⚔️' },
+        { id:'magna_carta',   year:1215, title:'Magna Carta Signed',             desc:'English barons force King John to limit royal power.',                                wiki:'Magna Carta',                                       emoji:'📜' },
+        { id:'black_death',   year:1347, title:'Black Death Strikes Europe',     desc:"The bubonic plague arrives, killing one-third of Europe's population.",              wiki:'Black Death',                                       emoji:'💀' },
+        { id:'gutenberg',     year:1455, title:'Gutenberg Bible Printed',        desc:'Gutenberg uses his press to produce the first mass-produced book.',                   wiki:'Gutenberg Bible',                                   emoji:'📖' },
+        { id:'columbus',      year:1492, title:'Columbus Reaches Americas',      desc:'Columbus lands in the Bahamas, beginning European contact with the Americas.',        wiki:'Christopher Columbus',                              emoji:'⛵' },
+        { id:'hijra',         year:622,  title:"Muhammad's Hijra",               desc:'Muhammad flees Mecca to Medina — Year 1 of the Islamic calendar.',                   wiki:'Hijra',                                             emoji:'🌙' },
+        { id:'viking_raid',   year:793,  title:'Viking Raid on Lindisfarne',     desc:'Fierce Norse raiders attack a holy English monastery, marking the Viking Age.',      wiki:'Lindisfarne',                                       emoji:'🛡️' },
+        { id:'charlemagne',   year:800,  title:'Charlemagne Crowned Emperor',    desc:'Pope Leo III crowns Charlemagne, uniting much of Western Europe.',                    wiki:'Charlemagne',                                       emoji:'👑' },
+        { id:'norman',        year:1066, title:'Norman Conquest of England',     desc:'William the Conqueror defeats King Harold at Hastings, reshaping English culture.',   wiki:'Norman conquest of England',                        emoji:'⚔️' },
+        { id:'marco_polo',    year:1271, title:"Marco Polo's Journey Begins",    desc:'Marco Polo travels from Venice to China, opening the East to European curiosity.',   wiki:'Marco Polo',                                        emoji:'🐫' },
+        { id:'fall_acre',     year:1291, title:'Fall of Acre',                   desc:'The last Crusader stronghold falls, ending Christian control in the Holy Land.',      wiki:'Fall of Acre',                                      emoji:'🏯' },
+        { id:'hundred_years', year:1337, title:"Hundred Years' War Begins",      desc:'England and France begin a century-long conflict over the French throne.',            wiki:"Hundred Years' War",                                emoji:'⚔️' },
+        { id:'joan_arc',      year:1429, title:'Joan of Arc Leads French Army',  desc:"A teenage peasant girl leads France to victory, changing the course of the war.",    wiki:'Joan of Arc',                                       emoji:'⚔️' }
       ]},
       { title:'Age of Revolutions', events:[
-        { id:'galileo',      year:1609, title:"Galileo's Telescope",         desc:'Galileo discovers the moons of Jupiter, supporting heliocentrism.',                  wiki:'Galileo Galilei',                                   emoji:'🔭' },
-        { id:'newton_world', year:1687, title:"Newton's Principia",          desc:'Isaac Newton publishes laws of motion and gravity.',                                  wiki:'Philosophiæ Naturalis Principia Mathematica',       emoji:'🍎' },
-        { id:'french_rev',   year:1789, title:'French Revolution Begins',    desc:'The French people storm the Bastille, demanding liberty.',                            wiki:'French Revolution',                                 emoji:'🗼' },
-        { id:'napoleon',     year:1804, title:'Napoleon Crowned Emperor',    desc:'Napoleon Bonaparte crowns himself Emperor of France.',                                wiki:'Napoleon',                                          emoji:'👑' },
-        { id:'steam',        year:1825, title:'First Steam Railway Opens',   desc:"Stephenson's locomotive pulls the first public steam railway in England.",            wiki:'Locomotion No. 1',                                  emoji:'🚂' }
+        { id:'galileo',       year:1609, title:"Galileo's Telescope",            desc:'Galileo discovers the moons of Jupiter, supporting heliocentrism.',                  wiki:'Galileo Galilei',                                   emoji:'🔭' },
+        { id:'newton_world',  year:1687, title:"Newton's Principia",             desc:'Isaac Newton publishes laws of motion and gravity.',                                  wiki:'Philosophiæ Naturalis Principia Mathematica',       emoji:'🍎' },
+        { id:'french_rev',    year:1789, title:'French Revolution Begins',       desc:'The French people storm the Bastille, demanding liberty.',                            wiki:'French Revolution',                                 emoji:'🗼' },
+        { id:'napoleon',      year:1804, title:'Napoleon Crowned Emperor',       desc:'Napoleon Bonaparte crowns himself Emperor of France.',                                wiki:'Napoleon',                                          emoji:'👑' },
+        { id:'steam',         year:1825, title:'First Steam Railway Opens',      desc:"Stephenson's locomotive pulls the first public steam railway in England.",            wiki:'Locomotion No. 1',                                  emoji:'🚂' },
+        { id:'westphalia',    year:1648, title:'Peace of Westphalia',            desc:"A landmark treaty ends the Thirty Years' War and creates the modern nation-state.",  wiki:'Peace of Westphalia',                               emoji:'📜' },
+        { id:'glorious_rev',  year:1688, title:'Glorious Revolution',            desc:"England's Parliament ousts King James II and establishes constitutional monarchy.",   wiki:'Glorious Revolution',                               emoji:'👑' },
+        { id:'am_rev_w',      year:1776, title:'American Revolution',            desc:'Thirteen colonies declare independence from Britain, inspiring revolutions worldwide.',wiki:'American Revolution',                               emoji:'🦅' },
+        { id:'haitian_rev',   year:1791, title:'Haitian Revolution Begins',      desc:'Enslaved people in Haiti revolt — the only successful slave revolution in history.', wiki:'Haitian Revolution',                                emoji:'✊' },
+        { id:'waterloo',      year:1815, title:'Battle of Waterloo',             desc:"Napoleon's final defeat ends French imperial domination of Europe.",                 wiki:'Battle of Waterloo',                                emoji:'⚔️' },
+        { id:'rev_1848_w',    year:1848, title:'Revolutions of 1848',            desc:'A wave of revolutions sweeps across Europe demanding democracy and nationalism.',     wiki:'Revolutions of 1848',                               emoji:'✊' },
+        { id:'canada',        year:1867, title:'Dominion of Canada Formed',      desc:'Canada becomes a self-governing dominion within the British Empire.',                 wiki:'Canadian Confederation',                            emoji:'🍁' }
       ]},
       { title:'World at War', events:[
-        { id:'wwi',          year:1914, title:'World War I Begins',          desc:'Europe erupts in war after Archduke Franz Ferdinand is assassinated.',                wiki:'World War I',                                       emoji:'💣' },
-        { id:'russian_rev',  year:1917, title:'Russian Revolution',          desc:'Tsar Nicholas II is overthrown; Bolsheviks seize power.',                             wiki:'Russian Revolution',                                emoji:'🔴' },
-        { id:'wwii_world',   year:1945, title:'World War II Ends',           desc:'Nazi Germany surrenders; Japan surrenders ending the deadliest war.',                 wiki:'World War II',                                      emoji:'🕊️' },
-        { id:'berlin_wall',  year:1989, title:'Berlin Wall Falls',           desc:'The wall dividing East and West Germany is torn down.',                               wiki:'Fall of the Berlin Wall',                           emoji:'🧱' },
-        { id:'nine_eleven_w',year:2001, title:'September 11 Attacks',        desc:'Terrorists attack the World Trade Center, killing nearly 3,000 people.',             wiki:'September 11 attacks',                              emoji:'🌆' }
+        { id:'wwi',           year:1914, title:'World War I Begins',             desc:'Europe erupts in war after Archduke Franz Ferdinand is assassinated.',               wiki:'World War I',                                       emoji:'💣' },
+        { id:'russian_rev',   year:1917, title:'Russian Revolution',             desc:'Tsar Nicholas II is overthrown; Bolsheviks seize power.',                             wiki:'Russian Revolution',                                emoji:'🔴' },
+        { id:'wwii_world',    year:1945, title:'World War II Ends',              desc:'Nazi Germany surrenders; Japan surrenders ending the deadliest war.',                 wiki:'World War II',                                      emoji:'🕊️' },
+        { id:'berlin_wall',   year:1989, title:'Berlin Wall Falls',              desc:'The wall dividing East and West Germany is torn down.',                               wiki:'Fall of the Berlin Wall',                           emoji:'🧱' },
+        { id:'nine_eleven_w', year:2001, title:'September 11 Attacks',           desc:'Terrorists attack the World Trade Center, killing nearly 3,000 people.',             wiki:'September 11 attacks',                              emoji:'🌆' },
+        { id:'somme',         year:1916, title:'Battle of the Somme',            desc:"One of history's bloodiest battles — over 1 million casualties in four months.",    wiki:'Battle of the Somme',                               emoji:'⚔️' },
+        { id:'wwi_end_war',   year:1918, title:'WWI Armistice',                  desc:'The Great War ends on the 11th hour of the 11th day of the 11th month.',            wiki:'Armistice of 11 November 1918',                     emoji:'🕊️' },
+        { id:'versailles_w',  year:1919, title:'Treaty of Versailles',           desc:'Harsh peace terms humiliate Germany and sow the seeds of World War II.',              wiki:'Treaty of Versailles',                              emoji:'📜' },
+        { id:'hitler_chan',   year:1933, title:'Hitler Becomes Chancellor',      desc:'Adolf Hitler is appointed Chancellor of Germany, beginning the Third Reich.',        wiki:'Adolf Hitler',                                      emoji:'⚠️' },
+        { id:'wwii_begins',   year:1939, title:'World War II Begins',            desc:'Germany invades Poland; Britain and France declare war.',                              wiki:'World War II',                                      emoji:'💥' },
+        { id:'dday_w',        year:1944, title:'D-Day',                          desc:'Allied forces launch the largest seaborne invasion in history on Normandy beaches.',  wiki:'Normandy landings',                                 emoji:'⚓' },
+        { id:'nato_w',        year:1949, title:'NATO Founded',                   desc:'Western nations form NATO as a collective defense against Soviet expansion.',         wiki:'NATO',                                              emoji:'🛡️' }
       ]},
       { title:'Age of Empire', events:[
-        { id:'am_rev',       year:1776, title:'American Revolution',         desc:'Thirteen colonies declare independence, inspiring revolutions worldwide.',            wiki:'American Revolution',                               emoji:'🦅' },
-        { id:'rev_1848',     year:1848, title:'Revolutions of 1848',         desc:'A wave of revolutions sweeps across Europe demanding democracy.',                     wiki:'Revolutions of 1848',                               emoji:'✊' },
-        { id:'suez',         year:1869, title:'Suez Canal Opens',            desc:'The canal connecting the Mediterranean and Red Sea opens in Egypt.',                  wiki:'Suez Canal',                                        emoji:'🚢' },
-        { id:'boxer',        year:1900, title:'Boxer Rebellion',             desc:'Chinese Boxers rebel against foreign influence and missionaries.',                    wiki:'Boxer Rebellion',                                   emoji:'⚔️' },
-        { id:'titanic',      year:1912, title:'Titanic Sinks',               desc:'The RMS Titanic sinks on its maiden voyage, killing over 1,500 people.',             wiki:'Sinking of the RMS Titanic',                        emoji:'🚢' }
+        { id:'am_rev',        year:1776, title:'American Revolution',            desc:'Thirteen colonies declare independence, inspiring revolutions worldwide.',            wiki:'American Revolution',                               emoji:'🦅' },
+        { id:'rev_1848',      year:1848, title:'Revolutions of 1848',            desc:'A wave of revolutions sweeps across Europe demanding democracy.',                     wiki:'Revolutions of 1848',                               emoji:'✊' },
+        { id:'suez',          year:1869, title:'Suez Canal Opens',               desc:'The canal connecting the Mediterranean and Red Sea opens in Egypt.',                  wiki:'Suez Canal',                                        emoji:'🚢' },
+        { id:'boxer',         year:1900, title:'Boxer Rebellion',                desc:'Chinese Boxers rebel against foreign influence and missionaries.',                    wiki:'Boxer Rebellion',                                   emoji:'⚔️' },
+        { id:'titanic',       year:1912, title:'Titanic Sinks',                  desc:'The RMS Titanic sinks on its maiden voyage, killing over 1,500 people.',             wiki:'Sinking of the RMS Titanic',                        emoji:'🚢' },
+        { id:'plassey',       year:1757, title:'Battle of Plassey',              desc:'Britain defeats the Nawab of Bengal, beginning British dominance over India.',        wiki:'Battle of Plassey',                                 emoji:'⚔️' },
+        { id:'aus_found',     year:1788, title:'Australia Founded',              desc:'Britain establishes its first penal colony in Australia at Botany Bay.',              wiki:'History of Australia',                              emoji:'🦘' },
+        { id:'nap_emp',       year:1804, title:'Napoleon Crowned Emperor',       desc:'Napoleon crowns himself Emperor of France, reshaping European power.',               wiki:'Napoleon',                                          emoji:'👑' },
+        { id:'brit_slavery',  year:1833, title:'Slavery Abolished in Britain',   desc:'The British Empire abolishes slavery, freeing 800,000 enslaved people.',             wiki:'Slavery Abolition Act 1833',                        emoji:'🕊️' },
+        { id:'india_rebel',   year:1857, title:'Indian Rebellion',               desc:'A massive uprising against British rule changes how Britain governs India.',          wiki:'Indian Rebellion of 1857',                          emoji:'⚔️' },
+        { id:'berlin_conf',   year:1885, title:'Berlin Conference',              desc:'European powers divide Africa among themselves — the "Scramble for Africa."',        wiki:'Berlin Conference',                                 emoji:'🗺️' },
+        { id:'pan_canal',     year:1914, title:'Panama Canal Opens',             desc:'The 51-mile waterway connects the Atlantic and Pacific Oceans.',                      wiki:'Panama Canal',                                      emoji:'🚢' }
       ]},
       { title:'Post-War World', events:[
-        { id:'un_founded',   year:1945, title:'United Nations Founded',      desc:'The UN is established after WWII to promote international peace.',                   wiki:'United Nations',                                    emoji:'🌐' },
-        { id:'israel',       year:1948, title:'Israel Founded',              desc:'The modern state of Israel is established.',                                          wiki:'Israeli Declaration of Independence',               emoji:'🌟' },
-        { id:'moon_world',   year:1969, title:'Humans Land on the Moon',     desc:"Apollo 11 lands — Neil Armstrong takes humanity's first steps on another world.",    wiki:'Apollo 11',                                         emoji:'🌙' },
-        { id:'ussr_fall',    year:1991, title:'Soviet Union Collapses',      desc:'The USSR dissolves into 15 independent nations, ending the Cold War.',               wiki:'Dissolution of the Soviet Union',                   emoji:'🏳️' },
-        { id:'covid',        year:2020, title:'COVID-19 Pandemic',           desc:'A global pandemic caused by SARS-CoV-2 affects billions worldwide.',                 wiki:'COVID-19 pandemic',                                 emoji:'🦠' }
+        { id:'un_founded',    year:1945, title:'United Nations Founded',         desc:'The UN is established after WWII to promote international peace.',                   wiki:'United Nations',                                    emoji:'🌐' },
+        { id:'israel',        year:1948, title:'Israel Founded',                 desc:'The modern state of Israel is established.',                                          wiki:'Israeli Declaration of Independence',               emoji:'🌟' },
+        { id:'moon_world',    year:1969, title:'Humans Land on the Moon',        desc:"Apollo 11 lands — Neil Armstrong takes humanity's first steps on another world.",    wiki:'Apollo 11',                                         emoji:'🌙' },
+        { id:'ussr_fall',     year:1991, title:'Soviet Union Collapses',         desc:'The USSR dissolves into 15 independent nations, ending the Cold War.',               wiki:'Dissolution of the Soviet Union',                   emoji:'🏳️' },
+        { id:'covid',         year:2020, title:'COVID-19 Pandemic',              desc:'A global pandemic caused by SARS-CoV-2 affects billions worldwide.',                 wiki:'COVID-19 pandemic',                                 emoji:'🦠' },
+        { id:'india_indep',   year:1947, title:'Indian Independence',            desc:'India gains independence from Britain after decades of peaceful resistance.',         wiki:'Indian independence movement',                      emoji:'🇮🇳' },
+        { id:'china_prc_pw',  year:1949, title:"People's Republic of China",    desc:"Mao Zedong proclaims the People's Republic of China after the civil war.",            wiki:"People's Republic of China",                        emoji:'🇨🇳' },
+        { id:'korean_pw',     year:1950, title:'Korean War Begins',              desc:'The Korean War draws in the US, China, and USSR in a Cold War proxy conflict.',      wiki:'Korean War',                                        emoji:'🪖' },
+        { id:'sputnik_pw',    year:1957, title:'Sputnik Launched',               desc:'The Soviet satellite shocks the world and starts the Space Race.',                   wiki:'Sputnik 1',                                         emoji:'🛸' },
+        { id:'berlin_pw',     year:1961, title:'Berlin Wall Built',              desc:'East Germany builds the Berlin Wall overnight, dividing families for 28 years.',     wiki:'Berlin Wall',                                       emoji:'🧱' },
+        { id:'mandela_pw',    year:1994, title:'Mandela Elected President',      desc:"Nelson Mandela becomes South Africa's first Black president, ending apartheid.",     wiki:'Nelson Mandela',                                    emoji:'✊' },
+        { id:'sept11_pw',     year:2001, title:'September 11 Attacks',           desc:'Coordinated terrorist attacks kill nearly 3,000 people in the US.',                  wiki:'September 11 attacks',                              emoji:'🌆' },
+        { id:'gfc',           year:2008, title:'Global Financial Crisis',        desc:'The worst financial crisis since the Great Depression rocks the world economy.',      wiki:'Financial crisis of 2007–2008',                     emoji:'📉' }
+      ]},
+      { title:'Ancient Civilizations', events:[
+        { id:'pyramids',      year:-2560, title:'Great Pyramid Built',           desc:'The Great Pyramid of Giza is completed as a tomb for Pharaoh Khufu.',               wiki:'Great Pyramid of Giza',                             emoji:'🔺' },
+        { id:'rome_founded',  year:-753,  title:'Rome Founded',                  desc:'According to Roman tradition, Romulus founds the city of Rome.',                    wiki:'Founding of Rome',                                  emoji:'🏛️' },
+        { id:'alexander',     year:-323,  title:"Alexander the Great Dies",      desc:'Alexander dies after conquering an empire stretching from Greece to India.',        wiki:'Alexander the Great',                               emoji:'⚔️' },
+        { id:'julius_caesar', year:-44,   title:'Julius Caesar Assassinated',    desc:'Roman general Julius Caesar is stabbed to death on the Ides of March.',             wiki:'Assassination of Julius Caesar',                    emoji:'🗡️' },
+        { id:'pompeii',       year:79,    title:'Pompeii Destroyed',             desc:'Mount Vesuvius erupts, burying the city of Pompeii in volcanic ash.',               wiki:'Eruption of Vesuvius in AD 79',                     emoji:'🌋' },
+        { id:'egypt_unify',   year:-3100, title:'Egypt Unified',                 desc:"Pharaoh Menes unites Upper and Lower Egypt, forming one of the world's first nations.", wiki:'Ancient Egypt',                                  emoji:'🏺' },
+        { id:'olympics',      year:-776,  title:'First Olympic Games',           desc:'Ancient Greeks hold the first Olympic Games at Olympia in honor of Zeus.',          wiki:'Ancient Olympic Games',                             emoji:'🏅' },
+        { id:'confucius',     year:-551,  title:'Confucius Born',                desc:'The great Chinese philosopher whose teachings still shape East Asian culture.',      wiki:'Confucius',                                         emoji:'📚' },
+        { id:'roman_rep',     year:-509,  title:'Roman Republic Founded',        desc:'Romans expel their king and establish a republic governed by elected senators.',    wiki:'Roman Republic',                                    emoji:'🏛️' },
+        { id:'marathon',      year:-490,  title:'Battle of Marathon',            desc:'Greeks defeat a vastly larger Persian force, saving Greek civilization.',           wiki:'Battle of Marathon',                                emoji:'🏃' },
+        { id:'socrates',      year:-399,  title:'Socrates Executed',             desc:'The founder of Western philosophy is forced to drink hemlock for "corrupting youth."', wiki:'Socrates',                                       emoji:'🧪' },
+        { id:'china_qin',     year:-221,  title:'China Unified by Qin Shi Huang', desc:'The first emperor unifies China and standardizes writing and currency.',          wiki:'Qin Shi Huang',                                     emoji:'🐉' },
+        { id:'rome_fall',     year:476,   title:'Fall of Western Roman Empire',  desc:'The last Roman emperor is deposed, ending 500 years of Roman rule in the West.',   wiki:'Fall of the Western Roman Empire',                  emoji:'🏛️' }
+      ]},
+      { title:'Renaissance & Exploration', events:[
+        { id:'printing',      year:1440, title:'Printing Press Invented',        desc:"Gutenberg's movable-type press revolutionizes the spread of knowledge across Europe.", wiki:'Johannes Gutenberg',                              emoji:'📖' },
+        { id:'da_vinci',      year:1503, title:'Mona Lisa Painted',              desc:"Leonardo da Vinci begins painting the Mona Lisa, one of the world's most famous artworks.", wiki:'Mona Lisa',                                 emoji:'🎨' },
+        { id:'magellan',      year:1519, title:'Magellan Sets Sail',             desc:"Ferdinand Magellan's expedition begins — the first voyage to circumnavigate the globe.", wiki:'Magellan–Elcano expedition',                   emoji:'⛵' },
+        { id:'shakespeare',   year:1599, title:'Globe Theatre Opens',            desc:"Shakespeare's Globe Theatre opens in London, transforming English drama.",            wiki:'Globe Theatre',                                     emoji:'🎭' },
+        { id:'mayflower_w',   year:1620, title:'Pilgrims Land in America',       desc:'The Mayflower lands at Plymouth, establishing one of the first lasting English colonies.', wiki:'Mayflower',                                   emoji:'🚢' },
+        { id:'const_fall',    year:1453, title:'Fall of Constantinople',         desc:'The Ottoman Turks capture Constantinople, ending the Byzantine Empire.',             wiki:'Fall of Constantinople',                            emoji:'🏯' },
+        { id:'columbus_r',    year:1492, title:'Columbus Reaches Americas',      desc:'Columbus lands in the Bahamas, beginning the era of European colonization.',          wiki:'Christopher Columbus',                              emoji:'⛵' },
+        { id:'vasco',         year:1497, title:'Vasco da Gama Reaches India',    desc:'Da Gama sails around Africa to India, opening a sea route and transforming trade.',   wiki:'Vasco da Gama',                                     emoji:'🚢' },
+        { id:'luther',        year:1517, title:'Protestant Reformation',         desc:"Luther's 95 Theses challenge the Catholic Church, splitting Western Christianity.",    wiki:'Reformation',                                       emoji:'⛪' },
+        { id:'copernicus_r',  year:1543, title:'Heliocentric Model Published',   desc:'Copernicus argues that Earth orbits the Sun, beginning the Scientific Revolution.',   wiki:'Nicolaus Copernicus',                               emoji:'☀️' },
+        { id:'armada',        year:1588, title:'Spanish Armada Defeated',        desc:"England defeats Spain's mighty fleet, ending Spanish naval supremacy.",               wiki:'Spanish Armada',                                    emoji:'⛵' },
+        { id:'east_india',    year:1602, title:'Dutch East India Company',       desc:"The world's first publicly traded company transforms global trade.",                  wiki:'Dutch East India Company',                          emoji:'🚢' },
+        { id:'galileo_r',     year:1610, title:"Galileo's Discoveries",          desc:'Galileo discovers four moons of Jupiter, proving not everything orbits Earth.',       wiki:'Galileo Galilei',                                   emoji:'🔭' }
+      ]},
+      { title:'20th Century Turning Points', events:[
+        { id:'wwi_end_w',     year:1918, title:'World War I Ends',               desc:'The armistice is signed on the 11th hour of the 11th day, ending the Great War.',    wiki:'Armistice of 11 November 1918',                     emoji:'🕊️' },
+        { id:'china_prc',     year:1949, title:"People's Republic of China",    desc:"Mao Zedong proclaims the People's Republic of China after the civil war ends.",       wiki:"People's Republic of China",                        emoji:'🇨🇳' },
+        { id:'berlin_found',  year:1961, title:'Berlin Wall Built',              desc:'East Germany constructs the Berlin Wall overnight, dividing the city for 28 years.',  wiki:'Berlin Wall',                                       emoji:'🧱' },
+        { id:'mandela',       year:1994, title:'Mandela Elected President',      desc:"Nelson Mandela becomes South Africa's first Black president, ending apartheid.",      wiki:'Nelson Mandela',                                    emoji:'✊' },
+        { id:'euro',          year:2002, title:'Euro Currency Introduced',       desc:'Twelve European Union countries begin using the euro as their common currency.',      wiki:'Euro',                                              emoji:'💶' },
+        { id:'russ_rev_tp',   year:1917, title:'Russian Revolution',             desc:'Tsar Nicholas II is overthrown; Lenin and the Bolsheviks seize power in Russia.',     wiki:'Russian Revolution',                                emoji:'🔴' },
+        { id:'league',        year:1920, title:'League of Nations Founded',      desc:"The world's first global peacekeeping organization is established after WWI.",        wiki:'League of Nations',                                 emoji:'🌐' },
+        { id:'great_dep_tp',  year:1929, title:'Great Depression',               desc:'The stock market crash triggers the worst global economic crisis in modern history.',  wiki:'Great Depression',                                  emoji:'📉' },
+        { id:'hitler_tp',     year:1933, title:'Hitler Becomes Chancellor',      desc:"Adolf Hitler's rise begins the path to World War II and the Holocaust.",              wiki:'Adolf Hitler',                                      emoji:'⚠️' },
+        { id:'un_tp',         year:1945, title:'United Nations Founded',         desc:'The UN is created to prevent future world wars and protect human rights.',             wiki:'United Nations',                                    emoji:'🌐' },
+        { id:'udhr',          year:1948, title:'Universal Declaration of Human Rights', desc:'The UN adopts the landmark declaration affirming the rights of all people.',   wiki:'Universal Declaration of Human Rights',             emoji:'📜' },
+        { id:'prague',        year:1968, title:'Prague Spring',                  desc:'Czechoslovakia attempts reform; Soviet tanks crush the democratic movement.',         wiki:'Prague Spring',                                     emoji:'🌸' },
+        { id:'iran_rev',      year:1979, title:'Iranian Revolution',             desc:'Shah Pahlavi is overthrown; Iran becomes an Islamic Republic.',                       wiki:'Iranian Revolution',                                emoji:'🕌' },
+        { id:'berlin_tp',     year:1989, title:'Berlin Wall Falls',              desc:'The symbol of the Cold War is torn down as communism collapses in Eastern Europe.',   wiki:'Fall of the Berlin Wall',                           emoji:'🧱' },
+        { id:'ussr_tp',       year:1991, title:'Soviet Union Dissolves',         desc:'The USSR breaks into 15 nations, ending the Cold War and the bipolar world order.',   wiki:'Dissolution of the Soviet Union',                   emoji:'🏳️' }
       ]}
     ]
   },
@@ -608,39 +783,124 @@ const MODES = {
     name:'Science Discoveries', emoji:'🔬',
     rounds:[
       { title:'Scientific Revolution', events:[
-        { id:'copernicus',   year:1543, title:'Heliocentric Model',          desc:'Copernicus proposes that Earth orbits the Sun, not the other way around.',           wiki:'Nicolaus Copernicus',                               emoji:'☀️' },
-        { id:'newton_sci',   year:1687, title:"Newton's Laws of Motion",    desc:'Newton publishes three laws explaining how all objects move and interact.',          wiki:"Newton's laws of motion",                           emoji:'🍎' },
-        { id:'linnaeus',     year:1735, title:'Classification of Life',      desc:'Linnaeus creates the scientific system for naming all living things.',                wiki:'Carl Linnaeus',                                     emoji:'🌿' },
-        { id:'franklin',     year:1752, title:"Franklin's Kite Experiment", desc:'Franklin proves lightning is electrical and invents the lightning rod.',             wiki:'Kite experiment',                                   emoji:'⚡' },
-        { id:'vaccine',      year:1796, title:'First Vaccine Developed',     desc:'Jenner creates the first vaccine, protecting against deadly smallpox.',              wiki:'Smallpox vaccine',                                  emoji:'💉' }
+        { id:'copernicus',    year:1543, title:'Heliocentric Model',             desc:'Copernicus proposes that Earth orbits the Sun, not the other way around.',           wiki:'Nicolaus Copernicus',                               emoji:'☀️' },
+        { id:'newton_sci',    year:1687, title:"Newton's Laws of Motion",        desc:'Newton publishes three laws explaining how all objects move and interact.',          wiki:"Newton's laws of motion",                           emoji:'🍎' },
+        { id:'linnaeus',      year:1735, title:'Classification of Life',         desc:'Linnaeus creates the scientific system for naming all living things.',                wiki:'Carl Linnaeus',                                     emoji:'🌿' },
+        { id:'franklin',      year:1752, title:"Franklin's Kite Experiment",     desc:'Franklin proves lightning is electrical and invents the lightning rod.',             wiki:'Kite experiment',                                   emoji:'⚡' },
+        { id:'vaccine',       year:1796, title:'First Vaccine Developed',        desc:'Jenner creates the first vaccine, protecting against deadly smallpox.',              wiki:'Smallpox vaccine',                                  emoji:'💉' },
+        { id:'tycho',         year:1572, title:"Tycho Brahe's Supernova",        desc:'Brahe observes a new star, proving the heavens are not unchanging as believed.',     wiki:'Tycho Brahe',                                       emoji:'⭐' },
+        { id:'gilbert',       year:1600, title:'Magnetism Studied',              desc:"William Gilbert publishes the first scientific study of magnetism and electricity.",  wiki:'William Gilbert (astronomer)',                       emoji:'🧲' },
+        { id:'telescope',     year:1608, title:'Telescope Invented',             desc:'Hans Lippershey creates the first telescope, transforming astronomy forever.',       wiki:'Telescope',                                         emoji:'🔭' },
+        { id:'kepler',        year:1609, title:"Kepler's Laws of Orbits",        desc:'Johannes Kepler discovers that planets move in ellipses, not perfect circles.',     wiki:"Kepler's laws of planetary motion",                 emoji:'🪐' },
+        { id:'harvey_sr',     year:1628, title:'Blood Circulation Described',    desc:'William Harvey proves blood circulates continuously through the body.',              wiki:'William Harvey',                                    emoji:'❤️' },
+        { id:'barometer',     year:1643, title:'Barometer Invented',             desc:"Torricelli invents the barometer, proving that air has weight.",                     wiki:'Evangelista Torricelli',                            emoji:'🌡️' },
+        { id:'newton_annus',  year:1665, title:"Newton's Annus Mirabilis",       desc:'Newton invents calculus and discovers gravity — all in one extraordinary year.',     wiki:'Annus Mirabilis papers',                            emoji:'🍎' },
+        { id:'oxygen',        year:1774, title:'Oxygen Discovered',              desc:'Joseph Priestley isolates oxygen, transforming chemistry.',                           wiki:'Joseph Priestley',                                  emoji:'💨' },
+        { id:'volta',         year:1800, title:"Volta's Battery Invented",       desc:"Alessandro Volta creates the first battery, making electricity controllable.",        wiki:'Alessandro Volta',                                  emoji:'🔋' }
       ]},
       { title:'Industrial Age of Discovery', events:[
-        { id:'photo',        year:1826, title:'First Photograph Taken',      desc:"Niépce creates the world's first surviving photograph.",                              wiki:'View from the Window at Le Gras',                   emoji:'📷' },
-        { id:'darwin',       year:1859, title:"Darwin's Origin of Species",  desc:'Darwin publishes his theory of evolution by natural selection.',                     wiki:'On the Origin of Species',                          emoji:'🦎' },
-        { id:'mendel',       year:1866, title:"Mendel's Genetics Laws",     desc:'Mendel publishes inheritance experiments, founding modern genetics.',                 wiki:'Gregor Mendel',                                     emoji:'🫛' },
-        { id:'telephone',    year:1876, title:'Telephone Invented',          desc:'Alexander Graham Bell patents the first telephone.',                                  wiki:'Alexander Graham Bell',                             emoji:'📞' },
-        { id:'light_bulb',   year:1879, title:'Practical Light Bulb',        desc:"Edison invents a practical incandescent light bulb.",                                 wiki:'Incandescent light bulb',                           emoji:'💡' }
+        { id:'photo',         year:1826, title:'First Photograph Taken',         desc:"Niépce creates the world's first surviving photograph.",                             wiki:'View from the Window at Le Gras',                   emoji:'📷' },
+        { id:'darwin',        year:1859, title:"Darwin's Origin of Species",     desc:'Darwin publishes his theory of evolution by natural selection.',                    wiki:'On the Origin of Species',                          emoji:'🦎' },
+        { id:'mendel',        year:1866, title:"Mendel's Genetics Laws",         desc:'Mendel publishes inheritance experiments, founding modern genetics.',                wiki:'Gregor Mendel',                                     emoji:'🫛' },
+        { id:'telephone',     year:1876, title:'Telephone Invented',             desc:'Alexander Graham Bell patents the first telephone.',                                 wiki:'Alexander Graham Bell',                             emoji:'📞' },
+        { id:'light_bulb',    year:1879, title:'Practical Light Bulb',           desc:"Edison invents a practical incandescent light bulb.",                                wiki:'Incandescent light bulb',                           emoji:'💡' },
+        { id:'battery_i',     year:1800, title:"Volta's Battery",                desc:'Alessandro Volta creates the electric battery, enabling electrical experiments.',    wiki:'Alessandro Volta',                                  emoji:'🔋' },
+        { id:'oersted',       year:1820, title:'Electromagnetism Discovered',    desc:'Hans Oersted discovers that electricity creates magnetism, uniting the two forces.', wiki:'Hans Christian Ørsted',                            emoji:'🧲' },
+        { id:'faraday',       year:1831, title:'Electromagnetic Induction',      desc:'Faraday shows that changing magnetic fields generate electricity — enabling motors.', wiki:'Michael Faraday',                                  emoji:'⚡' },
+        { id:'telegraph_i',   year:1837, title:'Telegraph Invented',             desc:'Morse demonstrates the electric telegraph, revolutionizing long-distance communication.', wiki:'Electrical telegraph',                         emoji:'⚡' },
+        { id:'germ_snow',     year:1854, title:"John Snow's Cholera Map",        desc:'Snow maps a cholera outbreak to a single water pump, founding epidemiology.',        wiki:'John Snow',                                         emoji:'🗺️' },
+        { id:'periodic',      year:1869, title:'Periodic Table Published',       desc:'Mendeleev arranges elements by weight, predicting elements not yet discovered.',     wiki:'Dmitri Mendeleev',                                  emoji:'⚗️' },
+        { id:'xray_i',        year:1895, title:'X-Rays Discovered',              desc:"Röntgen discovers X-rays, making it possible to see inside the human body.",          wiki:'Wilhelm Röntgen',                                  emoji:'🩻' },
+        { id:'radioact',      year:1896, title:'Radioactivity Discovered',       desc:'Henri Becquerel discovers that uranium emits radiation spontaneously.',               wiki:'Henri Becquerel',                                   emoji:'☢️' }
       ]},
       { title:'Modern Science', events:[
-        { id:'einstein',     year:1905, title:"Einstein's Special Relativity",desc:'Einstein publishes E=mc², changing our understanding of physics.',              wiki:'Albert Einstein',                                   emoji:'⚛️' },
-        { id:'penicillin',   year:1928, title:'Penicillin Discovered',       desc:"Fleming discovers penicillin, launching the age of antibiotics.",                   wiki:'Alexander Fleming',                                 emoji:'🔬' },
-        { id:'dna',          year:1953, title:'DNA Double Helix Discovered', desc:'Watson, Crick, Franklin & Wilkins discover the structure of DNA.',                  wiki:'DNA',                                               emoji:'🧬' },
-        { id:'moon_sci',     year:1969, title:'Humans Land on the Moon',     desc:"Apollo 11 — Neil Armstrong and Buzz Aldrin become the first humans on the Moon.",   wiki:'Apollo 11',                                         emoji:'🌙' },
-        { id:'genome',       year:2003, title:'Human Genome Mapped',         desc:'The Human Genome Project completes mapping all human DNA.',                          wiki:'Human Genome Project',                              emoji:'🧬' }
+        { id:'einstein',      year:1905, title:"Einstein's Special Relativity",  desc:'Einstein publishes E=mc², changing our understanding of physics.',                  wiki:'Albert Einstein',                                   emoji:'⚛️' },
+        { id:'penicillin',    year:1928, title:'Penicillin Discovered',          desc:"Fleming discovers penicillin, launching the age of antibiotics.",                    wiki:'Alexander Fleming',                                 emoji:'🔬' },
+        { id:'dna',           year:1953, title:'DNA Double Helix Discovered',    desc:'Watson, Crick, Franklin & Wilkins discover the structure of DNA.',                   wiki:'DNA',                                               emoji:'🧬' },
+        { id:'moon_sci',      year:1969, title:'Humans Land on the Moon',        desc:"Apollo 11 — Neil Armstrong and Buzz Aldrin become the first humans on the Moon.",    wiki:'Apollo 11',                                         emoji:'🌙' },
+        { id:'genome',        year:2003, title:'Human Genome Mapped',            desc:'The Human Genome Project completes mapping all human DNA.',                           wiki:'Human Genome Project',                              emoji:'🧬' },
+        { id:'quantum',       year:1900, title:'Quantum Theory Proposed',        desc:'Max Planck proposes that energy comes in discrete packets called quanta.',            wiki:'Max Planck',                                        emoji:'⚛️' },
+        { id:'rutherford',    year:1911, title:'Atomic Nucleus Discovered',      desc:'Rutherford discovers that atoms have a tiny, dense nucleus at their center.',         wiki:'Ernest Rutherford',                                 emoji:'⚛️' },
+        { id:'wegener',       year:1912, title:'Continental Drift Theory',       desc:'Alfred Wegener proposes that continents drift — rejected, then proved decades later.',wiki:'Alfred Wegener',                                    emoji:'🌍' },
+        { id:'hubble_gal',    year:1924, title:'Other Galaxies Confirmed',       desc:'Edwin Hubble proves the Milky Way is just one of billions of galaxies.',              wiki:'Edwin Hubble',                                      emoji:'🌌' },
+        { id:'fission',       year:1938, title:'Nuclear Fission Discovered',     desc:'Scientists split the atom, making atomic bombs — and nuclear power — possible.',     wiki:'Nuclear fission',                                   emoji:'☢️' },
+        { id:'higgs_ms',      year:2012, title:'Higgs Boson Discovered',         desc:'CERN scientists confirm the Higgs boson, completing the Standard Model of physics.',  wiki:'Higgs boson',                                       emoji:'⚛️' }
       ]},
       { title:'20th Century Breakthroughs', events:[
-        { id:'first_flight', year:1903, title:'First Powered Flight',        desc:'Orville and Wilbur Wright achieve the first controlled powered airplane flight.',    wiki:'Wright Flyer',                                      emoji:'✈️' },
-        { id:'gen_rel',      year:1915, title:'General Relativity',          desc:'Einstein publishes his general theory of relativity, describing gravity.',          wiki:'General relativity',                                emoji:'⚛️' },
-        { id:'trinity',      year:1945, title:'First Atomic Bomb Test',      desc:'The Manhattan Project detonates the first nuclear bomb in New Mexico.',             wiki:'Trinity (nuclear test)',                            emoji:'☢️' },
-        { id:'gagarin',      year:1961, title:'First Human in Space',        desc:'Yuri Gagarin orbits Earth, becoming the first human in space.',                      wiki:'Vostok 1',                                          emoji:'🚀' },
-        { id:'dolly',        year:1997, title:'Dolly the Sheep Cloned',      desc:'Scientists clone Dolly, the first mammal cloned from an adult cell.',               wiki:'Dolly (sheep)',                                     emoji:'🐑' }
+        { id:'first_flight',  year:1903, title:'First Powered Flight',           desc:'Orville and Wilbur Wright achieve the first controlled powered airplane flight.',    wiki:'Wright Flyer',                                      emoji:'✈️' },
+        { id:'gen_rel',       year:1915, title:'General Relativity',             desc:'Einstein publishes his general theory of relativity, describing gravity as curved space.', wiki:'General relativity',                          emoji:'⚛️' },
+        { id:'trinity',       year:1945, title:'First Atomic Bomb Test',         desc:'The Manhattan Project detonates the first nuclear bomb in New Mexico.',              wiki:'Trinity (nuclear test)',                            emoji:'☢️' },
+        { id:'gagarin',       year:1961, title:'First Human in Space',           desc:'Yuri Gagarin orbits Earth, becoming the first human in space.',                      wiki:'Vostok 1',                                          emoji:'🚀' },
+        { id:'dolly',         year:1997, title:'Dolly the Sheep Cloned',         desc:'Scientists clone Dolly, the first mammal cloned from an adult cell.',                wiki:'Dolly (sheep)',                                     emoji:'🐑' },
+        { id:'xray_20',       year:1895, title:'X-Rays Discovered',              desc:"Röntgen discovers X-rays — the first look inside a living body without surgery.",    wiki:'Wilhelm Röntgen',                                  emoji:'🩻' },
+        { id:'planck',        year:1900, title:"Planck's Quantum Theory",        desc:'Max Planck discovers that energy is quantized — the foundation of quantum physics.',  wiki:'Max Planck',                                        emoji:'⚛️' },
+        { id:'supercon',      year:1911, title:'Superconductivity Discovered',   desc:'Onnes discovers that some metals conduct electricity with zero resistance at low temps.', wiki:'Superconductivity',                            emoji:'❄️' },
+        { id:'hubble_20',     year:1924, title:'Universe Beyond Milky Way',      desc:'Hubble proves there are billions of other galaxies beyond our own.',                  wiki:'Edwin Hubble',                                     emoji:'🌌' },
+        { id:'pen_20',        year:1928, title:'Penicillin Discovered',          desc:"Fleming's discovery of penicillin saves millions of lives.",                          wiki:'Alexander Fleming',                                 emoji:'🔬' },
+        { id:'nuc_fis',       year:1938, title:'Nuclear Fission',                desc:'Scientists split the atom, unlocking the energy that powers both reactors and bombs.', wiki:'Nuclear fission',                                  emoji:'☢️' },
+        { id:'transistor_20', year:1947, title:'Transistor Invented',            desc:'The transistor replaces bulky vacuum tubes, enabling modern electronics.',            wiki:'Transistor',                                        emoji:'⚡' },
+        { id:'dna_20',        year:1953, title:'DNA Double Helix',               desc:'The structure of DNA is revealed, unlocking the code of life.',                       wiki:'DNA',                                               emoji:'🧬' },
+        { id:'heart',         year:1967, title:'First Heart Transplant',         desc:'Dr. Christiaan Barnard performs the first successful human heart transplant.',        wiki:'Christiaan Barnard',                                emoji:'❤️' }
       ]},
       { title:'Digital Age', events:[
-        { id:'arpanet',      year:1969, title:'ARPANET Created',             desc:'The US military creates ARPANET, the network that became the internet.',            wiki:'ARPANET',                                           emoji:'💻' },
-        { id:'www',          year:1990, title:'World Wide Web Invented',     desc:'Tim Berners-Lee invents the Web at CERN, revolutionizing information sharing.',     wiki:'History of the World Wide Web',                     emoji:'🌐' },
-        { id:'exoplanet',    year:1995, title:'First Exoplanet Confirmed',   desc:'Scientists confirm the first planet orbiting another star, 51 Pegasi b.',          wiki:'51 Pegasi b',                                       emoji:'🌟' },
-        { id:'higgs',        year:2012, title:'Higgs Boson Discovered',      desc:'CERN scientists confirm the Higgs boson, completing the Standard Model.',           wiki:'Higgs boson',                                       emoji:'⚛️' },
-        { id:'grav_waves',   year:2016, title:'Gravitational Waves Detected',desc:'LIGO detects gravitational waves from two merging black holes.',                   wiki:'First observation of gravitational waves',          emoji:'🌊' }
+        { id:'arpanet',       year:1969, title:'ARPANET Created',                desc:'The US military creates ARPANET, the network that became the internet.',             wiki:'ARPANET',                                           emoji:'💻' },
+        { id:'www',           year:1990, title:'World Wide Web Invented',        desc:'Tim Berners-Lee invents the Web at CERN, revolutionizing information sharing.',      wiki:'History of the World Wide Web',                     emoji:'🌐' },
+        { id:'exoplanet',     year:1995, title:'First Exoplanet Confirmed',      desc:'Scientists confirm the first planet orbiting another star, 51 Pegasi b.',            wiki:'51 Pegasi b',                                       emoji:'🌟' },
+        { id:'higgs',         year:2012, title:'Higgs Boson Discovered',         desc:'CERN scientists confirm the Higgs boson, completing the Standard Model.',             wiki:'Higgs boson',                                       emoji:'⚛️' },
+        { id:'grav_waves',    year:2016, title:'Gravitational Waves Detected',   desc:'LIGO detects gravitational waves from two merging black holes.',                     wiki:'First observation of gravitational waves',          emoji:'🌊' },
+        { id:'turing_da',     year:1936, title:'Turing Machine Conceived',       desc:'Alan Turing describes the theoretical universal computer — the foundation of computing.', wiki:'Turing machine',                              emoji:'💻' },
+        { id:'eniac_da',      year:1945, title:'ENIAC Computer Built',           desc:'The first general-purpose electronic computer fills an entire room.',                 wiki:'ENIAC',                                             emoji:'💻' },
+        { id:'transistor_da', year:1947, title:'Transistor Invented',            desc:'Bell Labs invents the transistor, making modern computers possible.',                 wiki:'Transistor',                                        emoji:'⚡' },
+        { id:'micro',         year:1971, title:'Microprocessor Invented',        desc:'Intel creates the 4004 — the first microprocessor, a computer on a single chip.',    wiki:'Intel 4004',                                        emoji:'💾' },
+        { id:'pc',            year:1975, title:'First Personal Computer',        desc:'The Altair 8800 inspires a generation of hackers including Gates and Jobs.',          wiki:'Altair 8800',                                       emoji:'🖥️' },
+        { id:'ibm_pc',        year:1981, title:'IBM PC Released',                desc:"IBM's personal computer sets the standard that defines computing for decades.",       wiki:'IBM Personal Computer',                             emoji:'🖥️' },
+        { id:'google',        year:1998, title:'Google Founded',                 desc:'Larry Page and Sergey Brin launch Google, transforming how the world finds information.', wiki:'Google',                                       emoji:'🔍' },
+        { id:'iphone_da',     year:2007, title:'iPhone Introduced',              desc:"Steve Jobs unveils the iPhone, merging phone, computer, and music player.",           wiki:'IPhone (1st generation)',                            emoji:'📱' },
+        { id:'bitcoin',       year:2009, title:'Bitcoin Launched',               desc:"Satoshi Nakamoto releases Bitcoin, creating the world's first cryptocurrency.",       wiki:'Bitcoin',                                           emoji:'₿' }
+      ]},
+      { title:'Ancient & Medieval Science', events:[
+        { id:'archimedes',    year:-250, title:"Archimedes' Principle",          desc:'Archimedes discovers why objects float or sink — the principle of displacement.',    wiki:'Archimedes',                                        emoji:'🛁' },
+        { id:'eratosthenes',  year:-240, title:"Earth's Circumference Measured", desc:"Eratosthenes accurately calculates Earth's circumference using shadows and geometry.", wiki:'Eratosthenes',                                    emoji:'🌍' },
+        { id:'al_khwarizmi',  year:830,  title:'Algebra Invented',               desc:"Al-Khwarizmi writes the founding text of algebra — giving us the word 'algorithm'.", wiki:'Al-Khwarizmi',                                     emoji:'➕' },
+        { id:'black_powder',  year:850,  title:'Gunpowder Invented',             desc:'Chinese alchemists discover gunpowder, transforming warfare and mining forever.',    wiki:'Gunpowder',                                         emoji:'💥' },
+        { id:'vesalius',      year:1543, title:'Human Anatomy Book Published',   desc:'Vesalius publishes the first accurate human anatomy book based on real dissections.',wiki:'Andreas Vesalius',                                  emoji:'🫀' },
+        { id:'thales',        year:-585, title:'Solar Eclipse Predicted',        desc:'Thales of Miletus correctly predicts a solar eclipse using reason, not mythology.',  wiki:'Thales of Miletus',                                 emoji:'🌑' },
+        { id:'democritus',    year:-450, title:'Atomic Theory Proposed',         desc:'Democritus proposes all matter is made of tiny indivisible particles called atoms.',  wiki:'Democritus',                                        emoji:'⚛️' },
+        { id:'euclid',        year:-300, title:"Euclid's Elements Published",    desc:"Euclid's geometry textbook is used in schools for over 2,000 years.",                 wiki:"Euclid's Elements",                                emoji:'📐' },
+        { id:'ptolemy',       year:100,  title:"Ptolemy's Almagest",             desc:'Ptolemy creates a mathematical model of an Earth-centered universe used for 1,400 years.', wiki:'Almagest',                                  emoji:'🌍' },
+        { id:'ibn_haytham',   year:1011, title:"Ibn al-Haytham's Book of Optics", desc:'Ibn al-Haytham pioneers the scientific method and explains how eyes see light.',   wiki:'Alhazen',                                           emoji:'👁️' },
+        { id:'avicenna',      year:1025, title:"Avicenna's Canon of Medicine",   desc:"Avicenna's medical encyclopedia becomes the standard text in Europe for 600 years.",  wiki:'The Canon of Medicine',                             emoji:'📖' },
+        { id:'fibonacci',     year:1202, title:'Fibonacci Brings Arabic Numerals', desc:'Fibonacci introduces Hindu-Arabic numerals (0–9) to Europe, replacing Roman numerals.', wiki:'Fibonacci',                                  emoji:'🔢' }
+      ]},
+      { title:'Medicine & Biology', events:[
+        { id:'harvey',        year:1628, title:'Blood Circulation Discovered',   desc:'William Harvey proves that blood circulates continuously through the heart.',        wiki:'William Harvey',                                    emoji:'❤️' },
+        { id:'bacteria',      year:1674, title:'Bacteria Discovered',            desc:'Antonie van Leeuwenhoek first observes bacteria through a homemade microscope.',     wiki:'Antonie van Leeuwenhoek',                           emoji:'🔬' },
+        { id:'pasteur',       year:1861, title:'Germ Theory Proven',             desc:"Louis Pasteur's experiments prove that microorganisms cause disease.",                wiki:'Louis Pasteur',                                     emoji:'🦠' },
+        { id:'xray',          year:1895, title:'X-Rays Discovered',              desc:"Wilhelm Röntgen discovers X-rays, making it possible to see inside the human body.", wiki:'Wilhelm Röntgen',                                  emoji:'🩻' },
+        { id:'blood_types',   year:1901, title:'Blood Types Identified',         desc:'Karl Landsteiner discovers ABO blood types, making safe transfusions possible.',     wiki:'ABO blood group system',                            emoji:'🩸' },
+        { id:'jenner',        year:1796, title:'Smallpox Vaccine Created',       desc:"Jenner infects a boy with cowpox and proves it protects against deadly smallpox.",   wiki:'Edward Jenner',                                     emoji:'💉' },
+        { id:'stethoscope',   year:1816, title:'Stethoscope Invented',           desc:"René Laennec creates the stethoscope, transforming the doctor's examination.",       wiki:'René Laennec',                                      emoji:'🩺' },
+        { id:'anesthesia',    year:1846, title:'Anesthesia Used in Surgery',     desc:'William Morton uses ether for surgery — patients can finally operate without pain.',  wiki:'Anesthesia',                                        emoji:'😴' },
+        { id:'lister',        year:1865, title:'Antiseptic Surgery',             desc:'Lister uses carbolic acid to kill germs in surgery, dramatically reducing deaths.',   wiki:'Joseph Lister',                                     emoji:'🧴' },
+        { id:'tb_germ',       year:1882, title:'Tuberculosis Bacteria Found',    desc:'Robert Koch identifies the bacterium that causes TB, founding modern germ theory.',  wiki:'Robert Koch',                                       emoji:'🦠' },
+        { id:'insulin',       year:1921, title:'Insulin Discovered',             desc:'Banting and Best discover insulin, turning Type 1 diabetes from fatal to manageable.', wiki:'Insulin',                                          emoji:'💉' },
+        { id:'smallpox_end',  year:1980, title:'Smallpox Eradicated',            desc:'The WHO certifies that smallpox is gone — the only human disease ever eradicated.',  wiki:'Smallpox',                                          emoji:'✅' },
+        { id:'hiv',           year:1983, title:'HIV Virus Identified',           desc:'French scientists identify HIV, the virus that causes AIDS.',                         wiki:'HIV',                                               emoji:'🔬' }
+      ]},
+      { title:'Space & Computing', events:[
+        { id:'turing',        year:1936, title:'Turing Machine Conceived',       desc:"Alan Turing describes the theoretical universal computer, the foundation of computing.", wiki:'Turing machine',                              emoji:'💻' },
+        { id:'transistor',    year:1947, title:'Transistor Invented',            desc:'Bell Labs scientists invent the transistor, enabling all modern electronics.',         wiki:'Transistor',                                        emoji:'⚡' },
+        { id:'hubble_tel',    year:1990, title:'Hubble Space Telescope Launched', desc:'NASA launches Hubble, giving humanity the clearest views of deep space ever seen.',  wiki:'Hubble Space Telescope',                            emoji:'🔭' },
+        { id:'crispr',        year:2012, title:'CRISPR Gene Editing Developed',  desc:'Scientists develop CRISPR-Cas9, allowing precise editing of DNA sequences.',          wiki:'CRISPR',                                            emoji:'🧬' },
+        { id:'webb',          year:2021, title:'James Webb Telescope Launched',  desc:'The most powerful space telescope ever is launched, peering back to the early universe.', wiki:'James Webb Space Telescope',                  emoji:'🌌' },
+        { id:'sputnik_sc',    year:1957, title:'Sputnik Launched',               desc:'The Soviet Union launches the first artificial satellite, starting the Space Age.',    wiki:'Sputnik 1',                                         emoji:'🛸' },
+        { id:'nasa_f',        year:1958, title:'NASA Founded',                   desc:'The US creates NASA to coordinate the Space Race after Sputnik shocks the nation.',    wiki:'NASA',                                              emoji:'🚀' },
+        { id:'gagarin_sc',    year:1961, title:'First Human in Space',           desc:'Yuri Gagarin orbits Earth once, becoming the first human in space.',                   wiki:'Vostok 1',                                          emoji:'🚀' },
+        { id:'moon_sc',       year:1969, title:'Moon Landing',                   desc:"Apollo 11's Neil Armstrong takes the first human steps on the Moon.",                  wiki:'Apollo 11',                                         emoji:'🌙' },
+        { id:'viking',        year:1976, title:'Viking 1 Lands on Mars',         desc:"NASA's Viking 1 becomes the first spacecraft to successfully land on Mars.",           wiki:'Viking 1',                                          emoji:'🔴' },
+        { id:'shuttle',       year:1981, title:'Space Shuttle First Flight',     desc:'The reusable Space Shuttle Columbia launches, opening a new era of spaceflight.',      wiki:'Space Shuttle Columbia',                            emoji:'🚀' },
+        { id:'exo_sc',        year:1995, title:'First Exoplanet Confirmed',      desc:'Astronomers confirm the first planet orbiting a Sun-like star outside our solar system.', wiki:'51 Pegasi b',                                  emoji:'🌟' },
+        { id:'black_hole',    year:2019, title:'First Black Hole Image',         desc:'The Event Horizon Telescope captures the first-ever image of a black hole.',          wiki:'Event Horizon Telescope',                           emoji:'🕳️' }
       ]}
     ]
   }
@@ -650,6 +910,7 @@ const MODES = {
    STATE
 ============================================================ */
 let currentMode, currentRoundIdx, totalScore, roundScores;
+let selectedRounds = [];   // 3 rounds randomly chosen at game start
 let currentEvents;
 let placements = {};   // eventId -> { slotYear }
 let checked = false;
@@ -673,6 +934,8 @@ function selectMode(modeId) {
   currentRoundIdx = 0;
   totalScore      = 0;
   roundScores     = [];
+  // Randomly pick 3 rounds from all available rounds
+  selectedRounds  = shuffle([...MODES[modeId].rounds]).slice(0, 3);
   showScreen('gameScreen');
   loadRound();
 }
@@ -686,15 +949,16 @@ function loadRound() {
   document.getElementById('continueBtn').style.display = 'none';
 
   const mode  = MODES[currentMode];
-  const round = mode.rounds[currentRoundIdx];
-  currentEvents = shuffle([...round.events]);
+  const round = selectedRounds[currentRoundIdx];
+  const pickedEvents = shuffle([...round.events]).slice(0, 5);
+  currentEvents = shuffle([...pickedEvents]);
 
   document.getElementById('gameRoundTitle').textContent =
     `${mode.emoji}  Round ${currentRoundIdx + 1}/3 — ${round.title}`;
   document.getElementById('scoreDisplay').textContent = totalScore;
   updateProgress();
 
-  buildTimeline(round.events);
+  buildTimeline(pickedEvents);
   buildCardsTray(currentEvents);
   loadImages(currentEvents);
 }
@@ -953,7 +1217,7 @@ function unplaceEvent(id, restoreCard) {
 }
 
 function updateCheckButton() {
-  const round  = MODES[currentMode].rounds[currentRoundIdx];
+  const round  = selectedRounds[currentRoundIdx];
   const allSet = round.events.every(e => placements[e.id] !== undefined);
   document.getElementById('checkBtn').disabled = !allSet;
 }
@@ -972,7 +1236,7 @@ function checkAnswers() {
   if (checked) return;
   checked = true;
 
-  const round  = MODES[currentMode].rounds[currentRoundIdx];
+  const round  = selectedRounds[currentRoundIdx];
   const events = round.events;
   const sortedYears = events.map(e => e.year).sort((a, b) => a - b);
 
@@ -1023,7 +1287,7 @@ function checkAnswers() {
   });
 
   totalScore += roundPts;
-  roundScores.push({ round: currentRoundIdx, pts: roundPts, title: round.title });
+  roundScores.push({ round: currentRoundIdx, pts: roundPts, title: selectedRounds[currentRoundIdx].title });
   document.getElementById('scoreDisplay').textContent = totalScore;
 
   // Result bar
