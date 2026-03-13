@@ -131,28 +131,52 @@ body {
 }
 
 .mode-card {
-  background: white;
+  background: rgba(255,255,255,0.18);
   border-radius: 20px;
   padding: 18px 20px;
   cursor: pointer;
-  transition: transform 0.18s cubic-bezier(.34,1.56,.64,1), box-shadow 0.18s, border-color 0.15s;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.14), 0 2px 6px rgba(0,0,0,0.08);
-  border: 3px solid transparent;
+  transition: transform 0.18s cubic-bezier(.34,1.56,.64,1), box-shadow 0.18s, background 0.18s;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+  border: 3px solid rgba(255,255,255,0.28);
   text-align: left;
   user-select: none;
+  position: relative;
 }
-.mode-card:hover  { transform: translateY(-4px); box-shadow: 0 12px 28px rgba(0,0,0,0.2); }
+.mode-card:hover  { transform: translateY(-4px); box-shadow: 0 10px 24px rgba(0,0,0,0.2); }
 .mode-card:active { transform: translateY(0); }
-.mode-card.selected { border-color: #FF6B35; box-shadow: 0 0 0 4px rgba(255,107,53,0.2), 0 8px 24px rgba(0,0,0,0.15); background: #FFF8F4; }
+.mode-card .mode-title { color: rgba(255,255,255,0.9); }
+.mode-card .mode-desc  { color: rgba(255,255,255,0.65); }
+
+/* Selected: solid white card with orange accent — high contrast against gradient bg */
+.mode-card.selected {
+  background: white;
+  border-color: white;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.22), 0 0 0 3px rgba(255,255,255,0.6);
+  transform: translateY(-2px);
+}
+.mode-card.selected .mode-title { color: #E63946; }
+.mode-card.selected .mode-desc  { color: #555; }
+.mode-card.selected::after {
+  content: '✓';
+  position: absolute;
+  top: 10px; right: 14px;
+  font-size: 1rem;
+  font-weight: 900;
+  color: #1A8A48;
+  background: #d4f7e4;
+  border-radius: 50%;
+  width: 24px; height: 24px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: sans-serif;
+}
 
 .mode-header { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
 .mode-icon { font-size: 1.9rem; line-height: 1; }
 .mode-title {
   font-family: 'Fredoka One', cursive;
   font-size: 1.2rem;
-  color: var(--dark);
 }
-.mode-desc { color: #666; font-size: 0.82rem; font-weight: 700; line-height: 1.4; padding-left: 46px; }
+.mode-desc { font-size: 0.82rem; font-weight: 700; line-height: 1.4; padding-left: 46px; }
 
 /* Difficulty */
 .diff-section { width: 100%; max-width: 380px; }
@@ -1026,20 +1050,14 @@ function updateHUD() {
 function updateCounter() {
   const el = document.getElementById('selectedCounter');
   if (G.mode !== 'build') return;
-  const { n, d } = G.frac;
+  const { d } = G.frac;
   const sel = G.selSlices.size;
   if (sel === 0) {
-    el.textContent = `Tap ${n} slice${n === 1 ? '' : 's'} to build ${n}/${d}`;
+    el.textContent = `Tap slices to build your fraction, then hit Check!`;
     el.style.color = 'rgba(255,255,255,0.75)';
-  } else if (sel === n) {
-    el.textContent = `✅ Looks good! Hit Check!`;
-    el.style.color = '#C8F7E8';
-  } else if (sel > n) {
-    el.textContent = `⚠️ Too many! You picked ${sel}/${d}`;
-    el.style.color = '#FFD166';
   } else {
-    el.textContent = `${sel} selected — need ${n} total`;
-    el.style.color = 'rgba(255,255,255,0.82)';
+    el.textContent = `${sel} of ${d} slice${d === 1 ? '' : 's'} selected`;
+    el.style.color = 'rgba(255,255,255,0.88)';
   }
 }
 
