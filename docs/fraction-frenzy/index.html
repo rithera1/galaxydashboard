@@ -118,17 +118,31 @@ body {
   max-width: 380px;
 }
 
+.section-label {
+  color: rgba(255,255,255,0.82);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  text-align: center;
+  width: 100%;
+  max-width: 380px;
+  margin-bottom: -8px;
+}
+
 .mode-card {
   background: white;
   border-radius: 20px;
   padding: 18px 20px;
-  cursor: default;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  cursor: pointer;
+  transition: transform 0.18s cubic-bezier(.34,1.56,.64,1), box-shadow 0.18s, border-color 0.15s;
   box-shadow: 0 6px 20px rgba(0,0,0,0.14), 0 2px 6px rgba(0,0,0,0.08);
   border: 3px solid transparent;
   text-align: left;
   user-select: none;
 }
+.mode-card:hover  { transform: translateY(-4px); box-shadow: 0 12px 28px rgba(0,0,0,0.2); }
+.mode-card:active { transform: translateY(0); }
 .mode-card.selected { border-color: #FF6B35; box-shadow: 0 0 0 4px rgba(255,107,53,0.2), 0 8px 24px rgba(0,0,0,0.15); background: #FFF8F4; }
 
 .mode-header { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
@@ -165,7 +179,7 @@ body {
 .diff-btn .diff-sub  { font-family: 'Nunito', sans-serif; font-size: 0.62rem; font-weight: 800; opacity: 0.78; line-height: 1.2; text-align: center; }
 .diff-btn:hover { background: rgba(255,255,255,0.22); border-color: rgba(255,255,255,0.6); }
 /* Each difficulty has its own selected color */
-.diff-btn[data-diff="easy"].selected   { background: #1A8A48; border-color: #136934; color: white; }
+.diff-btn[data-diff="easy"].selected   { background: #1A8A48; border-color: #52C882; color: white; }
 .diff-btn[data-diff="medium"].selected { background: #F0C040; border-color: #C89A10; color: #3D2800; }
 .diff-btn[data-diff="hard"].selected   { background: #E63946; border-color: #B0202C; color: white; }
 
@@ -338,7 +352,7 @@ body {
 .choice-btn:hover:not(:disabled) { transform: translateY(-3px) scale(1.03); box-shadow: 0 8px 22px rgba(0,0,0,0.18); }
 .choice-btn:disabled { cursor: default; }
 .choice-btn .c-bar { width: 55%; height: 3px; background: var(--dark); border-radius: 2px; margin: 4px 0; }
-.choice-btn.correct { background: #1A8A48; border-color: #136934; color: white; animation: popIn 0.35s; }
+.choice-btn.correct { background: #1A8A48; border-color: #52C882; color: white; animation: popIn 0.35s; }
 .choice-btn.correct .c-bar { background: white; }
 .choice-btn.wrong { background: #E63946; border-color: #B0202E; color: white; animation: shakeX 0.45s; }
 .choice-btn.wrong .c-bar { background: white; }
@@ -531,6 +545,7 @@ body {
   <h1 class="home-title">Fraction Frenzy!</h1>
   <p class="home-sub">Learn fractions with pizza — the most delicious way to do math! 🧮</p>
 
+  <div class="section-label">Choose Game Mode</div>
   <div class="mode-cards">
     <div class="mode-card selected" data-mode="identify" onclick="selectMode('identify')">
       <div class="mode-header">
@@ -722,11 +737,12 @@ function drawPizza() {
   const ctx = pizzaCtx;
   const W = pizzaCanvas.width, H = pizzaCanvas.height;
   const cx = W / 2, cy = H / 2;
-  const R  = W * 0.46;   // outer crust radius
-  const PR = R * 0.86;   // cheese/sauce radius
+  const R   = W * 0.46;        // outer tray rim radius
+  const PR  = R * 0.87;        // pizza area radius (inside tray lip)
+  const SR  = PR * 0.86;       // sauce radius
+  const CR  = SR * 0.88;       // cheese radius
 
   ctx.clearRect(0, 0, W, H);
-
   if (!G.frac) return;
   const { n, d } = G.frac;
 
@@ -742,49 +758,58 @@ function drawPizza() {
   ctx.scale(G.pScale, G.pScale);
   ctx.translate(-cx, -cy);
 
-  // Determine which slices are highlighted
   const lit = G.mode === 'identify' ? new Set(G.litSlices) : G.selSlices;
-  const START = -Math.PI / 2; // top
+  const START = -Math.PI / 2;
 
   // ---- Drop shadow ----
   ctx.save();
-  ctx.shadowColor = 'rgba(0,0,0,0.28)';
-  ctx.shadowBlur  = 18;
-  ctx.shadowOffsetY = 6;
+  ctx.shadowColor = 'rgba(0,0,0,0.32)';
+  ctx.shadowBlur  = 22;
+  ctx.shadowOffsetY = 8;
   ctx.beginPath();
   ctx.arc(cx, cy, R, 0, Math.PI * 2);
-  ctx.fillStyle = '#A0522D';
+  ctx.fillStyle = '#8A9098';
   ctx.fill();
   ctx.restore();
 
-  // ---- Crust ----
-  const crustGrad = ctx.createRadialGradient(cx, cy - R * 0.1, R * 0.35, cx, cy, R);
-  crustGrad.addColorStop(0,   '#F4C27A');
-  crustGrad.addColorStop(0.72,'#DEB07A');
-  crustGrad.addColorStop(1,   '#C48050');
+  // ---- Silver tray base ----
+  const trayGrad = ctx.createRadialGradient(cx - R * 0.22, cy - R * 0.22, R * 0.08, cx, cy, R);
+  trayGrad.addColorStop(0,    '#EEF1F4');
+  trayGrad.addColorStop(0.45, '#D4D9DF');
+  trayGrad.addColorStop(0.82, '#B4BCC6');
+  trayGrad.addColorStop(1,    '#8E98A4');
   ctx.beginPath();
   ctx.arc(cx, cy, R, 0, Math.PI * 2);
-  ctx.fillStyle = crustGrad;
+  ctx.fillStyle = trayGrad;
   ctx.fill();
 
-  // ---- Sauce base ----
-  const sauceGrad = ctx.createRadialGradient(cx - PR * 0.15, cy - PR * 0.15, PR * 0.05, cx, cy, PR);
-  sauceGrad.addColorStop(0,   '#E84040');
-  sauceGrad.addColorStop(0.65,'#C02828');
-  sauceGrad.addColorStop(1,   '#901818');
+  // Tray rim highlight (top-left shine)
   ctx.beginPath();
-  ctx.arc(cx, cy, PR, 0, Math.PI * 2);
-  ctx.fillStyle = sauceGrad;
-  ctx.fill();
+  ctx.arc(cx, cy, R, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(255,255,255,0.65)';
+  ctx.lineWidth = 3.5;
+  ctx.stroke();
+  // Tray rim shadow (bottom-right)
+  ctx.beginPath();
+  ctx.arc(cx, cy, R - 1, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(60,70,80,0.35)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
 
-  // ---- Cheese gradient — same base for ALL slices ----
-  const cheeseGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, PR);
-  cheeseGrad.addColorStop(0,   '#FFFEF0');
-  cheeseGrad.addColorStop(0.45,'#FAF0A0');
-  cheeseGrad.addColorStop(0.82,'#EDDA40');
-  cheeseGrad.addColorStop(1,   'rgba(220,190,20,0)');
+  // ---- Empty slot shadow rings ----
+  for (let i = 0; i < d; i++) {
+    if (lit.has(i)) continue;
+    const a1 = START + (i / d) * Math.PI * 2;
+    const a2 = START + ((i + 1) / d) * Math.PI * 2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, PR, a1, a2);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(80,90,110,0.10)';
+    ctx.fill();
+  }
 
-  // ---- PASS 1: Fill all slices with cheese ----
+  // ---- Pizza slices on lit/hover slots ----
   for (let i = 0; i < d; i++) {
     const a1  = START + (i / d) * Math.PI * 2;
     const a2  = START + ((i + 1) / d) * Math.PI * 2;
@@ -792,147 +817,122 @@ function drawPizza() {
     const isLit   = lit.has(i);
     const isHover = G.mode === 'build' && !G.answered && G.hoverSlice === i && !isLit;
 
-    ctx.save();
-    if (isLit || isHover) {
-      const push = isLit ? 5 : 3;
-      ctx.translate(cx + Math.cos(mid) * push, cy + Math.sin(mid) * push);
-      ctx.translate(-cx, -cy);
-    }
+    if (!isLit && !isHover) continue;
 
+    ctx.save();
+    // Push selected slices slightly outward
+    const push = isLit ? 4 : 2;
+    ctx.translate(cx + Math.cos(mid) * push, cy + Math.sin(mid) * push);
+    ctx.translate(-cx, -cy);
+
+    // Crust wedge
+    const crustG = ctx.createRadialGradient(cx, cy, PR * 0.55, cx, cy, PR);
+    crustG.addColorStop(0,   '#F4C27A');
+    crustG.addColorStop(0.7, '#DEB07A');
+    crustG.addColorStop(1,   '#C48050');
     ctx.beginPath();
     ctx.moveTo(cx, cy);
     ctx.arc(cx, cy, PR, a1, a2);
     ctx.closePath();
-    ctx.fillStyle = cheeseGrad;
+    ctx.fillStyle = crustG;
     ctx.fill();
 
-    // Hover: faint warm tint preview
+    // Sauce
+    const sauceG = ctx.createRadialGradient(cx, cy, 0, cx, cy, SR);
+    sauceG.addColorStop(0,   '#E84040');
+    sauceG.addColorStop(0.65,'#C02828');
+    sauceG.addColorStop(1,   '#901818');
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, SR, a1, a2);
+    ctx.closePath();
+    ctx.fillStyle = sauceG;
+    ctx.fill();
+
+    // Cheese
+    const cheeseG = ctx.createRadialGradient(cx, cy, 0, cx, cy, CR);
+    cheeseG.addColorStop(0,   '#FFFEF0');
+    cheeseG.addColorStop(0.5, '#FAF0A0');
+    cheeseG.addColorStop(0.9, '#EDDA40');
+    cheeseG.addColorStop(1,   'rgba(220,190,20,0)');
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, CR, a1, a2);
+    ctx.closePath();
+    ctx.fillStyle = cheeseG;
+    ctx.fill();
+
+    // Hover preview overlay (translucent brighten)
     if (isHover) {
-      ctx.fillStyle = 'rgba(255, 200, 50, 0.28)';
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, CR, a1, a2);
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(255,255,255,0.22)';
       ctx.fill();
     }
 
-    // Cheese bubbles on plain (unlit) slices
-    if (!isLit) {
-      ctx.save();
-      ctx.clip();
-      [0.38, 0.55, 0.68, 0.45, 0.62].forEach((fr, bi) => {
-        const ba = mid + (bi % 3 - 1) * 0.22;
-        ctx.beginPath();
-        ctx.arc(cx + Math.cos(ba) * PR * fr, cy + Math.sin(ba) * PR * fr, PR * 0.065, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(255,255,230,0.5)';
-        ctx.fill();
+    // Pepperoni
+    const pepX = cx + Math.cos(mid) * SR * 0.52;
+    const pepY = cy + Math.sin(mid) * SR * 0.52;
+    const pepR = SR * 0.11;
+    // shadow
+    ctx.beginPath(); ctx.arc(pepX + 1.5, pepY + 2, pepR, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(0,0,0,0.2)'; ctx.fill();
+    // body
+    const pepG = ctx.createRadialGradient(pepX - pepR * 0.3, pepY - pepR * 0.3, pepR * 0.1, pepX, pepY, pepR);
+    pepG.addColorStop(0, '#FF5050'); pepG.addColorStop(0.6, '#CC1818'); pepG.addColorStop(1, '#880808');
+    ctx.beginPath(); ctx.arc(pepX, pepY, pepR, 0, Math.PI * 2);
+    ctx.fillStyle = pepG; ctx.fill();
+    // highlight
+    ctx.beginPath(); ctx.arc(pepX - pepR * 0.3, pepY - pepR * 0.3, pepR * 0.3, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,180,160,0.55)'; ctx.fill();
+
+    // Olives on wide slices (d >= 6)
+    if (d >= 6) {
+      const offa = (a2 - a1) * 0.35;
+      [mid - offa, mid + offa].forEach(oa => {
+        const ox = cx + Math.cos(oa) * SR * 0.68;
+        const oy = cy + Math.sin(oa) * SR * 0.68;
+        ctx.beginPath(); ctx.arc(ox, oy, SR * 0.065, 0, Math.PI * 2);
+        ctx.fillStyle = '#3A2820'; ctx.fill();
+        ctx.beginPath(); ctx.arc(ox - 1.5, oy - 1.5, SR * 0.028, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,255,255,0.32)'; ctx.fill();
       });
-      ctx.restore();
     }
 
     ctx.restore();
   }
 
-  // ---- PASS 2: Glowing border on lit slices (clipped inside wedge) ----
-  for (let i = 0; i < d; i++) {
-    if (!lit.has(i)) continue;
-    const a1  = START + (i / d) * Math.PI * 2;
-    const a2  = START + ((i + 1) / d) * Math.PI * 2;
-    const mid = (a1 + a2) / 2;
-
-    ctx.save();
-    ctx.translate(cx + Math.cos(mid) * 5, cy + Math.sin(mid) * 5);
-    ctx.translate(-cx, -cy);
-
-    // Clip to wedge so all glow stays inside
-    ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.arc(cx, cy, PR, a1, a2);
-    ctx.closePath();
-    ctx.clip();
-
-    // Three layers: wide/faint → medium → thin/bright
-    [
-      { color: 'rgba(255, 230, 20, 0.22)', lw: 32 },
-      { color: 'rgba(255, 210, 10, 0.55)', lw: 14 },
-      { color: 'rgba(255, 245, 60, 1.00)', lw: 4  },
-    ].forEach(g => {
-      ctx.beginPath();
-      ctx.moveTo(cx, cy);
-      ctx.arc(cx, cy, PR, a1, a2);
-      ctx.closePath();
-      ctx.strokeStyle = g.color;
-      ctx.lineWidth   = g.lw;
-      ctx.stroke();
-    });
-
-    ctx.restore();
-  }
-
-  // ---- PASS 3: Slice cut lines (over glow, under toppings) ----
-  ctx.lineWidth   = 2.5;
-  ctx.strokeStyle = 'rgba(100, 50, 10, 0.75)';
+  // ---- Slice divider lines (over pizza, under rivet) ----
   for (let i = 0; i < d; i++) {
     const angle = START + (i / d) * Math.PI * 2;
     ctx.beginPath();
     ctx.moveTo(cx, cy);
     ctx.lineTo(cx + Math.cos(angle) * PR, cy + Math.sin(angle) * PR);
+    ctx.strokeStyle = 'rgba(70,80,90,0.55)';
+    ctx.lineWidth = 1.8;
     ctx.stroke();
   }
 
-  // ---- PASS 4: Toppings on lit slices ----
-  for (let i = 0; i < d; i++) {
-    if (!lit.has(i)) continue;
-    const a1  = START + (i / d) * Math.PI * 2;
-    const a2  = START + ((i + 1) / d) * Math.PI * 2;
-    const mid = (a1 + a2) / 2;
-
-    ctx.save();
-    ctx.translate(cx + Math.cos(mid) * 5, cy + Math.sin(mid) * 5);
-    ctx.translate(-cx, -cy);
-
-    // Pepperoni
-    const pepX = cx + Math.cos(mid) * PR * 0.52;
-    const pepY = cy + Math.sin(mid) * PR * 0.52;
-    const pepR = PR * 0.11;
-    ctx.beginPath(); ctx.arc(pepX + 1.5, pepY + 2, pepR, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(0,0,0,0.18)'; ctx.fill();
-    const pepG = ctx.createRadialGradient(pepX - pepR * 0.3, pepY - pepR * 0.3, pepR * 0.1, pepX, pepY, pepR);
-    pepG.addColorStop(0, '#FF5050'); pepG.addColorStop(0.6, '#CC1818'); pepG.addColorStop(1, '#880808');
-    ctx.beginPath(); ctx.arc(pepX, pepY, pepR, 0, Math.PI * 2);
-    ctx.fillStyle = pepG; ctx.fill();
-    ctx.beginPath(); ctx.arc(pepX - pepR * 0.3, pepY - pepR * 0.3, pepR * 0.3, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(255,180,160,0.6)'; ctx.fill();
-
-    // Extra toppings on pizzas with more slices
-    if (d >= 6) {
-      const offa = (a2 - a1) * 0.34;
-      [mid - offa, mid + offa].forEach(oa => {
-        const ox = cx + Math.cos(oa) * PR * 0.70;
-        const oy = cy + Math.sin(oa) * PR * 0.70;
-        ctx.beginPath(); ctx.arc(ox, oy, PR * 0.06, 0, Math.PI * 2);
-        ctx.fillStyle = '#4A3028'; ctx.fill();
-      });
-    }
-
-    ctx.restore();
-  }
-
-  // ---- Crust ring outline ----
-  ctx.beginPath();
-  ctx.arc(cx, cy, R, 0, Math.PI * 2);
-  ctx.strokeStyle = '#8B4513';
-  ctx.lineWidth = 2.5;
-  ctx.stroke();
-
-  // ---- Inner crust edge ----
+  // Tray inner pizza-area edge
   ctx.beginPath();
   ctx.arc(cx, cy, PR, 0, Math.PI * 2);
-  ctx.strokeStyle = 'rgba(100,50,10,0.35)';
+  ctx.strokeStyle = 'rgba(70,80,90,0.40)';
   ctx.lineWidth = 1.5;
   ctx.stroke();
 
-  // ---- Center dot ----
+  // ---- Center rivet ----
   ctx.beginPath();
-  ctx.arc(cx, cy, 5, 0, Math.PI * 2);
-  ctx.fillStyle = '#7A3B10';
-  ctx.fill();
+  ctx.arc(cx + 1, cy + 1, 6, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(0,0,0,0.22)'; ctx.fill();
+  const rivetG = ctx.createRadialGradient(cx - 2, cy - 2, 1, cx, cy, 6);
+  rivetG.addColorStop(0,   '#E8ECF0');
+  rivetG.addColorStop(0.5, '#B0B8C4');
+  rivetG.addColorStop(1,   '#7A8898');
+  ctx.beginPath();
+  ctx.arc(cx, cy, 6, 0, Math.PI * 2);
+  ctx.fillStyle = rivetG; ctx.fill();
 
   ctx.restore();
 }
@@ -1054,29 +1054,33 @@ function randFrac(diff) {
 }
 
 function wrongChoices(correct, diff) {
-  const key = `${correct.n}/${correct.d}`;
   const pool = [];
   for (const d of DIFF[diff].denoms) {
     for (let n = 1; n < d; n++) {
-      if (`${n}/${d}` !== key) pool.push({ n, d });
+      // Skip any fraction equivalent to the correct answer
+      if (n * correct.d === correct.n * d) continue;
+      pool.push({ n, d });
     }
   }
-  // Also mix in nearby fractions for plausibility
+  // Prioritize nearby fractions for plausibility
   const extras = [];
   if (correct.n > 1) extras.push({ n: correct.n - 1, d: correct.d });
   if (correct.n < correct.d - 1) extras.push({ n: correct.n + 1, d: correct.d });
-  extras.forEach(e => { if (`${e.n}/${e.d}` !== key) pool.unshift(e); }); // prioritize nearby
+  extras.forEach(e => {
+    if (e.n * correct.d !== correct.n * e.d) pool.unshift(e);
+  });
 
   shuffle(pool);
-  // Deduplicate by key
-  const seen = new Set([key]);
+  // Deduplicate by equivalence (no two wrong choices should equal each other either)
+  const picked = [correct]; // seed with correct to block equivalents
   const out = [];
   for (const f of pool) {
-    const k = `${f.n}/${f.d}`;
-    if (!seen.has(k)) { seen.add(k); out.push(f); }
+    if (picked.some(s => f.n * s.d === s.n * f.d)) continue;
+    picked.push(f);
+    out.push(f);
     if (out.length === 3) break;
   }
-  // Pad if needed
+  // Pad if somehow short (very small diff pools)
   while (out.length < 3) out.push({ n: Math.floor(Math.random() * 3) + 1, d: 6 });
   return out;
 }
@@ -1195,18 +1199,18 @@ function handleIdentify(chosen, btn) {
   G.answered = true;
   document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
 
-  const ok = chosen.n === G.frac.n && chosen.d === G.frac.d;
+  // Use cross-multiplication so equivalent fractions (e.g. 2/4 == 1/2) are accepted
+  const ok = chosen.n * G.frac.d === G.frac.n * chosen.d;
   if (ok) {
     btn.classList.add('correct');
     onCorrect();
   } else {
     btn.classList.add('wrong');
-    // Reveal correct answer
+    // Reveal the correct answer button (also using equivalence check)
     document.querySelectorAll('.choice-btn').forEach(b => {
       const spans = b.querySelectorAll('span');
-      if (+spans[0].textContent === G.frac.n && +spans[1].textContent === G.frac.d) {
-        b.classList.add('reveal');
-      }
+      const bn = +spans[0].textContent, bd = +spans[1].textContent;
+      if (bn * G.frac.d === G.frac.n * bd) b.classList.add('reveal');
     });
     onWrong();
   }
