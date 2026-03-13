@@ -1054,8 +1054,18 @@ function drawPlanet(ts) {
 function drawCannon(ts) {
   const L = 38;
   const col = getLaserColors(ts);
-  // Barrel offsets: 1 or 2 barrels
-  const offsets = laserBeamCount === 2 ? [-9, 9] : [0];
+  const isThick  = laserStyle === 'thick';
+  const offsets  = laserBeamCount === 2 ? [-10, 10] : [0];
+  const bw       = isThick ? 20 : 14;  // barrel width
+  const tipR     = isThick ? 10 : 7;   // tip circle radius
+
+  // Barrel body — darkened tint of the laser color so upgrade is obvious at a glance
+  let barrelBody;
+  if      (laserStyle === 'hot')     barrelBody = '#7a3018';
+  else if (laserStyle === 'ice')     barrelBody = '#205888';
+  else if (laserStyle === 'rainbow') { const h = (ts * 0.18) % 360; barrelBody = `hsl(${h},70%,28%)`; }
+  else if (laserStyle === 'thick')   barrelBody = '#5030a0';
+  else                               barrelBody = '#6060a0';
 
   ctx.save();
   ctx.translate(cannonPX, cannonPY);
@@ -1064,16 +1074,15 @@ function drawCannon(ts) {
   offsets.forEach(ox => {
     ctx.save();
     ctx.translate(ox, 0);
-    ctx.shadowColor = col.glow; ctx.shadowBlur = 20;
-    roundRectFill(ctx, -7, -L, 14, L, 5, '#6060a0');
+    ctx.shadowColor = col.glow; ctx.shadowBlur = isThick ? 32 : 20;
+    roundRectFill(ctx, -bw/2, -L, bw, L, 5, barrelBody);
     ctx.shadowBlur = 5;
-    ctx.strokeStyle = 'rgba(200,200,255,0.6)'; ctx.lineWidth = 1.5;
-    roundRectStroke(ctx, -7, -L, 14, L, 5, 'rgba(200,200,255,0.6)', 1.5);
+    roundRectStroke(ctx, -bw/2, -L, bw, L, 5, 'rgba(200,200,255,0.6)', 1.5);
     // Tip glow — uses current laser color
     ctx.globalAlpha = 0.92;
     ctx.fillStyle = col.main;
-    ctx.shadowColor = col.glow; ctx.shadowBlur = 16;
-    ctx.beginPath(); ctx.arc(0, -L-2, 7, 0, Math.PI*2); ctx.fill();
+    ctx.shadowColor = col.glow; ctx.shadowBlur = isThick ? 24 : 16;
+    ctx.beginPath(); ctx.arc(0, -L - 2, tipR, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
   });
 
