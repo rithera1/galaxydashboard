@@ -151,8 +151,11 @@ body {
 .mode-card.selected {
   background: white;
   border-color: white;
-  box-shadow: 0 6px 24px rgba(0,0,0,0.22), 0 0 0 3px rgba(255,255,255,0.6);
-  transform: translateY(-2px);
+  box-shadow:
+    0 0 0 4px rgba(255,255,255,0.85),
+    0 0 28px 8px rgba(255,200,80,0.55),
+    0 8px 28px rgba(0,0,0,0.28);
+  transform: translateY(-3px);
 }
 .mode-card.selected .mode-title { color: #E63946; }
 .mode-card.selected .mode-desc  { color: #555; }
@@ -202,10 +205,22 @@ body {
 .diff-btn .diff-name { font-size: 1rem; line-height: 1; }
 .diff-btn .diff-sub  { font-family: 'Nunito', sans-serif; font-size: 0.62rem; font-weight: 800; opacity: 0.78; line-height: 1.2; text-align: center; }
 .diff-btn:hover { background: rgba(255,255,255,0.22); border-color: rgba(255,255,255,0.6); }
-/* Each difficulty has its own selected color */
-.diff-btn[data-diff="easy"].selected   { background: #1A8A48; border-color: #52C882; color: white; }
-.diff-btn[data-diff="medium"].selected { background: #F0C040; border-color: #C89A10; color: #3D2800; }
-.diff-btn[data-diff="hard"].selected   { background: #E63946; border-color: #B0202C; color: white; }
+/* Each difficulty has its own selected color + glow */
+.diff-btn[data-diff="easy"].selected {
+  background: #1A8A48; border-color: #52C882; color: white;
+  box-shadow: 0 0 0 3px rgba(82,200,130,0.5), 0 0 18px 4px rgba(82,200,130,0.45), 0 6px 16px rgba(0,0,0,0.2);
+  transform: translateY(-2px) scale(1.04);
+}
+.diff-btn[data-diff="medium"].selected {
+  background: #F0C040; border-color: #F5E070; color: #3D2800;
+  box-shadow: 0 0 0 3px rgba(245,220,80,0.55), 0 0 18px 4px rgba(245,210,40,0.5), 0 6px 16px rgba(0,0,0,0.2);
+  transform: translateY(-2px) scale(1.04);
+}
+.diff-btn[data-diff="hard"].selected {
+  background: #E63946; border-color: #FF7080; color: white;
+  box-shadow: 0 0 0 3px rgba(255,100,120,0.5), 0 0 18px 4px rgba(230,57,70,0.5), 0 6px 16px rgba(0,0,0,0.2);
+  transform: translateY(-2px) scale(1.04);
+}
 
 /* Start button */
 .start-btn {
