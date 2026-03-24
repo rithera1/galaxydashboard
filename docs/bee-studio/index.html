@@ -93,6 +93,12 @@
   .nav-btn{background:#f5f5f5;border:2px solid #e0e0e0;border-radius:99px;padding:8px 19px;font-size:.88rem;font-family:'Nunito',sans-serif;font-weight:800;cursor:pointer;color:#666;transition:background .15s;}
   .nav-btn:hover{background:#ffe;border-color:var(--yellow);color:var(--orange);}
   .nav-btn:disabled{opacity:.35;cursor:not-allowed;}
+  .def-btn{background:linear-gradient(135deg,var(--teal),var(--blue));color:white;border:none;border-radius:99px;padding:9px 22px;font-size:.92rem;font-family:'Fredoka One',cursive;cursor:pointer;box-shadow:0 3px 12px rgba(46,196,182,.25);transition:transform .15s;display:flex;align-items:center;gap:7px;}
+  .def-btn:hover{transform:scale(1.05);}
+  .def-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+  .def-panel{width:100%;background:#f0fffe;border:2px solid var(--teal);border-radius:14px;padding:12px 15px;text-align:left;display:flex;flex-direction:column;gap:8px;}
+  .def-entry{font-size:.9rem;font-family:'Nunito',sans-serif;color:#333;line-height:1.5;}
+  .def-pos{display:inline-block;background:var(--teal);color:white;border-radius:6px;padding:1px 7px;font-size:.75rem;font-family:'Fredoka One',cursive;margin-right:6px;vertical-align:middle;}
 
   /* MATCH */
   #matchScreen{max-width:700px;}
@@ -300,6 +306,8 @@
     <span class="word-number" id="wordNumber">Word 1 of ?</span>
     <div class="bee-icon" id="beeIcon">🐝</div>
     <button class="speak-btn" id="speakBtn" onclick="speakCurrentWord()">🔊 Hear the Word</button>
+    <button class="def-btn" id="defBtn" onclick="toggleDefinition()">📖 Definition</button>
+    <div class="def-panel hidden" id="defPanel"></div>
     <div style="width:100%;display:flex;flex-direction:column;align-items:center;gap:10px;">
       <input class="spell-input" id="spellInput" type="text" placeholder="Type your spelling here…"
         autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
@@ -565,6 +573,50 @@ function selectList(list) {
   else startMatching(list);
 }
 
+// ── DEFINITION LOOKUP ────────────────────────────────────────────────────────
+const _defCache = {};
+async function fetchDefinition(word) {
+  const key = word.toLowerCase();
+  if (_defCache[key] !== undefined) return _defCache[key];
+  try {
+    const resp = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(key)}`);
+    if (!resp.ok) { _defCache[key] = null; return null; }
+    const data = await resp.json();
+    const wordRe = new RegExp(`\\b${key.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}\\b`, 'i');
+    const defs = [];
+    for (const entry of data) {
+      for (const meaning of entry.meanings) {
+        for (const d of meaning.definitions) {
+          if (!wordRe.test(d.definition)) defs.push({ pos: meaning.partOfSpeech, def: d.definition });
+        }
+      }
+    }
+    _defCache[key] = defs.length ? defs : null;
+    return _defCache[key];
+  } catch(e) { _defCache[key] = null; return null; }
+}
+
+window.toggleDefinition = async () => {
+  const panel = document.getElementById('defPanel');
+  const btn   = document.getElementById('defBtn');
+  if (!panel.classList.contains('hidden')) {
+    panel.classList.add('hidden');
+    btn.innerHTML = '📖 Definition';
+    return;
+  }
+  const word = currentList.words[spCurrent];
+  btn.innerHTML = '📖 Loading…'; btn.disabled = true;
+  const defs = await fetchDefinition(word);
+  btn.disabled = false;
+  if (!defs) {
+    panel.innerHTML = '<div class="def-entry"><em>No definition available.</em></div>';
+  } else {
+    panel.innerHTML = defs.slice(0,3).map(d=>`<div class="def-entry"><span class="def-pos">${d.pos}</span>${d.def}</div>`).join('');
+  }
+  panel.classList.remove('hidden');
+  btn.innerHTML = '📖 Definition ▲';
+};
+
 // ── SPELLING ─────────────────────────────────────────────────────────────────
 function startSpelling(list) {
   spCurrent=0;
@@ -590,6 +642,9 @@ function loadSpellWord() {
   const input=document.getElementById('spellInput');
   const fb=document.getElementById('spellFeedback');
   const sub=document.getElementById('submitBtn');
+  const defPanel=document.getElementById('defPanel');
+  const defBtn=document.getElementById('defBtn');
+  defPanel.classList.add('hidden'); defPanel.innerHTML=''; defBtn.innerHTML='📖 Definition'; defBtn.disabled=false;
   document.getElementById('wordNumber').textContent=`Word ${spCurrent+1} of ${total}`;
   input.value=spUserAnswers[spCurrent];
   input.className='spell-input'; fb.textContent=''; fb.className='feedback';
