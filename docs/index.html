@@ -228,6 +228,17 @@
   .card.c-pink .card-icon-wrap { background: #fde0ea; border-color: var(--pink); }
   .card.c-pink .card-name { color: #a02050; }
 
+  /* ---- DISABLED CARD ---- */
+  .card.disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+  .card.disabled .card-desc::after {
+    content: ' (coming soon)';
+    font-style: italic;
+  }
+
   .card-icon-wrap {
     width: 68px;
     height: 68px;
@@ -320,7 +331,7 @@
     <a href="asteroid-add/" class="card c-orange" tabindex="0">
       <div class="card-icon-wrap">☄️</div>
       <div class="card-name">Asteroid Addition</div>
-      <div class="card-desc">Blast asteroids with math!</div>
+      <div class="card-desc">Dodge asteroids with math!</div>
     </a>
 
     <a href="solar-system/" class="card c-purple" tabindex="0">
@@ -329,11 +340,11 @@
       <div class="card-desc">Explore planets & space!</div>
     </a>
 
-    <a href="dashboard.html" class="card c-blue" tabindex="0">
+    <div class="card c-blue disabled" aria-disabled="true">
       <div class="card-icon-wrap">📊</div>
       <div class="card-name">Dashboard</div>
       <div class="card-desc">Mission control stats</div>
-    </a>
+    </div>
 
     <!-- PLACEHOLDER cards to show how the grid grows -->
     <a href="geo-guesser/" class="card c-teal" tabindex="0">
