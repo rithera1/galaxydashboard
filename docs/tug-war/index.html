@@ -272,39 +272,6 @@
     overflow: visible;
   }
 
-  /* ── TEAM SWAY ANIMATIONS ────────────────────── */
-  #teamRed, #teamBlue {
-    transform-box: fill-box;
-  }
-  #teamRed {
-    transform-origin: 91% 100%;
-    animation: swayRed 1s ease-in-out infinite;
-  }
-  #teamBlue {
-    transform-origin: 9% 100%;
-    animation: swayBlue 1.15s ease-in-out infinite;
-  }
-  @keyframes swayRed {
-    0%, 100% { transform: rotate(0deg); }
-    50%       { transform: rotate(-2deg); }
-  }
-  @keyframes swayBlue {
-    0%, 100% { transform: rotate(0deg); }
-    50%       { transform: rotate(2deg); }
-  }
-  #teamRed.pull-hard  { animation: pullRed  0.38s cubic-bezier(.34,1.56,.64,1) !important; }
-  #teamBlue.pull-hard { animation: pullBlue 0.38s cubic-bezier(.34,1.56,.64,1) !important; }
-  @keyframes pullRed {
-    0%   { transform: rotate(0deg); }
-    40%  { transform: rotate(-6deg); }
-    100% { transform: rotate(0deg); }
-  }
-  @keyframes pullBlue {
-    0%   { transform: rotate(0deg); }
-    40%  { transform: rotate(6deg); }
-    100% { transform: rotate(0deg); }
-  }
-
   /* ── FLAG ANIMATIONS ─────────────────────────── */
   /* Spring slide transition on the whole flag group */
   #tugFlag {
@@ -786,6 +753,7 @@ function goMenu() {
   live = false;
   clearTimeout(aiTimer);
   stopClock();
+  stopAnimLoop();
   document.removeEventListener('keydown', onKey);
   show('menuScreen');
 }
@@ -945,6 +913,96 @@ function checkAns(p) {
   }
 }
 
+// ── ANIMATION LOOP (sway + live rope) ──────────────────────────
+// Pivot points match the innermost feet of each team (SVG coords).
+const RED_PIVOT  = { x: 83,  y: 113 };
+const BLUE_PIVOT = { x: 277, y: 113 };
+
+// Base grip positions on the rope BEFORE any rotation.
+// Order: back → mid → front for each team.
+const RED_GRIPS  = [
+  { x: 32, y: 66 },   // Fig 3 back grip
+  { x: 60, y: 67 },   // Fig 2 mid grip
+  { x: 87, y: 64 }    // Fig 1 front grip (midpoint of two hands)
+];
+const BLUE_GRIPS = [
+  { x: 273, y: 64 },  // Fig 1 front grip
+  { x: 300, y: 67 },  // Fig 2 mid grip
+  { x: 328, y: 66 }   // Fig 3 back grip
+];
+
+const SWAY = {
+  red:  { phase: 0,                 freq: 1.0,  amp: 2, kick: 0 },
+  blue: { phase: Math.PI * 0.3,     freq: 0.87, amp: 2, kick: 0 }
+};
+
+let animFrameId  = null;
+let lastAnimTime = null;
+
+function rotPt(x, y, px, py, deg) {
+  const r = deg * Math.PI / 180, c = Math.cos(r), s = Math.sin(r);
+  const dx = x - px, dy = y - py;
+  return { x: px + dx * c - dy * s, y: py + dx * s + dy * c };
+}
+
+function buildRopePath(flagX, redAng, blueAng) {
+  const rg = RED_GRIPS.map(g  => rotPt(g.x, g.y, RED_PIVOT.x,  RED_PIVOT.y,  redAng));
+  const bg = BLUE_GRIPS.map(g => rotPt(g.x, g.y, BLUE_PIVOT.x, BLUE_PIVOT.y, blueAng));
+  const f = v => v.toFixed(1);
+  return [
+    `M 5,${f(rg[0].y)}`,
+    `L ${f(rg[0].x)},${f(rg[0].y)}`,
+    `L ${f(rg[1].x)},${f(rg[1].y)}`,
+    `L ${f(rg[2].x)},${f(rg[2].y)}`,
+    `L ${f(flagX)},72`,
+    `L ${f(bg[0].x)},${f(bg[0].y)}`,
+    `L ${f(bg[1].x)},${f(bg[1].y)}`,
+    `L ${f(bg[2].x)},${f(bg[2].y)}`,
+    `L 355,${f(bg[2].y)}`
+  ].join(' ');
+}
+
+function animTick(ts) {
+  if (!lastAnimTime) lastAnimTime = ts;
+  const dt = Math.min((ts - lastAnimTime) / 1000, 0.05);
+  lastAnimTime = ts;
+
+  SWAY.red.phase  += SWAY.red.freq  * dt * 2 * Math.PI;
+  SWAY.blue.phase += SWAY.blue.freq * dt * 2 * Math.PI;
+
+  ['red', 'blue'].forEach(k => {
+    if (SWAY[k].kick !== 0) {
+      SWAY[k].kick *= Math.exp(-10 * dt);
+      if (Math.abs(SWAY[k].kick) < 0.05) SWAY[k].kick = 0;
+    }
+  });
+
+  const redAng  = SWAY.red.amp  * Math.sin(SWAY.red.phase)  + SWAY.red.kick;
+  const blueAng = SWAY.blue.amp * Math.sin(SWAY.blue.phase) + SWAY.blue.kick;
+
+  document.getElementById('teamRed').setAttribute('transform',
+    `rotate(${redAng.toFixed(3)},${RED_PIVOT.x},${RED_PIVOT.y})`);
+  document.getElementById('teamBlue').setAttribute('transform',
+    `rotate(${blueAng.toFixed(3)},${BLUE_PIVOT.x},${BLUE_PIVOT.y})`);
+
+  const flagX = FLAG_CX + (rope / WIN) * FLAG_SPAN;
+  const d = buildRopePath(flagX, redAng, blueAng);
+  document.querySelectorAll('.rope-path').forEach(p => p.setAttribute('d', d));
+
+  animFrameId = requestAnimationFrame(animTick);
+}
+
+function startAnimLoop() {
+  if (animFrameId) cancelAnimationFrame(animFrameId);
+  lastAnimTime = null;
+  animFrameId  = requestAnimationFrame(animTick);
+}
+
+function stopAnimLoop() {
+  if (animFrameId) { cancelAnimationFrame(animFrameId); animFrameId = null; }
+  lastAnimTime = null;
+}
+
 // ── ROPE PULL ──────────────────────────────────────────────────
 function pull(p) {
   if (!live) return;
@@ -958,10 +1016,8 @@ function pull(p) {
 }
 
 function triggerPull(p) {
-  const el = document.getElementById(p === 1 ? 'teamRed' : 'teamBlue');
-  if (!el) return;
-  el.classList.add('pull-hard');
-  setTimeout(() => el.classList.remove('pull-hard'), 460);
+  if (p === 1) SWAY.red.kick  = -6;   // lean back-left = pull
+  else         SWAY.blue.kick =  6;   // lean back-right = pull
 }
 
 function triggerFlagPop() {
@@ -980,10 +1036,6 @@ function updateTugScene() {
   // Slide flag (CSS spring transition)
   document.getElementById('tugFlag').style.transform = `translateX(${flagX - FLAG_CX}px)`;
 
-  // Update both rope layers together
-  const d = ropeD(flagX);
-  document.querySelectorAll('.rope-path').forEach(p => p.setAttribute('d', d));
-
   // Score dots
   const dc = document.getElementById('scoreDots');
   dc.innerHTML = '';
@@ -1000,11 +1052,9 @@ function updateTugScene() {
     rope  <  0  ? `🔴 Red leads ${Math.abs(rope)}-0` :
                   `🔵 Blue leads ${rope}-0`;
 
-  // Winning team sways faster, losing team slower
-  document.getElementById('teamRed').style.animationDuration  =
-    rope < 0 ? '0.58s' : rope > 0 ? '1.5s' : '1s';
-  document.getElementById('teamBlue').style.animationDuration =
-    rope > 0 ? '0.58s' : rope < 0 ? '1.5s' : '1.15s';
+  // Winning team sways faster, losing team slower (via anim loop freq)
+  SWAY.red.freq  = rope < 0 ? 1.72 : rope > 0 ? 0.67 : 1.0;
+  SWAY.blue.freq = rope > 0 ? 1.72 : rope < 0 ? 0.67 : 0.87;
 }
 
 // ── NEXT QUESTION ──────────────────────────────────────────────
@@ -1103,9 +1153,10 @@ function startGame() {
   resetStats();
   startClock();
 
-  // Reset team animation speeds
-  document.getElementById('teamRed').style.animationDuration  = '1s';
-  document.getElementById('teamBlue').style.animationDuration = '1.15s';
+  // Reset sway state and start animation loop
+  SWAY.red.phase  = 0;   SWAY.red.freq  = 1.0;  SWAY.red.kick  = 0;
+  SWAY.blue.phase = Math.PI * 0.3; SWAY.blue.freq = 0.87; SWAY.blue.kick = 0;
+  startAnimLoop();
 
   // Snap flag back to centre instantly, then re-enable spring
   const flag = document.getElementById('tugFlag');
@@ -1165,6 +1216,7 @@ function endGame(winner) {
   live = false;
   clearTimeout(aiTimer);
   stopClock();
+  stopAnimLoop();
   document.removeEventListener('keydown', onKey);
   const p1wins = winner === 1;
   document.getElementById('winBanner').textContent =
