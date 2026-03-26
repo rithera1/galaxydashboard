@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>🎨 Chroma Chase</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #07071a;
+  --card: rgba(255,255,255,0.06);
+  --card-border: rgba(200,160,255,0.2);
+  --text: #eeeeff;
+  --muted: #9999cc;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body {
+  background: var(--bg);
+  font-family: 'Nunito', sans-serif;
+  min-height: 100vh;
+  color: var(--text);
+  overflow-x: hidden;
+}
+
+/* ── NAV ── */
+.site-nav {
+  display: flex; align-items: center; gap: 1rem;
+  padding: 0.7rem 1.25rem;
+  background: rgba(12,12,40,0.97);
+  border-bottom: 2px solid rgba(180,120,255,0.3);
+  position: sticky; top: 0; z-index: 100;
+  backdrop-filter: blur(10px);
+}
+.site-nav-back {
+  font-family: 'Fredoka One', cursive; font-size: 0.9rem;
+  color: var(--text); text-decoration: none;
+  background: rgba(180,120,255,0.12);
+  border: 2px solid rgba(180,120,255,0.35);
+  border-radius: 10px; padding: 0.28rem 0.75rem;
+  transition: background 0.15s;
+  touch-action: manipulation;
+}
+.site-nav-back:hover { background: rgba(180,120,255,0.26); }
+.site-nav-title { font-family: 'Fredoka One', cursive; font-size: 1.1rem; }
+
+/* ── STARS ── */
+.stars-layer { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.star { position: absolute; border-radius: 50%; background: #fff; animation: twinkle 3s ease-in-out infinite; }
+@keyframes twinkle { 0%,100%{ opacity:0.05 } 50%{ opacity:0.28 } }
+
+/* ── PAGE ── */
+.page {
+  position: relative; z-index: 1;
+  max-width: 480px; margin: 0 auto;
+  padding: 1.5rem 1.25rem 5rem;
+}
+
+/* ── SCREENS ── */
+.screen { display: none; }
+.screen.active { display: block; animation: fadeUp 0.3s ease both; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(16px) } to { opacity:1; transform:translateY(0) } }
+
+/* ── SHARED BUTTONS ── */
+.big-btn {
+  display: block; width: 100%;
+  font-family: 'Fredoka One', cursive; font-size: 1.3rem;
+  padding: 0.85rem;
+  background: linear-gradient(135deg, #a050ff, #5070ff);
+  color: white; border: none; border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(140,80,255,0.4);
+  cursor: pointer; text-align: center; text-decoration: none;
+  transition: transform 0.18s cubic-bezier(.34,1.56,.64,1), box-shadow 0.15s;
+  touch-action: manipulation;
+}
+.big-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 32px rgba(140,80,255,0.55); }
+.big-btn:active { transform: scale(0.97) !important; }
+.big-btn.green {
+  background: linear-gradient(135deg, #28b858, #18963e);
+  box-shadow: 0 4px 24px rgba(40,184,88,0.4);
+}
+.big-btn.green:hover { box-shadow: 0 8px 32px rgba(40,184,88,0.55); }
+.big-btn.ghost {
+  background: transparent;
+  border: 2px solid rgba(180,140,255,0.35);
+  color: var(--text); box-shadow: none;
+  margin-top: 0.65rem;
+}
+.big-btn.ghost:hover { background: rgba(180,140,255,0.1); box-shadow: none; }
+
+/* ── CARDS ── */
+.info-card {
+  background: var(--card);
+  border: 2px solid var(--card-border);
+  border-radius: 20px; padding: 1.2rem 1.1rem;
+  margin-bottom: 1.4rem;
+}
+
+/* ══════════════════════════════════
+   START SCREEN
+══════════════════════════════════ */
+.start-icon {
+  font-size: 5rem; text-align: center; display: block;
+  margin: 0.5rem 0;
+  animation: paintBob 2.8s ease-in-out infinite;
+  filter: drop-shadow(0 0 22px rgba(200,100,255,0.65));
+}
+@keyframes paintBob {
+  0%,100%{ transform:rotate(-8deg) translateY(0) }
+  50%{ transform:rotate(8deg) translateY(-14px) }
+}
+.start-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(2.3rem, 9vw, 3.4rem);
+  text-align: center; margin: 0.3rem 0 0.2rem;
+  background: linear-gradient(135deg, #ff80e8, #80c8ff, #80ffb8);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  line-height: 1.1;
+}
+.start-sub {
+  text-align: center; color: var(--muted);
+  font-size: 1.05rem; font-weight: 700; margin-bottom: 1.6rem;
+}
+.how-item {
+  display: flex; align-items: flex-start; gap: 0.75rem;
+  margin-bottom: 0.8rem; font-size: 0.92rem; font-weight: 700; line-height: 1.4;
+}
+.how-item:last-child { margin-bottom: 0; }
+.how-icon { font-size: 1.45rem; flex-shrink: 0; line-height: 1.1; }
+
+/* ══════════════════════════════════
+   ROUND HEADER
+══════════════════════════════════ */
+.round-header { text-align: center; margin-bottom: 1.1rem; }
+.round-label {
+  font-family: 'Fredoka One', cursive; font-size: 1rem;
+  color: var(--muted); letter-spacing: 0.04em;
+}
+.phase-label {
+  font-family: 'Fredoka One', cursive; font-size: 1.7rem;
+  margin-top: 0.1rem; line-height: 1.2;
+}
+
+/* ══════════════════════════════════
+   MEMORIZE SCREEN
+══════════════════════════════════ */
+.memorize-swatch {
+  width: 100%; height: clamp(170px, 44vw, 240px);
+  border-radius: 26px;
+  border: 4px solid rgba(255,255,255,0.25);
+  display: block; margin-bottom: 0.5rem;
+  transition: box-shadow 0.3s ease;
+}
+.swatch-caption {
+  font-family: 'Fredoka One', cursive; font-size: 0.82rem;
+  color: var(--muted); text-align: center;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  margin-bottom: 1.25rem;
+}
+.countdown-wrap { text-align: center; margin-bottom: 0.6rem; }
+.countdown-num {
+  font-family: 'Orbitron', monospace; font-size: 3.5rem; font-weight: 700;
+  color: white; text-shadow: 0 0 30px rgba(180,120,255,0.8);
+}
+.countdown-bar-bg {
+  width: 100%; height: 12px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 6px; overflow: hidden; margin-top: 0.7rem;
+}
+.countdown-bar {
+  height: 100%; border-radius: 6px;
+  transition: width 0.22s linear, background 0.35s ease;
+  box-shadow: 0 0 8px rgba(160,100,255,0.5);
+}
+
+/* ══════════════════════════════════
+   MATCH SCREEN
+══════════════════════════════════ */
+.swatch-pair {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;
+  margin-bottom: 1.2rem;
+}
+.swatch-box { text-align: center; }
+.swatch-live {
+  width: 100%; height: clamp(110px, 30vw, 170px);
+  border-radius: 20px;
+  border: 3px solid rgba(255,255,255,0.2);
+  display: block;
+  transition: background-color 0.04s linear;
+}
+.swatch-mystery {
+  width: 100%; height: clamp(110px, 30vw, 170px);
+  border-radius: 20px;
+  border: 2.5px dashed rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.04);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.8rem;
+  animation: mystPulse 2.2s ease-in-out infinite;
+}
+@keyframes mystPulse {
+  0%,100%{ opacity:0.55; transform:scale(1) }
+  50%{ opacity:0.9; transform:scale(1.02) }
+}
+.swatch-name {
+  font-family: 'Fredoka One', cursive; font-size: 0.8rem;
+  color: var(--muted); margin-top: 0.4rem;
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
+
+/* ── RGB SLIDERS ── */
+.sliders-card { margin-bottom: 1.2rem; }
+.slider-row { margin-bottom: 0.95rem; }
+.slider-row:last-child { margin-bottom: 0; }
+.slider-top {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 0.45rem;
+}
+.slider-name {
+  font-family: 'Fredoka One', cursive; font-size: 1.05rem;
+}
+.slider-val {
+  font-family: 'Orbitron', monospace; font-size: 0.95rem; font-weight: 700;
+  min-width: 36px; text-align: right;
+}
+input[type=range] {
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: 11px; border-radius: 6px; outline: none;
+  cursor: pointer;
+}
+input[type=range].r-slider { background: linear-gradient(to right, #1e0000, #ff2828); }
+input[type=range].g-slider { background: linear-gradient(to right, #001e00, #28e850); }
+input[type=range].b-slider { background: linear-gradient(to right, #00001e, #2860ff); }
+
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 30px; height: 30px; border-radius: 50%;
+  background: white; cursor: pointer;
+  border: 3px solid rgba(0,0,0,0.25);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.55);
+  transition: transform 0.12s;
+}
+input[type=range]:active::-webkit-slider-thumb { transform: scale(1.22); }
+input[type=range]::-moz-range-thumb {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: white; cursor: pointer;
+  border: 3px solid rgba(0,0,0,0.25);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.55);
+}
+.rgb-hex {
+  text-align: center; font-family: 'Orbitron', monospace;
+  font-size: 0.8rem; color: var(--muted);
+  margin-top: 0.8rem; letter-spacing: 0.08em;
+}
+
+/* ══════════════════════════════════
+   ROUND RESULT SCREEN
+══════════════════════════════════ */
+.result-swatches {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;
+  margin-bottom: 1.2rem;
+}
+.result-swatch {
+  width: 100%; height: clamp(110px, 30vw, 170px);
+  border-radius: 20px;
+  border: 3px solid rgba(255,255,255,0.22);
+}
+.score-display { text-align: center; margin-bottom: 1.4rem; }
+.score-num {
+  font-family: 'Orbitron', monospace;
+  font-size: clamp(3rem, 12vw, 4rem); font-weight: 700;
+  line-height: 1; margin-bottom: 0.15rem;
+}
+.score-denom { font-family: 'Fredoka One', cursive; font-size: 1rem; color: var(--muted); }
+.score-grade { font-size: 2rem; margin-top: 0.5rem; }
+
+/* ══════════════════════════════════
+   FINAL SCREEN
+══════════════════════════════════ */
+.final-header { text-align: center; margin-bottom: 1.25rem; }
+.final-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(1.9rem, 7vw, 2.7rem); line-height: 1.1;
+  margin-bottom: 0.3rem;
+}
+.final-total {
+  font-family: 'Orbitron', monospace;
+  font-size: clamp(3.2rem, 12vw, 4.5rem); font-weight: 700;
+  line-height: 1; margin-bottom: 0.1rem;
+}
+.final-denom { font-family: 'Fredoka One', cursive; font-size: 1rem; color: var(--muted); margin-bottom: 0.4rem; }
+.final-grade { font-size: 2.2rem; }
+
+/* Round summary table */
+.rounds-table {
+  margin-bottom: 1.4rem;
+  border: 2px solid var(--card-border);
+  border-radius: 18px; overflow: hidden;
+  background: var(--card);
+}
+.rounds-row {
+  display: flex; align-items: center; gap: 0.6rem;
+  padding: 0.65rem 0.9rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.rounds-row:last-child { border-bottom: none; }
+.round-dot {
+  width: 34px; height: 34px; border-radius: 8px; flex-shrink: 0;
+  border: 2px solid rgba(255,255,255,0.15);
+}
+.round-dot.yours { border-color: rgba(255,255,255,0.25); }
+.round-arrow { color: var(--muted); font-size: 0.8rem; flex-shrink: 0; }
+.round-label-text {
+  font-family: 'Fredoka One', cursive; font-size: 0.85rem;
+  color: var(--muted); flex: 1; min-width: 0;
+}
+.round-score-text {
+  font-family: 'Orbitron', monospace; font-size: 0.95rem; font-weight: 700;
+  flex-shrink: 0;
+}
+.round-emoji { font-size: 1.1rem; flex-shrink: 0; }
+
+@media (max-width: 380px) {
+  .memorize-swatch { height: 150px; }
+  .swatch-live, .swatch-mystery, .result-swatch { height: 100px; }
+}
+</style>
+</head>
+<body>
+
+<div class="stars-layer" id="starsLayer"></div>
+
+<nav class="site-nav">
+  <a href="../" class="site-nav-back">← Home</a>
+  <span class="site-nav-title">🎨 Chroma Chase</span>
+</nav>
+
+<div class="page">
+
+  <!-- ═════════════ START SCREEN ═════════════ -->
+  <div id="startScreen" class="screen active">
+    <span class="start-icon">🎨</span>
+    <div class="start-title">Chroma Chase</div>
+    <p class="start-sub">How sharp is your color memory?</p>
+    <div class="info-card">
+      <div class="how-item">
+        <span class="how-icon">🌈</span>
+        <span>A mystery color flashes for <strong>5 seconds</strong> — stare hard and memorize it!</span>
+      </div>
+      <div class="how-item">
+        <span class="how-icon">🎚️</span>
+        <span>Use the <strong>Red, Green & Blue</strong> sliders to recreate it from memory.</span>
+      </div>
+      <div class="how-item">
+        <span class="how-icon">🎯</span>
+        <span><strong>5 rounds</strong> — the closer your match, the higher you score!</span>
+      </div>
+      <div class="how-item">
+        <span class="how-icon">🏆</span>
+        <span>Perfect match = <strong>100 pts per round.</strong> Can you hit 500?</span>
+      </div>
+    </div>
+    <button class="big-btn" onclick="startGame()">🚀 Start Game!</button>
+  </div>
+
+  <!-- ═════════════ MEMORIZE SCREEN ═════════════ -->
+  <div id="memorizeScreen" class="screen">
+    <div class="round-header">
+      <div class="round-label" id="memRoundLabel">Round 1 of 5</div>
+      <div class="phase-label">👀 Memorize the Color!</div>
+    </div>
+    <div class="memorize-swatch" id="memSwatch"></div>
+    <div class="swatch-caption">Target Color</div>
+    <div class="countdown-wrap">
+      <div class="countdown-num" id="countNum">5</div>
+      <div class="countdown-bar-bg">
+        <div class="countdown-bar" id="countBar" style="width:100%"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═════════════ MATCH SCREEN ═════════════ -->
+  <div id="matchScreen" class="screen">
+    <div class="round-header">
+      <div class="round-label" id="matchRoundLabel">Round 1 of 5</div>
+      <div class="phase-label">🎚️ Match It!</div>
+    </div>
+
+    <div class="swatch-pair">
+      <div class="swatch-box">
+        <div class="swatch-live" id="yourSwatch" style="background:rgb(128,128,128)"></div>
+        <div class="swatch-name">Your Color</div>
+      </div>
+      <div class="swatch-box">
+        <div class="swatch-mystery">❓</div>
+        <div class="swatch-name">Target</div>
+      </div>
+    </div>
+
+    <div class="info-card sliders-card">
+      <div class="slider-row">
+        <div class="slider-top">
+          <span class="slider-name" style="color:#ff6868;">🔴 Red</span>
+          <span class="slider-val" id="valR" style="color:#ff6868;">128</span>
+        </div>
+        <input type="range" class="r-slider" id="sliderR" min="0" max="255" value="128" oninput="onSlider()">
+      </div>
+      <div class="slider-row">
+        <div class="slider-top">
+          <span class="slider-name" style="color:#60ee80;">🟢 Green</span>
+          <span class="slider-val" id="valG" style="color:#60ee80;">128</span>
+        </div>
+        <input type="range" class="g-slider" id="sliderG" min="0" max="255" value="128" oninput="onSlider()">
+      </div>
+      <div class="slider-row">
+        <div class="slider-top">
+          <span class="slider-name" style="color:#7090ff;">🔵 Blue</span>
+          <span class="slider-val" id="valB" style="color:#7090ff;">128</span>
+        </div>
+        <input type="range" class="b-slider" id="sliderB" min="0" max="255" value="128" oninput="onSlider()">
+      </div>
+      <div class="rgb-hex" id="hexDisplay">#808080</div>
+    </div>
+
+    <button class="big-btn green" onclick="lockIn()">🔒 Lock In!</button>
+  </div>
+
+  <!-- ═════════════ ROUND RESULT SCREEN ═════════════ -->
+  <div id="roundResultScreen" class="screen">
+    <div class="round-header">
+      <div class="round-label" id="resultRoundLabel">Round 1 of 5</div>
+      <div class="phase-label">🎯 Result!</div>
+    </div>
+
+    <div class="result-swatches">
+      <div class="swatch-box">
+        <div class="result-swatch" id="resultYours"></div>
+        <div class="swatch-name">Your Match</div>
+      </div>
+      <div class="swatch-box">
+        <div class="result-swatch" id="resultTarget"></div>
+        <div class="swatch-name">Target</div>
+      </div>
+    </div>
+
+    <div class="score-display">
+      <div class="score-num" id="roundScoreNum">85</div>
+      <div class="score-denom">out of 100</div>
+      <div class="score-grade" id="roundGrade">🎯 Great!</div>
+    </div>
+
+    <button class="big-btn" id="nextBtn" onclick="nextRound()">Next Round →</button>
+  </div>
+
+  <!-- ═════════════ FINAL SCREEN ═════════════ -->
+  <div id="finalScreen" class="screen">
+    <div class="final-header">
+      <div class="final-title" id="finalTitle">🎨 Nice Work!</div>
+      <div class="final-total" id="finalTotal">420</div>
+      <div class="final-denom">out of 500</div>
+      <div class="final-grade" id="finalGrade">🌟 Amazing!</div>
+    </div>
+    <div class="rounds-table" id="roundsTable"></div>
+    <button class="big-btn green" onclick="startGame()">🔄 Play Again</button>
+    <a href="../" class="big-btn ghost">← Home</a>
+  </div>
+
+</div><!-- /page -->
+
+<script>
+'use strict';
+
+// ─── Constants ───────────────────────────────────────
+const ROUNDS      = 5;
+const SHOW_SECS   = 5;
+const RESET_R     = 128;
+const RESET_G     = 128;
+const RESET_B     = 128;
+const MAX_DIST    = Math.sqrt(255**2 + 255**2 + 255**2); // ≈ 441.67
+
+// ─── State ───────────────────────────────────────────
+let round        = 0;
+let targets      = [];
+let playerGuesses = [];
+let roundScores  = [];
+let ticker       = null;
+let secsLeft     = SHOW_SECS;
+
+// ─── Color Helpers ───────────────────────────────────
+function hslToRgb(h, s, l) {
+  s /= 100; l /= 100;
+  const k = n => (n + h / 30) % 12;
+  const a = s * Math.min(l, 1 - l);
+  const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+  return {
+    r: Math.round(f(0) * 255),
+    g: Math.round(f(8) * 255),
+    b: Math.round(f(4) * 255)
+  };
+}
+
+function randomVivid() {
+  const h = Math.random() * 360;
+  const s = 55 + Math.random() * 45;   // 55–100 %  vivid
+  const l = 32 + Math.random() * 33;   // 32–65 %  not too dark / not too washed
+  return hslToRgb(h, s, l);
+}
+
+function rgbStr(c) { return `rgb(${c.r},${c.g},${c.b})`; }
+
+function toHex(c) {
+  const h = v => v.toString(16).padStart(2,'0').toUpperCase();
+  return `#${h(c.r)}${h(c.g)}${h(c.b)}`;
+}
+
+function calcScore(a, b) {
+  const d = Math.sqrt((a.r-b.r)**2 + (a.g-b.g)**2 + (a.b-b.b)**2);
+  return Math.round(Math.max(0, (1 - d / MAX_DIST) * 100));
+}
+
+function gradeForScore(s) {
+  if (s >= 96) return '🌟 Perfect!';
+  if (s >= 85) return '🎯 Excellent!';
+  if (s >= 70) return '😊 Great!';
+  if (s >= 55) return '👍 Good!';
+  if (s >= 40) return '🤔 Not Bad!';
+  return '😬 Keep Trying!';
+}
+
+function gradeEmoji(s) { return gradeForScore(s).split(' ')[0]; }
+
+function colorForScore(s) {
+  if (s >= 85) return '#50ffaa';
+  if (s >= 65) return '#ffe050';
+  if (s >= 45) return '#ffa040';
+  return '#ff6060';
+}
+
+function totalTitle(avg) {
+  if (avg >= 90) return '🌈 Color Genius!';
+  if (avg >= 75) return '🎨 Amazing Eye!';
+  if (avg >= 60) return '👏 Nice Recall!';
+  if (avg >= 45) return '🙂 Keep Practicing!';
+  return '🎮 Fun Try!';
+}
+
+// ─── Screen Switch ───────────────────────────────────
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ─── Slider Logic ────────────────────────────────────
+function onSlider() {
+  const r = +document.getElementById('sliderR').value;
+  const g = +document.getElementById('sliderG').value;
+  const b = +document.getElementById('sliderB').value;
+  document.getElementById('valR').textContent = r;
+  document.getElementById('valG').textContent = g;
+  document.getElementById('valB').textContent = b;
+  document.getElementById('yourSwatch').style.backgroundColor = `rgb(${r},${g},${b})`;
+  document.getElementById('hexDisplay').textContent = toHex({r,g,b});
+}
+
+function resetSliders() {
+  document.getElementById('sliderR').value = RESET_R;
+  document.getElementById('sliderG').value = RESET_G;
+  document.getElementById('sliderB').value = RESET_B;
+  onSlider();
+}
+
+// ─── Game Flow ───────────────────────────────────────
+function startGame() {
+  round        = 0;
+  targets      = [];
+  playerGuesses = [];
+  roundScores  = [];
+  for (let i = 0; i < ROUNDS; i++) targets.push(randomVivid());
+  startRound();
+}
+
+function startRound() {
+  round++;
+  const t = targets[round - 1];
+
+  document.getElementById('memRoundLabel').textContent = `Round ${round} of ${ROUNDS}`;
+  const swatch = document.getElementById('memSwatch');
+  swatch.style.backgroundColor = rgbStr(t);
+  swatch.style.boxShadow       = `0 0 70px ${rgbStr(t)}, 0 0 20px rgba(0,0,0,0.4)`;
+
+  secsLeft = SHOW_SECS;
+  document.getElementById('countNum').textContent = secsLeft;
+  setBar(100, 'start');
+
+  show('memorizeScreen');
+
+  clearInterval(ticker);
+  ticker = setInterval(() => {
+    secsLeft--;
+    document.getElementById('countNum').textContent = Math.max(0, secsLeft);
+    const pct = Math.max(0, secsLeft / SHOW_SECS) * 100;
+    setBar(pct, secsLeft <= 1 ? 'low' : secsLeft <= 2 ? 'mid' : 'start');
+    if (secsLeft <= 0) { clearInterval(ticker); startMatch(); }
+  }, 1000);
+}
+
+function setBar(pct, phase) {
+  const bar = document.getElementById('countBar');
+  bar.style.width = pct + '%';
+  if (phase === 'low')        bar.style.background = '#ff4030';
+  else if (phase === 'mid')   bar.style.background = 'linear-gradient(90deg,#ffb030,#ff5030)';
+  else                        bar.style.background = 'linear-gradient(90deg,#b060ff,#5080ff)';
+}
+
+function startMatch() {
+  document.getElementById('matchRoundLabel').textContent = `Round ${round} of ${ROUNDS}`;
+  resetSliders();
+  show('matchScreen');
+}
+
+function lockIn() {
+  const r = +document.getElementById('sliderR').value;
+  const g = +document.getElementById('sliderG').value;
+  const b = +document.getElementById('sliderB').value;
+  const guess  = { r, g, b };
+  const target = targets[round - 1];
+  const score  = calcScore(target, guess);
+
+  playerGuesses.push(guess);
+  roundScores.push(score);
+
+  // Populate result screen
+  document.getElementById('resultRoundLabel').textContent = `Round ${round} of ${ROUNDS}`;
+
+  const yEl = document.getElementById('resultYours');
+  yEl.style.backgroundColor = rgbStr(guess);
+  yEl.style.boxShadow = `0 0 24px ${rgbStr(guess)}99`;
+
+  const tEl = document.getElementById('resultTarget');
+  tEl.style.backgroundColor = rgbStr(target);
+  tEl.style.boxShadow = `0 0 24px ${rgbStr(target)}99`;
+
+  const sEl = document.getElementById('roundScoreNum');
+  sEl.textContent  = score;
+  sEl.style.color  = colorForScore(score);
+  sEl.style.textShadow = `0 0 30px ${colorForScore(score)}88`;
+
+  document.getElementById('roundGrade').textContent = gradeForScore(score);
+
+  const isLast = round >= ROUNDS;
+  const btn = document.getElementById('nextBtn');
+  btn.textContent = isLast ? '🏆 See Final Score!' : `Next Round →`;
+  btn.className   = isLast ? 'big-btn green' : 'big-btn';
+
+  show('roundResultScreen');
+}
+
+function nextRound() {
+  if (round >= ROUNDS) showFinal();
+  else startRound();
+}
+
+function showFinal() {
+  const total = roundScores.reduce((a, b) => a + b, 0);
+  const avg   = total / ROUNDS;
+
+  const tEl = document.getElementById('finalTotal');
+  tEl.textContent = total;
+  tEl.style.color = colorForScore(avg);
+  tEl.style.textShadow = `0 0 40px ${colorForScore(avg)}88`;
+
+  document.getElementById('finalTitle').textContent = totalTitle(avg);
+  document.getElementById('finalGrade').textContent = gradeForScore(avg);
+
+  // Build round table
+  const table = document.getElementById('roundsTable');
+  table.innerHTML = '';
+  for (let i = 0; i < ROUNDS; i++) {
+    const sc = roundScores[i];
+    const row = document.createElement('div');
+    row.className = 'rounds-row';
+    row.innerHTML = `
+      <div class="round-dot"        style="background:${rgbStr(targets[i])}"></div>
+      <div class="round-arrow">→</div>
+      <div class="round-dot yours"  style="background:${rgbStr(playerGuesses[i])}"></div>
+      <div class="round-label-text">Round ${i + 1}</div>
+      <div class="round-score-text" style="color:${colorForScore(sc)}">${sc}/100</div>
+      <div class="round-emoji">${gradeEmoji(sc)}</div>
+    `;
+    table.appendChild(row);
+  }
+
+  show('finalScreen');
+}
+
+// ─── Background Stars ────────────────────────────────
+const sl = document.getElementById('starsLayer');
+for (let i = 0; i < 130; i++) {
+  const s  = document.createElement('div');
+  s.className = 'star';
+  const sz = [1,1,2,2,3][Math.floor(Math.random()*5)];
+  Object.assign(s.style, {
+    width: sz + 'px', height: sz + 'px',
+    left: Math.random()*100 + '%',
+    top:  Math.random()*100 + '%',
+    animationDelay:    (Math.random()*5).toFixed(2) + 's',
+    animationDuration: (2.5 + Math.random()*3).toFixed(2) + 's'
+  });
+  sl.appendChild(s);
+}
+
+// Expose for inline handlers
+window.startGame = startGame;
+window.lockIn    = lockIn;
+window.nextRound = nextRound;
+window.onSlider  = onSlider;
+</script>
+</body>
+</html>
