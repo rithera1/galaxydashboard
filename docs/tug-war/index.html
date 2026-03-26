@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>🪢 Tug of War Math</title>
+<title>Tug × Battle</title>
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -57,7 +57,6 @@
     align-items: center; justify-content: center;
     flex-direction: column;
   }
-  /* game screen overrides to grid */
   #gameScreen {
     grid-template-columns: 1fr 200px 1fr;
     grid-template-rows: 1fr;
@@ -113,6 +112,7 @@
   }
   .menu-title .r { color: var(--red); }
   .menu-title .b { color: var(--blue); }
+  .menu-title .x { color: var(--ink); opacity: 0.55; font-size: 0.75em; vertical-align: middle; }
   .menu-sub { font-size: 0.95rem; color: var(--ink-lt); font-weight: 700; text-align: center; }
   .sec-lbl {
     font-family: 'Fredoka One', cursive; font-size: 0.88rem;
@@ -140,10 +140,24 @@
     border-radius: 18px; border: 3px solid;
     padding: 0.5rem 0.6rem;
     display: flex; flex-direction: column; align-items: center;
-    gap: 0.35rem; overflow: hidden;
+    gap: 0.35rem; overflow: visible;
   }
   .panel.p1 { background: var(--red-bg);  border-color: var(--red); }
   .panel.p2 { background: var(--blue-bg); border-color: var(--blue); }
+
+  /* Panel feedback flashes */
+  @keyframes panelOk {
+    0%,100% { box-shadow: 0 0 0 0 transparent; }
+    30%     { box-shadow: 0 0 0 6px var(--green), 0 0 28px rgba(76,175,80,0.6); }
+    70%     { box-shadow: 0 0 0 4px var(--green), 0 0 16px rgba(76,175,80,0.3); }
+  }
+  @keyframes panelErr {
+    0%,100%  { box-shadow: 0 0 0 0 transparent; }
+    20%, 60% { box-shadow: 0 0 0 6px var(--red), 0 0 28px rgba(212,40,40,0.6); }
+    40%      { box-shadow: 0 0 0 3px var(--red), 0 0 14px rgba(212,40,40,0.3); }
+  }
+  .panel.flash-ok  { animation: panelOk  0.48s ease; }
+  .panel.flash-err { animation: panelErr 0.48s ease; }
 
   .p-label {
     font-family: 'Fredoka One', cursive;
@@ -157,24 +171,40 @@
     font-family: 'Fredoka One', cursive;
     font-size: clamp(1.6rem, 4vw, 2.6rem);
     color: var(--ink); text-align: center; min-height: 1.2em;
-    transition: color 0.12s;
+    transition: color 0.1s;
   }
   .q-box.ok  { color: var(--green); }
   .q-box.err { color: var(--red); }
 
+  /* ── ANSWER BOX — bigger + animated feedback ──── */
   .ans-box {
     font-family: 'Fredoka One', cursive;
-    font-size: clamp(1.8rem, 4.5vw, 2.9rem);
-    width: 3.8rem; min-height: 2.8rem;
-    border-radius: 12px; border: 3px solid;
+    font-size: clamp(2.1rem, 5.2vw, 3.4rem);
+    width: 5.8rem; min-height: 4rem;
+    border-radius: 14px; border: 3px solid;
     display: flex; align-items: center; justify-content: center;
     background: white; line-height: 1;
-    transition: background 0.12s;
   }
   .panel.p1 .ans-box { border-color: var(--red);  color: var(--red); }
   .panel.p2 .ans-box { border-color: var(--blue); color: var(--blue); }
-  .ans-box.ok  { background: #d4ffdc !important; }
-  .ans-box.err { background: #ffd4d4 !important; }
+
+  @keyframes ansOk {
+    0%   { transform: scale(1); }
+    35%  { transform: scale(1.32); }
+    65%  { transform: scale(0.92); }
+    100% { transform: scale(1); }
+  }
+  @keyframes ansErr {
+    0%,100% { transform: translateX(0); }
+    15%     { transform: translateX(-10px); }
+    30%     { transform: translateX(10px); }
+    45%     { transform: translateX(-7px); }
+    60%     { transform: translateX(7px); }
+    78%     { transform: translateX(-3px); }
+    90%     { transform: translateX(3px); }
+  }
+  .ans-box.ok  { background: #c6ffd0 !important; animation: ansOk  0.38s ease; }
+  .ans-box.err { background: #ffc6c6 !important; animation: ansErr 0.44s ease; }
 
   /* ── NUMPAD ───────────────────────────────────── */
   .np-wrap {
@@ -226,51 +256,92 @@
     color: var(--ink-lt); text-align: center;
   }
 
-  /* Rope */
+  /* ── ROPE + TUG SCENE ─────────────────────────── */
   .rope-wrap {
-    position: relative; width: 100%; height: 66px;
+    position: relative; width: 100%; height: 110px;
     display: flex; align-items: center;
   }
   .rope-track {
-    position: absolute; left: 0; right: 0; height: 14px;
+    position: absolute; left: 0; right: 0; height: 18px;
     background: repeating-linear-gradient(
       90deg,
       #c9972a 0, #c9972a 8px,
       #8b5e0c 8px, #8b5e0c 16px
     );
-    border-radius: 7px; border: 2px solid #7a4f08;
+    border-radius: 9px; border: 2px solid #7a4f08;
     top: 50%; transform: translateY(-50%);
+    z-index: 2;
   }
   .rope-end-r {
-    position: absolute; left: 0; width: 18%; height: 14px;
-    background: rgba(212,40,40,0.35); border-radius: 7px 0 0 7px;
-    top: 50%; transform: translateY(-50%);
+    position: absolute; left: 0; width: 18%; height: 18px;
+    background: rgba(212,40,40,0.38); border-radius: 9px 0 0 9px;
+    top: 50%; transform: translateY(-50%); z-index: 2;
   }
   .rope-end-b {
-    position: absolute; right: 0; width: 18%; height: 14px;
-    background: rgba(32,80,212,0.35); border-radius: 0 7px 7px 0;
-    top: 50%; transform: translateY(-50%);
+    position: absolute; right: 0; width: 18%; height: 18px;
+    background: rgba(32,80,212,0.38); border-radius: 0 9px 9px 0;
+    top: 50%; transform: translateY(-50%); z-index: 2;
   }
   .rope-tick {
-    position: absolute; width: 3px; height: 26px;
+    position: absolute; width: 3px; height: 30px;
     background: rgba(0,0,0,0.16); border-radius: 2px;
     top: 50%; transform: translate(-50%, -50%);
-    pointer-events: none;
+    pointer-events: none; z-index: 3;
   }
   .rope-knot {
-    position: absolute; width: 34px; height: 34px;
+    position: absolute; width: 44px; height: 44px;
     background: white; border: 3px solid var(--ink); border-radius: 50%;
     top: 50%; transform: translate(-50%, -50%);
     display: flex; align-items: center; justify-content: center;
-    font-size: 1.05rem;
+    font-size: 1.3rem;
     transition: left 0.4s cubic-bezier(.34,1.56,.64,1);
-    z-index: 5; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    z-index: 5; box-shadow: 0 3px 10px rgba(0,0,0,0.25);
   }
   @keyframes knotPop {
     0%,100% { transform: translate(-50%,-50%) scale(1); }
-    45%     { transform: translate(-50%,-50%) scale(1.3); }
+    45%     { transform: translate(-50%,-50%) scale(1.45); }
   }
   .rope-knot.pop { animation: knotPop 0.38s ease; }
+
+  /* Cartoon tugger stick figures */
+  .tgr-team {
+    position: absolute;
+    top: 50%;
+    margin-top: -38px;   /* half of (40 + 3 + 32) = 75px → ~38px */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    z-index: 4;
+    pointer-events: none;
+  }
+  .tgr-r {
+    left: 4px;
+    transform-origin: right center;
+    animation: tugAnimR 0.9s ease-in-out infinite;
+  }
+  .tgr-b {
+    right: 4px;
+    transform-origin: left center;
+    animation: tugAnimB 0.9s ease-in-out infinite;
+  }
+  @keyframes tugAnimR {
+    0%, 100% { transform: rotate(-12deg); }
+    50%       { transform: rotate(-20deg); }
+  }
+  @keyframes tugAnimB {
+    0%, 100% { transform: rotate(12deg); }
+    50%       { transform: rotate(20deg); }
+  }
+  .tgr-char {
+    display: block;
+    width: 20px;
+    height: auto;
+    flex-shrink: 0;
+  }
+  .tgr-char.sm { width: 16px; opacity: 0.82; }
+  /* Mirror blue team to face left (toward rope from right side) */
+  .tgr-b .tgr-char { transform: scaleX(-1); }
 
   /* Score dots */
   .score-row {
@@ -328,10 +399,15 @@
     #gameScreen { gap: 0.3rem; padding: 0.3rem; }
     .panel { padding: 0.3rem 0.4rem; gap: 0.2rem; }
     .q-box   { font-size: 1.4rem; }
-    .ans-box { font-size: 1.6rem; min-height: 2.2rem; width: 3rem; }
-    .rope-wrap  { height: 50px; }
-    .rope-knot  { width: 26px; height: 26px; font-size: 0.82rem; }
-    .rope-tick  { height: 20px; }
+    .ans-box { font-size: 1.7rem; min-height: 2.8rem; width: 4.2rem; }
+    .rope-wrap  { height: 70px; }
+    .rope-track { height: 13px; }
+    .rope-end-r, .rope-end-b { height: 13px; }
+    .rope-knot  { width: 32px; height: 32px; font-size: 0.9rem; }
+    .rope-tick  { height: 22px; }
+    .tgr-char   { width: 14px; }
+    .tgr-char.sm{ width: 11px; }
+    .tgr-team   { margin-top: -26px; }
   }
   @media (max-width: 600px) and (orientation: landscape) {
     #gameScreen { grid-template-columns: 1fr 160px 1fr; }
@@ -344,7 +420,7 @@
 <div id="portraitWarn">
   <div class="wi">📱</div>
   <div class="wt">Please rotate your device!</div>
-  <div class="ws">Tug of War needs landscape mode.</div>
+  <div class="ws">Tug × Battle needs landscape mode.</div>
 </div>
 
 <!-- Back to Dashboard -->
@@ -355,9 +431,9 @@
 ════════════════════════════════════════════════ -->
 <div class="screen active" id="menuScreen">
   <div class="menu-title">
-    <span class="r">Tug</span> of <span class="b">War</span> Math 🪢
+    <span class="r">Tug</span><span class="x"> × </span><span class="b">Battle</span>
   </div>
-  <div class="menu-sub">Answer faster — pull harder!</div>
+  <div class="menu-sub">Multiply faster — pull harder!</div>
 
   <div class="sec-lbl">Mode</div>
   <div class="btn-row">
@@ -374,7 +450,7 @@
     </div>
   </div>
 
-  <button class="btn btn-go" onclick="startCountdown()">🪢 Start!</button>
+  <button class="btn btn-go" onclick="startCountdown()">⚔️ Start!</button>
 </div>
 
 <!-- ═══════════════════════════════════════════════
@@ -406,6 +482,47 @@
       <div class="rope-end-r"></div>
       <div class="rope-end-b"></div>
       <!-- tick marks injected by JS -->
+
+      <!-- Red team stick figures (left, face right toward rope) -->
+      <div class="tgr-team tgr-r">
+        <svg class="tgr-char" viewBox="0 0 24 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="8" r="6" fill="#d42828"/>
+          <line x1="12" y1="14" x2="12" y2="30" stroke="#d42828" stroke-width="3" stroke-linecap="round"/>
+          <line x1="12" y1="19" x2="21" y2="14" stroke="#d42828" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="12" y1="19" x2="5"  y2="25" stroke="#d42828" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="12" y1="30" x2="7"  y2="44" stroke="#d42828" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="12" y1="30" x2="17" y2="44" stroke="#d42828" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+        <svg class="tgr-char sm" viewBox="0 0 24 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="8" r="6" fill="#d42828"/>
+          <line x1="12" y1="14" x2="12" y2="30" stroke="#d42828" stroke-width="3" stroke-linecap="round"/>
+          <line x1="12" y1="19" x2="21" y2="14" stroke="#d42828" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="12" y1="19" x2="5"  y2="25" stroke="#d42828" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="12" y1="30" x2="7"  y2="44" stroke="#d42828" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="12" y1="30" x2="17" y2="44" stroke="#d42828" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+
+      <!-- Blue team stick figures (right, mirrored to face left toward rope) -->
+      <div class="tgr-team tgr-b">
+        <svg class="tgr-char" viewBox="0 0 24 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="8" r="6" fill="#2050d4"/>
+          <line x1="12" y1="14" x2="12" y2="30" stroke="#2050d4" stroke-width="3" stroke-linecap="round"/>
+          <line x1="12" y1="19" x2="21" y2="14" stroke="#2050d4" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="12" y1="19" x2="5"  y2="25" stroke="#2050d4" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="12" y1="30" x2="7"  y2="44" stroke="#2050d4" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="12" y1="30" x2="17" y2="44" stroke="#2050d4" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+        <svg class="tgr-char sm" viewBox="0 0 24 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="8" r="6" fill="#2050d4"/>
+          <line x1="12" y1="14" x2="12" y2="30" stroke="#2050d4" stroke-width="3" stroke-linecap="round"/>
+          <line x1="12" y1="19" x2="21" y2="14" stroke="#2050d4" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="12" y1="19" x2="5"  y2="25" stroke="#2050d4" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="12" y1="30" x2="7"  y2="44" stroke="#2050d4" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="12" y1="30" x2="17" y2="44" stroke="#2050d4" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+
       <div class="rope-knot" id="knot">🪢</div>
     </div>
 
@@ -439,11 +556,11 @@
 
 <script>
 // ── CONFIG ─────────────────────────────────────────────────────
-const WIN = 5;   // first to pull rope this many spots wins
+const WIN = 5;
 
 // ── STATE ──────────────────────────────────────────────────────
 let mode = 'ai', diff = 'easy';
-let rope = 0;            // -WIN..+WIN  (negative = P1 winning)
+let rope = 0;
 let inp1 = '', inp2 = '';
 let q1 = null, q2 = null;
 let live = false;
@@ -475,15 +592,16 @@ function pickMode(m) {
 }
 function pickDiff(d) {
   diff = d;
-  ['easy','medium','hard'].forEach(x => {
-    const id = 'btn' + x[0].toUpperCase() + x.slice(1);
-    document.getElementById(id).classList.toggle('sel', x === d);
+  // Explicit ID map — avoids the btnMedium vs btnMed mismatch
+  const idMap = { easy: 'btnEasy', medium: 'btnMed', hard: 'btnHard' };
+  Object.keys(idMap).forEach(x => {
+    document.getElementById(idMap[x]).classList.toggle('sel', x === d);
   });
 }
 
 // ── QUESTION GENERATOR ─────────────────────────────────────────
-// Only produces questions whose answer is a 2-digit number (10–99).
-function makeQ(d) {
+// avoidAns: if set, will not generate a question with that answer (no back-to-back)
+function makeQ(d, avoidAns) {
   const ranges = { easy: [2,7], medium: [2,9], hard: [3,12] };
   const [lo, hi] = ranges[d] || [2, 9];
   let a, b, tries = 0;
@@ -491,7 +609,7 @@ function makeQ(d) {
     a = lo + Math.floor(Math.random() * (hi - lo + 1));
     b = lo + Math.floor(Math.random() * (hi - lo + 1));
     tries++;
-  } while ((a * b < 10 || a * b > 99) && tries < 500);
+  } while ((a * b < 10 || a * b > 99 || (avoidAns != null && a * b === avoidAns)) && tries < 500);
   if (Math.random() < 0.5) [a, b] = [b, a];
   return { a, b, ans: a * b };
 }
@@ -538,33 +656,57 @@ function setAns(p, v) {
 
 // ── ANSWER CHECK ───────────────────────────────────────────────
 function checkAns(p) {
-  const inp = p === 1 ? inp1 : inp2;
-  const q   = p === 1 ? q1   : q2;
-  const aEl = document.getElementById('a' + p);
-  const qEl = document.getElementById('q' + p);
+  const inp   = p === 1 ? inp1 : inp2;
+  const q     = p === 1 ? q1   : q2;
+  const aEl   = document.getElementById('a' + p);
+  const qEl   = document.getElementById('q' + p);
+  const panel = document.querySelector('.panel.p' + p);
+
+  // Force-restart a CSS animation by clearing the inline style
+  const restartAnim = el => {
+    el.style.animation = 'none';
+    void el.offsetWidth;
+    el.style.animation = '';
+  };
 
   if (parseInt(inp) === q.ans) {
     // ✓ Correct
-    aEl.classList.add('ok'); qEl.classList.add('ok');
+    aEl.classList.remove('ok', 'err');   restartAnim(aEl);
+    panel.classList.remove('flash-ok', 'flash-err'); restartAnim(panel);
+    qEl.classList.remove('ok', 'err');
+
+    aEl.classList.add('ok');
+    qEl.classList.add('ok');
+    panel.classList.add('flash-ok');
+
     if (p === 1) inp1 = ''; else inp2 = '';
     setTimeout(() => {
-      aEl.classList.remove('ok'); qEl.classList.remove('ok');
+      aEl.classList.remove('ok');
+      qEl.classList.remove('ok');
+      panel.classList.remove('flash-ok');
       pull(p);
-    }, 220);
+    }, 310);
   } else {
-    // ✗ Wrong — flash red, then clear and stay on same question
-    aEl.classList.add('err'); qEl.classList.add('err');
+    // ✗ Wrong
+    aEl.classList.remove('ok', 'err');   restartAnim(aEl);
+    panel.classList.remove('flash-ok', 'flash-err'); restartAnim(panel);
+    qEl.classList.remove('ok', 'err');
+
+    aEl.classList.add('err');
+    qEl.classList.add('err');
+    panel.classList.add('flash-err');
+
     if (p === 1) inp1 = ''; else inp2 = '';
     setTimeout(() => {
-      aEl.classList.remove('err'); qEl.classList.remove('err');
+      aEl.classList.remove('err');
+      qEl.classList.remove('err');
+      panel.classList.remove('flash-err');
       setAns(p, '');
-    }, 380);
+    }, 460);
   }
 }
 
 // ── ROPE PULL ──────────────────────────────────────────────────
-// P1 correct → rope goes negative (knot toward P1 / left)
-// P2 correct → rope goes positive (knot toward P2 / right)
 function pull(p) {
   if (!live) return;
   rope += (p === 1 ? -1 : 1);
@@ -575,16 +717,12 @@ function pull(p) {
 }
 
 function updateRope() {
-  // Knot position: 5% (P1 wins) ↔ 95% (P2 wins), center = 50%
   const knot = document.getElementById('knot');
   knot.style.left = (50 + (rope / WIN) * 45) + '%';
   knot.classList.remove('pop');
-  void knot.offsetWidth;  // reflow to restart animation
+  void knot.offsetWidth;
   knot.classList.add('pop');
 
-  // Score dots: 9 dots for WIN=5 (-4…+4)
-  // Dots on P1's side (i < 0) fill RED  when knot has passed them (rope ≤ i)
-  // Dots on P2's side (i > 0) fill BLUE when knot has passed them (rope ≥ i)
   const dc = document.getElementById('scoreDots');
   dc.innerHTML = '';
   for (let i = -(WIN-1); i <= WIN-1; i++) {
@@ -599,12 +737,22 @@ function updateRope() {
     rope === 0  ? 'Dead even!' :
     rope  <  0  ? `🔴 Red leads ${Math.abs(rope)}-0` :
                   `🔵 Blue leads ${rope}-0`;
+
+  // Winning side animates faster (energetic pull), losing side slower
+  const tugR = document.querySelector('.tgr-r');
+  const tugB = document.querySelector('.tgr-b');
+  if (tugR && tugB) {
+    tugR.style.animationDuration = (rope < 0 ? 0.55 : rope > 0 ? 1.25 : 0.9) + 's';
+    tugB.style.animationDuration = (rope > 0 ? 0.55 : rope < 0 ? 1.25 : 0.9) + 's';
+  }
 }
 
 // ── NEXT QUESTION ──────────────────────────────────────────────
 function nextQ(p) {
   if (!live) return;
-  const q = makeQ(diff);
+  // Pass previous answer to avoid back-to-back repeats
+  const prev = p === 1 ? q1 : q2;
+  const q = makeQ(diff, prev ? prev.ans : null);
   if (p === 1) {
     q1 = q; inp1 = '';
     document.getElementById('q1').textContent = `${q.a} × ${q.b} = ?`;
@@ -631,7 +779,6 @@ function scheduleAI() {
     hard:    500 + Math.random() * 1000
   }[diff];
 
-  // Animate progress bar
   const fill = document.querySelector('.ai-fill');
   if (fill) {
     fill.style.transition = 'none'; fill.style.width = '0%';
@@ -643,7 +790,6 @@ function scheduleAI() {
 
   aiTimer = setTimeout(() => {
     if (!live) return;
-    // Briefly reveal question + answer, then pull
     document.getElementById('q2').textContent = `${q2.a} × ${q2.b} = ?`;
     setAns(2, String(q2.ans));
     const aEl = document.getElementById('a2');
@@ -677,16 +823,19 @@ function startGame() {
   rope = 0; inp1 = ''; inp2 = ''; live = true;
   clearTimeout(aiTimer);
 
-  // Labels
   document.getElementById('p1name').textContent = 'Player 1';
   document.getElementById('p2name').textContent = mode === 'ai' ? 'AI' : 'Player 2';
   document.getElementById('vsLbl').textContent  = mode === 'ai' ? 'You vs AI' : 'P1 vs P2';
 
-  // P1 numpad
+  // Reset tugger speeds
+  const tugR = document.querySelector('.tgr-r');
+  const tugB = document.querySelector('.tgr-b');
+  if (tugR) tugR.style.animationDuration = '0.9s';
+  if (tugB) tugB.style.animationDuration = '0.9s';
+
   const np1 = document.getElementById('np1');
   np1.innerHTML = ''; np1.appendChild(buildPad(1));
 
-  // P2 area
   const np2 = document.getElementById('np2');
   np2.innerHTML = '';
   if (mode === '2p') {
@@ -699,7 +848,6 @@ function startGame() {
       </div>`;
   }
 
-  // Rope tick marks (positions -(WIN-1) to +(WIN-1))
   const rw = document.getElementById('ropeWrap');
   rw.querySelectorAll('.rope-tick').forEach(t => t.remove());
   for (let i = -(WIN-1); i <= WIN-1; i++) {
@@ -709,16 +857,16 @@ function startGame() {
     rw.appendChild(t);
   }
 
-  // Reset knot (no transition for instant snap to center)
   const knot = document.getElementById('knot');
   knot.style.transition = 'none'; knot.style.left = '50%';
   setTimeout(() => { knot.style.transition = 'left 0.4s cubic-bezier(.34,1.56,.64,1)'; }, 30);
 
-  // Draw initial rope state
   updateRope();
 
-  // First questions
-  q1 = makeQ(diff); q2 = makeQ(diff);
+  // Generate initial questions — p2 avoids same answer as p1
+  q1 = makeQ(diff, null);
+  q2 = makeQ(diff, q1.ans);
+
   document.getElementById('q1').textContent = `${q1.a} × ${q1.b} = ?`;
   setAns(1, '');
   if (mode === '2p') {
@@ -731,12 +879,11 @@ function startGame() {
   }
 
   show('gameScreen');
-
   document.removeEventListener('keydown', onKey);
   document.addEventListener('keydown', onKey);
 }
 
-// Number keys / backspace control P1 (useful on desktop/keyboard testing)
+// Number keys / backspace for P1 on desktop
 function onKey(e) {
   if (!live) return;
   if (e.key >= '0' && e.key <= '9') addInp(1, e.key);
@@ -780,7 +927,6 @@ function launchConfetti(mainCol) {
     c:   palette[Math.floor(Math.random() * palette.length)],
     a:   1
   }));
-  let raf;
   (function draw() {
     ctx.clearRect(0, 0, cv.width, cv.height);
     let alive = false;
@@ -795,7 +941,7 @@ function launchConfetti(mainCol) {
       ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
       ctx.restore();
     });
-    if (alive) raf = requestAnimationFrame(draw);
+    if (alive) requestAnimationFrame(draw);
     else ctx.clearRect(0, 0, cv.width, cv.height);
   })();
 }
