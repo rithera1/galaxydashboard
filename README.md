@@ -125,4 +125,31 @@ A fast-paced parts-of-speech arcade game — defend your planet by blasting the 
   - 📡 Wide Beam — larger click hit area
 - **Escalating points** — each round's base score is 20% higher than the previous
 - ✨ Glowing special words grant bonus powerups (extra life, time slow, 2× multiplier)
-- 80+ words per category; point multiplier, shield, and slow-time powerup system
+- 90 elementary-friendly words per category; point multiplier, shield, and slow-time powerup system
+
+---
+
+## ⚔️ Tug × Battle
+A two-player (or vs AI) multiplayer math game — solve multiplication problems faster to pull the rope your way.
+
+**Live:** [rithera1.github.io/galaxydashboard/tug-war](https://rithera1.github.io/galaxydashboard/tug-war/)
+
+- Landscape-only layout: two numpad panels flank a live SVG tug-of-war scene
+- VS AI mode with three difficulty levels (Easy / Medium / Hard) — AI speed scales with difficulty
+- 2-Player mode: share one device, each player uses their own side
+- Rope uses quadratic bezier curves with a continuous sag-wobble animation; teams sway and lean on each pull
+- Flag slides along the rope with a spring transition; score dots track each side's progress toward 5 wins
+- Stats HUD: correct answers, wrong answers, personal best time, and game clock
+- Confetti burst on win screen
+
+---
+
+## 🎨 Chroma Chase
+A color memory challenge — memorize a mystery color, then recreate it from memory using RGB sliders.
+
+**Live:** [rithera1.github.io/galaxydashboard/color-match](https://rithera1.github.io/galaxydashboard/color-match/)
+
+- A target color is shown for 5 seconds — stare hard and commit it to memory
+- Use Red, Green & Blue sliders to mix your best match from memory
+- 5 rounds; score per round is based on how close your RGB values are (perfect match = 100 pts, max 500)
+- End-of-game breakdown table showing your guess vs. the target for each round
