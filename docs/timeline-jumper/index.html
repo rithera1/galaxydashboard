@@ -383,6 +383,25 @@
     100% { transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(0); opacity: 0; }
   }
 
+  /* ── LANDSCAPE / SHORT-SCREEN COMPACT LAYOUT ── */
+  @media (max-height: 500px) {
+    .game-header { padding: 0.25rem 0.6rem; }
+    .tl-section { padding: 0.35rem 0.6rem 0.2rem; }
+    .slot-year-label { font-size: 0.78rem; margin-bottom: 0.14rem; }
+    .slot-dot { margin-bottom: 0.14rem; }
+    .slot-drop-zone { min-height: 72px; }
+    .spc-emoji { font-size: 1.2rem; }
+    .spc-img { height: 42px; }
+    .spc-title { font-size: 0.75rem; }
+    .cards-tray-section { padding: 0.25rem 0.6rem 0.15rem; min-height: 90px; }
+    .tray-label { font-size: 0.7rem; margin-bottom: 0.18rem; }
+    .card-img-wrap { height: 46px; }
+    .card-body { padding: 0.28rem 0.45rem; }
+    .card-title { font-size: 0.8rem; }
+    .card-desc { display: none; }
+    .action-row { padding: 0.28rem 0.5rem; }
+  }
+
   /* ── ACTION ROW ── */
   .action-row {
     flex-shrink: 0; display: flex; gap: 0.65rem; justify-content: center;

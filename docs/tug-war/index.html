@@ -722,10 +722,9 @@ const WIN = 5;
 const FLAG_CX   = 180;   // SVG centre x
 const FLAG_SPAN = 93;    // half-range in SVG px
 
-// Builds the full rope path for a given flag x-position
-function ropeD(flagX) {
-  return `M 5,66 L 32,66 L 60,67 L 87,64 L ${flagX},72 L 273,64 L 300,67 L 328,66 L 355,66`;
-}
+// Global rope wobble state (updated each animation frame)
+let ropeWobblePhase = 0;
+let ropeWobble = 0; // current [-1..1] sine value
 
 // ── STATE ──────────────────────────────────────────────────────
 let mode = 'ai', diff = 'easy';
@@ -932,8 +931,8 @@ const BLUE_GRIPS = [
 ];
 
 const SWAY = {
-  red:  { phase: 0,                 freq: 1.0,  amp: 2, kick: 0 },
-  blue: { phase: Math.PI * 0.3,     freq: 0.87, amp: 2, kick: 0 }
+  red:  { phase: 0,                 freq: 1.0,  amp: 3, kick: 0 },
+  blue: { phase: Math.PI * 0.3,     freq: 0.87, amp: 3, kick: 0 }
 };
 
 let animFrameId  = null;
@@ -949,16 +948,40 @@ function buildRopePath(flagX, redAng, blueAng) {
   const rg = RED_GRIPS.map(g  => rotPt(g.x, g.y, RED_PIVOT.x,  RED_PIVOT.y,  redAng));
   const bg = BLUE_GRIPS.map(g => rotPt(g.x, g.y, BLUE_PIVOT.x, BLUE_PIVOT.y, blueAng));
   const f = v => v.toFixed(1);
+  const w = ropeWobble; // [-1..1] gentle live wobble
+
+  // Quadratic bezier ctrl point: midpoint dragged down by 'sag' pixels
+  const q = (x1, y1, x2, y2, sag) => ({
+    cx: (x1 + x2) / 2,
+    cy: (y1 + y2) / 2 + sag
+  });
+
+  const fY = 72; // flag knot y (unchanged)
+
+  // Sag amounts – vary slightly with wobble so the rope breathes
+  const s1 = 3  + w * 0.8;   // wall → back-lean grip
+  const s2 = 5  + w * 1.4;   // between grip figures
+  const s3 = 8  + w * 2.2;   // front grip → flag (longest free span)
+
+  const c0 = q(5,         rg[0].y, rg[0].x, rg[0].y, s1);
+  const c1 = q(rg[0].x,  rg[0].y, rg[1].x, rg[1].y, s2);
+  const c2 = q(rg[1].x,  rg[1].y, rg[2].x, rg[2].y, s2);
+  const c3 = q(rg[2].x,  rg[2].y, flagX,   fY,       s3);
+  const c4 = q(flagX,    fY,       bg[0].x, bg[0].y,  s3);
+  const c5 = q(bg[0].x,  bg[0].y, bg[1].x, bg[1].y,  s2);
+  const c6 = q(bg[1].x,  bg[1].y, bg[2].x, bg[2].y,  s2);
+  const c7 = q(bg[2].x,  bg[2].y, 355,     bg[2].y,  s1);
+
   return [
     `M 5,${f(rg[0].y)}`,
-    `L ${f(rg[0].x)},${f(rg[0].y)}`,
-    `L ${f(rg[1].x)},${f(rg[1].y)}`,
-    `L ${f(rg[2].x)},${f(rg[2].y)}`,
-    `L ${f(flagX)},72`,
-    `L ${f(bg[0].x)},${f(bg[0].y)}`,
-    `L ${f(bg[1].x)},${f(bg[1].y)}`,
-    `L ${f(bg[2].x)},${f(bg[2].y)}`,
-    `L 355,${f(bg[2].y)}`
+    `Q ${f(c0.cx)},${f(c0.cy)} ${f(rg[0].x)},${f(rg[0].y)}`,
+    `Q ${f(c1.cx)},${f(c1.cy)} ${f(rg[1].x)},${f(rg[1].y)}`,
+    `Q ${f(c2.cx)},${f(c2.cy)} ${f(rg[2].x)},${f(rg[2].y)}`,
+    `Q ${f(c3.cx)},${f(c3.cy)} ${f(flagX)},${f(fY)}`,
+    `Q ${f(c4.cx)},${f(c4.cy)} ${f(bg[0].x)},${f(bg[0].y)}`,
+    `Q ${f(c5.cx)},${f(c5.cy)} ${f(bg[1].x)},${f(bg[1].y)}`,
+    `Q ${f(c6.cx)},${f(c6.cy)} ${f(bg[2].x)},${f(bg[2].y)}`,
+    `Q ${f(c7.cx)},${f(c7.cy)} 355,${f(bg[2].y)}`
   ].join(' ');
 }
 
@@ -969,6 +992,10 @@ function animTick(ts) {
 
   SWAY.red.phase  += SWAY.red.freq  * dt * 2 * Math.PI;
   SWAY.blue.phase += SWAY.blue.freq * dt * 2 * Math.PI;
+
+  // Rope wobble – gentle continuous breathing at a slightly different rhythm
+  ropeWobblePhase += dt * 2.4;
+  ropeWobble = Math.sin(ropeWobblePhase);
 
   ['red', 'blue'].forEach(k => {
     if (SWAY[k].kick !== 0) {
@@ -1016,8 +1043,8 @@ function pull(p) {
 }
 
 function triggerPull(p) {
-  if (p === 1) SWAY.red.kick  = -6;   // lean back-left = pull
-  else         SWAY.blue.kick =  6;   // lean back-right = pull
+  if (p === 1) SWAY.red.kick  = -10;  // lean back-left = pull
+  else         SWAY.blue.kick =  10;  // lean back-right = pull
 }
 
 function triggerFlagPop() {
@@ -1156,13 +1183,14 @@ function startGame() {
   // Reset sway state and start animation loop
   SWAY.red.phase  = 0;   SWAY.red.freq  = 1.0;  SWAY.red.kick  = 0;
   SWAY.blue.phase = Math.PI * 0.3; SWAY.blue.freq = 0.87; SWAY.blue.kick = 0;
+  ropeWobblePhase = 0;   ropeWobble = 0;
   startAnimLoop();
 
   // Snap flag back to centre instantly, then re-enable spring
   const flag = document.getElementById('tugFlag');
   flag.style.transition = 'none';
   flag.style.transform  = 'translateX(0)';
-  document.querySelectorAll('.rope-path').forEach(p => p.setAttribute('d', ropeD(FLAG_CX)));
+  document.querySelectorAll('.rope-path').forEach(p => p.setAttribute('d', buildRopePath(FLAG_CX, 0, 0)));
   requestAnimationFrame(() => requestAnimationFrame(() => {
     flag.style.transition = '';
   }));

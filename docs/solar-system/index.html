@@ -106,9 +106,16 @@ body{font-family:'Space Grotesk',sans-serif;touch-action:none;user-select:none;}
 }
 .fact-card{
   min-width:100%;padding:8px 16px 6px;
-  
+  display:flex;
   flex-direction:column;justify-content:center;
   cursor:pointer;
+}
+/* Landscape / short-screen: give facts enough room to actually show */
+@media (max-height: 500px) {
+  #factSheet { max-height: 55vh; }
+  #factCards { height: calc(55vh - 85px); }
+  .fact-text  { font-size: 0.88rem; line-height: 1.35; }
+  .fact-label { margin-bottom: 4px; }
 }
 .fact-label{
   font-size:.55rem;color:rgba(100,200,255,.45);letter-spacing:.15em;
