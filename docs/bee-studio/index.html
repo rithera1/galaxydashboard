@@ -617,14 +617,15 @@ function selectList(list) {
 let mwKey = '';
 const _mwCache = {};
 async function fetchMWData(word) {
+  console.log('[MW v4] called:', word, '| key set:', !!mwKey);
   if (!mwKey) return null;
   const key = word.toLowerCase();
-  if (_mwCache[key] !== undefined) return _mwCache[key];
+  if (_mwCache[key] !== undefined) { console.log('[MW v4] cache hit:', key, JSON.stringify(_mwCache[key])?.slice(0,120)); return _mwCache[key]; }
   try {
     const resp = await fetch(`https://www.dictionaryapi.com/api/v3/references/sd3/json/${encodeURIComponent(key)}?key=${mwKey}`);
-    if (!resp.ok) { _mwCache[key] = null; return null; }
+    if (!resp.ok) { console.log('[MW v4] bad status:', resp.status); _mwCache[key] = null; return null; }
     const data = await resp.json();
-    console.log('[MW] raw response for', key, ':', JSON.stringify(data).slice(0, 300));
+    console.log('[MW v4] raw:', key, JSON.stringify(data).slice(0, 300));
     if (!data.length || typeof data[0] === 'string') { _mwCache[key] = null; return null; }
     let audioUrl = null;
     for (const entry of data) {
