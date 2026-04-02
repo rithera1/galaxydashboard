@@ -430,7 +430,7 @@
     </div>
     <div class="pin-change-form">
       <h3>📖 Dictionary API Key</h3>
-      <p style="font-size:.82rem;color:#aaa;font-weight:700;">Merriam-Webster School Dictionary key:</p>
+      <p style="font-size:.82rem;color:#aaa;font-weight:700;">Merriam-Webster Elementary Dictionary key:</p>
       <div class="pin-input-wrap" style="flex-direction:column;align-items:stretch;gap:8px;">
         <input type="text" id="mwKeyInput" placeholder="Paste key here" style="width:100%;letter-spacing:normal;text-align:left;">
         <button class="change-pin-btn" onclick="saveMWKeyAdmin()">Save Key</button>
@@ -545,10 +545,8 @@ async function savePinHash(hash) { await setDoc(doc(db,'config','pin'),{hash}); 
 async function getMWKey() {
   try {
     const snap = await getDoc(doc(db,'config','mwKey'));
-    const val = snap.exists() ? snap.data().key : '';
-    console.log('[MW] key loaded:', val ? `"${val.slice(0,8)}…"` : '(empty)');
-    return val;
-  } catch(e) { console.error('[MW] getMWKey failed:', e); return ''; }
+    return snap.exists() ? snap.data().key : '';
+  } catch { return ''; }
 }
 async function saveMWKey(key) { await setDoc(doc(db,'config','mwKey'),{key}); }
 
@@ -617,15 +615,13 @@ function selectList(list) {
 let mwKey = '';
 const _mwCache = {};
 async function fetchMWData(word) {
-  console.log('[MW v4] called:', word, '| key set:', !!mwKey);
   if (!mwKey) return null;
   const key = word.toLowerCase();
-  if (_mwCache[key] !== undefined) { console.log('[MW v4] cache hit:', key, JSON.stringify(_mwCache[key])?.slice(0,120)); return _mwCache[key]; }
+  if (_mwCache[key] !== undefined) return _mwCache[key];
   try {
-    const resp = await fetch(`https://www.dictionaryapi.com/api/v3/references/sd3/json/${encodeURIComponent(key)}?key=${mwKey}`);
-    if (!resp.ok) { console.log('[MW v4] bad status:', resp.status); _mwCache[key] = null; return null; }
+    const resp = await fetch(`https://www.dictionaryapi.com/api/v3/references/sd2/json/${encodeURIComponent(key)}?key=${mwKey}`);
+    if (!resp.ok) { _mwCache[key] = null; return null; }
     const data = await resp.json();
-    console.log('[MW v4] raw:', key, JSON.stringify(data).slice(0, 300));
     if (!data.length || typeof data[0] === 'string') { _mwCache[key] = null; return null; }
     let audioUrl = null;
     for (const entry of data) {
@@ -644,7 +640,7 @@ async function fetchMWData(word) {
     const result = { audioUrl, defs: defs.length ? defs : null };
     _mwCache[key] = result;
     return result;
-  } catch(e) { console.error('[MW v4] fetch error:', e.message); _mwCache[key] = null; return null; }
+  } catch(e) { _mwCache[key] = null; return null; }
 }
 
 window.toggleDefinition = async () => {
