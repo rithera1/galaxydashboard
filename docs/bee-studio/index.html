@@ -624,6 +624,7 @@ async function fetchMWData(word) {
     const resp = await fetch(`https://www.dictionaryapi.com/api/v3/references/sd3/json/${encodeURIComponent(key)}?key=${mwKey}`);
     if (!resp.ok) { _mwCache[key] = null; return null; }
     const data = await resp.json();
+    console.log('[MW] raw response for', key, ':', JSON.stringify(data).slice(0, 300));
     if (!data.length || typeof data[0] === 'string') { _mwCache[key] = null; return null; }
     let audioUrl = null;
     for (const entry of data) {
