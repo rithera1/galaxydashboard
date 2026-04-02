@@ -428,15 +428,6 @@
       </div>
       <p style="font-size:.75rem;color:#ccc;font-weight:700;">Stored as SHA-256 hash — never plain text anywhere.</p>
     </div>
-    <div class="pin-change-form">
-      <h3>📖 Dictionary API Key</h3>
-      <p style="font-size:.82rem;color:#aaa;font-weight:700;">Merriam-Webster Elementary Dictionary key:</p>
-      <div class="pin-input-wrap" style="flex-direction:column;align-items:stretch;gap:8px;">
-        <input type="text" id="mwKeyInput" placeholder="Paste key here" style="width:100%;letter-spacing:normal;text-align:left;">
-        <button class="change-pin-btn" onclick="saveMWKeyAdmin()">Save Key</button>
-      </div>
-      <p style="font-size:.75rem;color:#ccc;font-weight:700;" id="mwKeyStatus">Stored in Firestore — not in source code.</p>
-    </div>
   </div>
 </div>
 
@@ -511,7 +502,7 @@ function speakWithSynth(text) {
 let _activeAudio = null;
 function speak(text) {
   if (_activeAudio) { _activeAudio.pause(); _activeAudio = null; }
-  return fetchMWData(text).then(mw => {
+  return fetchWordData(text).then(mw => {
     if (!mw?.audioUrl) return speakWithSynth(text);
     return new Promise(resolve => {
       const playOnce = () => new Promise((res, rej) => {
@@ -542,18 +533,10 @@ async function getPinHash() {
   } catch { return DEFAULT_PIN_HASH; }
 }
 async function savePinHash(hash) { await setDoc(doc(db,'config','pin'),{hash}); }
-async function getMWKey() {
-  try {
-    const snap = await getDoc(doc(db,'config','mwKey'));
-    return snap.exists() ? snap.data().key : '';
-  } catch { return ''; }
-}
-async function saveMWKey(key) { await setDoc(doc(db,'config','mwKey'),{key}); }
-
 // ── BOOT ─────────────────────────────────────────────────────────────────────
 (async()=>{
   showLoading(true);
-  try { await loadAllLists(); mwKey = await getMWKey(); }
+  try { await loadAllLists(); }
   catch(e) { toast('Firebase connection failed. Check your config.','err'); }
   showLoading(false);
   showScreen('homeScreen');
@@ -612,41 +595,35 @@ function selectList(list) {
 }
 
 // ── DEFINITION LOOKUP ────────────────────────────────────────────────────────
-let mwKey = '';
-const _mwCache = {};
-async function fetchMWData(word) {
-  if (!mwKey) return null;
+const _wordCache = {};
+async function fetchWordData(word) {
   const key = word.toLowerCase();
-  if (_mwCache[key] !== undefined) return _mwCache[key];
+  if (_wordCache[key] !== undefined) return _wordCache[key];
   try {
-    const resp = await fetch(`https://www.dictionaryapi.com/api/v3/references/sd2/json/${encodeURIComponent(key)}?key=${mwKey}`);
-    if (!resp.ok) { _mwCache[key] = null; return null; }
+    const resp = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(key)}`);
+    if (!resp.ok) { _wordCache[key] = null; return null; }
     const data = await resp.json();
-    if (!data.length || typeof data[0] === 'string') { _mwCache[key] = null; return null; }
-    // Only use MW audio if the headword matches the searched word exactly.
-    // Inflected forms (e.g. "grew") redirect to the base lemma ("grow") whose
-    // audio would say the wrong word — fall back to Web Speech in that case.
-    const hw = (data[0]?.hwi?.hw || '').replace(/\*/g, '').toLowerCase();
+    if (!data.length) { _wordCache[key] = null; return null; }
     let audioUrl = null;
-    if (hw === key) {
-      for (const entry of data) {
-        const audio = entry.hwi?.prs?.[0]?.sound?.audio;
-        if (audio) {
-          const sub = audio.startsWith('bix') ? 'bix' : audio.startsWith('gg') ? 'gg' : /^[0-9]/.test(audio) ? 'number' : audio[0];
-          audioUrl = `https://media.merriam-webster.com/audio/prons/en/us/mp3/${sub}/${audio}.mp3`;
-          break;
+    for (const entry of data) {
+      for (const p of (entry.phonetics || [])) {
+        if (p.audio) { audioUrl = p.audio; break; }
+      }
+      if (audioUrl) break;
+    }
+    const wordRe = new RegExp(`\\b${key.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}\\b`, 'i');
+    const defs = [];
+    for (const entry of data) {
+      for (const meaning of entry.meanings) {
+        for (const d of meaning.definitions) {
+          if (!wordRe.test(d.definition)) defs.push({ pos: meaning.partOfSpeech, def: d.definition });
         }
       }
     }
-    const defs = [];
-    for (const entry of data) {
-      const pos = entry.fl || '';
-      for (const def of (entry.shortdef || [])) defs.push({ pos, def });
-    }
     const result = { audioUrl, defs: defs.length ? defs : null };
-    _mwCache[key] = result;
+    _wordCache[key] = result;
     return result;
-  } catch(e) { _mwCache[key] = null; return null; }
+  } catch(e) { _wordCache[key] = null; return null; }
 }
 
 window.toggleDefinition = async () => {
@@ -659,9 +636,9 @@ window.toggleDefinition = async () => {
   }
   const word = currentList.words[spCurrent];
   btn.innerHTML = '📖 Loading…'; btn.disabled = true;
-  const mw = await fetchMWData(word);
+  const data = await fetchWordData(word);
   btn.disabled = false;
-  const defs = mw?.defs;
+  const defs = data?.defs;
   if (!defs) {
     panel.innerHTML = '<div class="def-entry"><em>No definition available.</em></div>';
   } else {
@@ -864,8 +841,6 @@ async function verifyPin() {
 // ── ADMIN ────────────────────────────────────────────────────────────────────
 function openAdmin() {
   renderAdminLists();
-  document.getElementById('mwKeyInput').value = '';
-  document.getElementById('mwKeyStatus').textContent = mwKey ? 'Key is saved ✓ — paste to replace.' : 'No key saved yet.';
   showScreen('adminScreen');
 }
 
@@ -931,21 +906,6 @@ window.addList = async(type)=>{
     document.getElementById(type==='spell'?'spellFileLbl':'matchFileLbl').textContent='';
     renderAdminLists(); toast(`"${name}" saved — ${data.length} ${type==='spell'?'words':'pairs'} ✅`,'ok');
   } catch(e) { toast('Error saving to Firebase: '+e.message,'err'); }
-  showLoading(false);
-};
-
-window.saveMWKeyAdmin = async()=>{
-  const val=document.getElementById('mwKeyInput').value.trim();
-  if (!val) { toast('Paste a key first','err'); return; }
-  showLoading(true);
-  try {
-    await saveMWKey(val);
-    mwKey = val;
-    Object.keys(_mwCache).forEach(k=>delete _mwCache[k]);
-    document.getElementById('mwKeyInput').value='';
-    document.getElementById('mwKeyStatus').textContent='Key is saved ✓ — paste to replace.';
-    toast('Dictionary key saved ✅','ok');
-  } catch { toast('Error saving key','err'); }
   showLoading(false);
 };
 
