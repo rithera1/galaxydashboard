@@ -623,13 +623,19 @@ async function fetchMWData(word) {
     if (!resp.ok) { _mwCache[key] = null; return null; }
     const data = await resp.json();
     if (!data.length || typeof data[0] === 'string') { _mwCache[key] = null; return null; }
+    // Only use MW audio if the headword matches the searched word exactly.
+    // Inflected forms (e.g. "grew") redirect to the base lemma ("grow") whose
+    // audio would say the wrong word — fall back to Web Speech in that case.
+    const hw = (data[0]?.hwi?.hw || '').replace(/\*/g, '').toLowerCase();
     let audioUrl = null;
-    for (const entry of data) {
-      const audio = entry.hwi?.prs?.[0]?.sound?.audio;
-      if (audio) {
-        const sub = audio.startsWith('bix') ? 'bix' : audio.startsWith('gg') ? 'gg' : /^[0-9]/.test(audio) ? 'number' : audio[0];
-        audioUrl = `https://media.merriam-webster.com/audio/prons/en/us/mp3/${sub}/${audio}.mp3`;
-        break;
+    if (hw === key) {
+      for (const entry of data) {
+        const audio = entry.hwi?.prs?.[0]?.sound?.audio;
+        if (audio) {
+          const sub = audio.startsWith('bix') ? 'bix' : audio.startsWith('gg') ? 'gg' : /^[0-9]/.test(audio) ? 'number' : audio[0];
+          audioUrl = `https://media.merriam-webster.com/audio/prons/en/us/mp3/${sub}/${audio}.mp3`;
+          break;
+        }
       }
     }
     const defs = [];
