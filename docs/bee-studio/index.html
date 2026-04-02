@@ -644,7 +644,7 @@ async function fetchMWData(word) {
     const result = { audioUrl, defs: defs.length ? defs : null };
     _mwCache[key] = result;
     return result;
-  } catch(e) { _mwCache[key] = null; return null; }
+  } catch(e) { console.error('[MW v4] fetch error:', e.message); _mwCache[key] = null; return null; }
 }
 
 window.toggleDefinition = async () => {
