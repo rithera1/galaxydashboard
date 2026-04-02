@@ -545,8 +545,10 @@ async function savePinHash(hash) { await setDoc(doc(db,'config','pin'),{hash}); 
 async function getMWKey() {
   try {
     const snap = await getDoc(doc(db,'config','mwKey'));
-    return snap.exists() ? snap.data().key : '';
-  } catch { return ''; }
+    const val = snap.exists() ? snap.data().key : '';
+    console.log('[MW] key loaded:', val ? `"${val.slice(0,8)}…"` : '(empty)');
+    return val;
+  } catch(e) { console.error('[MW] getMWKey failed:', e); return ''; }
 }
 async function saveMWKey(key) { await setDoc(doc(db,'config','mwKey'),{key}); }
 
