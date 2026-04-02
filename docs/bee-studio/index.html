@@ -630,6 +630,8 @@ async function fetchMWData(word) {
     let audioUrl = null;
     if (hw === key) {
       for (const entry of data) {
+        const entryHw = (entry.hwi?.hw || '').replace(/\*/g, '').toLowerCase();
+        if (entryHw !== key) continue;
         const audio = entry.hwi?.prs?.[0]?.sound?.audio;
         if (audio) {
           const sub = audio.startsWith('bix') ? 'bix' : audio.startsWith('gg') ? 'gg' : /^[0-9]/.test(audio) ? 'number' : audio[0];
