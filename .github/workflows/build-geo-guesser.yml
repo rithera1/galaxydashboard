@@ -1,0 +1,38 @@
+name: Build Geo Guesser
+
+on:
+  push:
+    branches: [main]
+    paths: [src/geo-guesser/**]
+  pull_request:
+    branches: [main]
+    paths: [src/geo-guesser/**]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: src/geo-guesser/package-lock.json
+
+      - name: Install dependencies
+        working-directory: src/geo-guesser
+        run: npm install
+
+      - name: Build
+        working-directory: src/geo-guesser
+        run: npm run build
+
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: geo-guesser-dist
+          path: src/geo-guesser/dist/
