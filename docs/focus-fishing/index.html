@@ -1,0 +1,1665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Focus Fishing 🎣</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ===== RESET ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      font-family: 'Nunito', sans-serif;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+
+    /* ===== SCREEN SYSTEM ===== */
+    .screen {
+      display: none; flex-direction: column; align-items: center; justify-content: center;
+      width: 100%; height: 100%;
+      position: absolute; top: 0; left: 0;
+    }
+    .screen.active { display: flex; }
+
+    /* ===== SKY BACKGROUNDS ===== */
+    .bg-sky {
+      position: absolute; width: 100%; height: 100%; top: 0; left: 0; z-index: 0;
+    }
+    .sky-day   { background: linear-gradient(180deg,#4fc3f7 0%,#81d4fa 40%,#b3e5fc 70%,#e0f7fa 100%); }
+    .sky-dawn  { background: linear-gradient(180deg,#ff7043 0%,#ffab40 30%,#ffe082 60%,#b3e5fc 100%); }
+    .sky-dusk  { background: linear-gradient(180deg,#6a1b9a 0%,#e91e63 22%,#ff7043 48%,#ffcc02 68%,#4db6ac 100%); }
+    .sky-cloudy{ background: linear-gradient(180deg,#90a4ae 0%,#b0bec5 40%,#cfd8dc 70%,#eceff1 100%); }
+    .sky-rainy { background: linear-gradient(180deg,#546e7a 0%,#607d8b 40%,#78909c 70%,#90a4ae 100%); }
+
+    /* ===== WATER ===== */
+    .water-layer {
+      position: absolute; bottom: 0; left: 0; width: 100%; height: 42%; z-index: 1;
+    }
+    .water-base {
+      position: absolute; bottom: 0; left: 0; width: 100%; height: 100%;
+      background: linear-gradient(180deg,rgba(2,136,209,0.88) 0%,rgba(1,87,155,0.96) 100%);
+      overflow: hidden;
+    }
+    .water-base::before, .water-base::after {
+      content: ''; position: absolute; top: -12px; left: -50%;
+      width: 200%; height: 44px;
+      background: rgba(255,255,255,0.12); border-radius: 50%;
+      animation: waveTop 4s ease-in-out infinite;
+    }
+    .water-base::after { top: 8px; animation: waveTop 5.5s ease-in-out infinite reverse; opacity: 0.65; }
+    @keyframes waveTop {
+      0%,100% { transform: translateX(0) scaleY(1); }
+      50%      { transform: translateX(4%) scaleY(1.25); }
+    }
+
+    /* ===== CLOUDS ===== */
+    .clouds {
+      position: absolute; top: 0; left: 0; width: 100%; height: 50%; z-index: 1; pointer-events: none;
+    }
+    .cloud {
+      position: absolute; background: rgba(255,255,255,0.88); border-radius: 50px;
+      animation: cloudDrift linear infinite;
+    }
+    .cloud::before, .cloud::after {
+      content: ''; position: absolute; background: inherit; border-radius: 50%;
+    }
+    @keyframes cloudDrift { from { transform: translateX(-220px); } to { transform: translateX(calc(100vw + 220px)); } }
+
+    /* ===== BOAT ===== */
+    .boat-container {
+      position: absolute; bottom: calc(42% - 8px); left: 50%;
+      transform: translateX(-50%); z-index: 10;
+      animation: boatRock 4s ease-in-out infinite;
+    }
+    @keyframes boatRock {
+      0%,100% { transform: translateX(-50%) rotate(-1deg) translateY(0); }
+      50%      { transform: translateX(-50%) rotate(1deg) translateY(-5px); }
+    }
+    .boat-svg { width: clamp(140px, 25vw, 200px); height: auto; }
+
+    /* ===== BUTTONS ===== */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 13px 26px; border: none; border-radius: 50px;
+      font-family: 'Fredoka One', cursive; font-size: 1.15rem;
+      cursor: pointer; transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    .btn:active { transform: scale(0.94) !important; }
+    .btn-primary {
+      background: linear-gradient(135deg,#43e97b,#38f9d7); color: #1a5c3a;
+      font-size: 1.3rem; padding: 16px 38px;
+    }
+    .btn-primary:hover { transform: scale(1.05); box-shadow: 0 8px 25px rgba(67,233,123,0.45); }
+    .btn-secondary {
+      background: rgba(255,255,255,0.16); color: white;
+      border: 2px solid rgba(255,255,255,0.32);
+    }
+    .btn-secondary:hover { background: rgba(255,255,255,0.26); transform: scale(1.03); }
+    .btn-action {
+      background: linear-gradient(135deg,#f7971e,#ffd200); color: #5c3800;
+    }
+    .btn-action:hover { transform: scale(1.05); filter: brightness(1.08); }
+    .btn-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .disabled { opacity: 0.5; pointer-events: none; }
+
+    /* ===== MENU SCREEN ===== */
+    #menuScreen { background: radial-gradient(ellipse at 50% 30%, #1a6b8a 0%, #083457 70%); }
+    .menu-content { position: relative; z-index: 10; text-align: center; padding: 20px; }
+    .game-title {
+      font-family: 'Fredoka One', cursive;
+      font-size: clamp(2.8rem,10vw,5rem); color: #fff;
+      text-shadow: 0 4px 24px rgba(0,0,0,0.4), 0 0 50px rgba(100,200,255,0.3);
+      letter-spacing: 2px; margin-bottom: 6px;
+    }
+    .game-subtitle { font-size: clamp(0.95rem,3vw,1.25rem); color: #b3e5fc; margin-bottom: 36px; font-weight: 600; }
+    .menu-fish-row { font-size: 2.2rem; letter-spacing: 6px; margin-bottom: 16px; animation: menufloat 3s ease-in-out infinite; }
+    @keyframes menufloat { 0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)} }
+
+    /* ===== SESSION SCREEN ===== */
+    #sessionScreen { background: radial-gradient(ellipse at 50% 30%, #1565c0 0%, #083457 70%); }
+    .session-cards { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; margin: 20px 0; }
+    .session-card {
+      background: rgba(255,255,255,0.1); border: 2.5px solid rgba(255,255,255,0.22);
+      border-radius: 20px; padding: 22px 18px; text-align: center;
+      cursor: pointer; transition: all 0.2s; min-width: 150px; max-width: 190px;
+    }
+    .session-card:hover {
+      background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.55);
+      transform: translateY(-5px) scale(1.03);
+    }
+    .session-card .s-icon { font-size: 2.4rem; margin-bottom: 8px; }
+    .session-card .s-name { font-family: 'Fredoka One', cursive; color: white; font-size: 1.15rem; }
+    .session-card .s-desc { color: #b3e5fc; font-size: 0.82rem; margin-top: 5px; line-height: 1.3; }
+
+    /* ===== SCREEN HEADINGS ===== */
+    .screen-title {
+      font-family: 'Fredoka One', cursive; color: white;
+      font-size: clamp(1.5rem,5vw,2.4rem); text-align: center;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.4); margin-bottom: 6px; z-index: 10;
+    }
+    .screen-sub { color: rgba(255,255,255,0.72); font-size: clamp(0.82rem,2.4vw,1rem); text-align: center; margin-bottom: 18px; z-index: 10; }
+
+    /* ===== TOP BAR ===== */
+    .top-bar {
+      position: absolute; top: 10px; left: 0; right: 0;
+      z-index: 20; display: flex; justify-content: space-between;
+      align-items: center; padding: 0 12px; pointer-events: none;
+    }
+    .top-bar > * { pointer-events: all; }
+    .badge {
+      background: rgba(0,0,0,0.42); color: white; padding: 6px 13px;
+      border-radius: 20px; font-size: 0.85rem; backdrop-filter: blur(4px);
+    }
+    .badge-score { font-family: 'Fredoka One', cursive; font-size: 0.92rem; }
+    .menu-btn {
+      background: rgba(0,0,0,0.42); color: white; border: none;
+      padding: 6px 12px; border-radius: 20px; font-size: 0.82rem;
+      cursor: pointer; backdrop-filter: blur(4px);
+      font-family: 'Nunito', sans-serif;
+    }
+
+    /* ===== CHALLENGE BAR ===== */
+    .challenge-bar {
+      position: absolute; top: 48px; left: 50%; transform: translateX(-50%);
+      z-index: 20; background: rgba(0,0,0,0.48); border-radius: 20px;
+      padding: 5px 18px; display: flex; gap: 12px; align-items: center;
+      backdrop-filter: blur(4px);
+    }
+    .c-slots { display: flex; gap: 4px; }
+    .c-slot { font-size: 1.05rem; opacity: 0.3; transition: opacity 0.3s, transform 0.3s; }
+    .c-slot.caught { opacity: 1; transform: scale(1.25); }
+    .c-timer { font-family: 'Fredoka One', cursive; color: white; font-size: 0.95rem; }
+    .c-timer.urgent { color: #ff5722; animation: timerPulse 0.55s ease infinite; }
+    @keyframes timerPulse { 0%,100%{opacity:1}50%{opacity:0.35} }
+
+    /* ===== BOAT SCREEN UI ===== */
+    #boatScreen { position: relative; overflow: hidden; }
+    .boat-ui {
+      position: absolute; bottom: 0; left: 0; right: 0; padding: 14px; z-index: 20;
+    }
+    .boat-panel {
+      background: rgba(255,255,255,0.93); border-radius: 20px 20px 0 0;
+      padding: 18px 20px; max-width: 500px; margin: 0 auto;
+      box-shadow: 0 -4px 30px rgba(0,0,0,0.2);
+    }
+    .panel-title {
+      font-family: 'Fredoka One', cursive; font-size: 1.2rem;
+      color: #0d4a6b; text-align: center; margin-bottom: 14px;
+    }
+
+    /* Sinker buttons */
+    .sinker-row { display: flex; gap: 10px; justify-content: center; margin-bottom: 14px; }
+    .sinker-btn {
+      flex: 1; max-width: 130px; background: #f0f8ff;
+      border: 3px solid #b3d9f7; border-radius: 14px;
+      padding: 10px 6px; text-align: center; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .sinker-btn:hover { border-color: #0288d1; background: #e3f4fe; }
+    .sinker-btn.selected { border-color: #0288d1; background: #e3f4fe; box-shadow: 0 0 0 3px rgba(2,136,209,0.28); }
+    .sinker-btn .si-icon { font-size: 1.7rem; margin-bottom: 3px; }
+    .sinker-btn .si-name { font-weight: 800; color: #0d4a6b; font-size: 0.88rem; }
+    .sinker-btn .si-zone { font-size: 0.72rem; color: #546e7a; margin: 2px 0; }
+    .sinker-btn .si-diff { font-size: 0.7rem; font-weight: 700; }
+    .diff-easy   { color: #388e3c; }
+    .diff-medium { color: #f57c00; }
+    .diff-hard   { color: #c62828; }
+    .sinker-hint {
+      font-size: 0.78rem; color: #78909c; text-align: center;
+      margin-bottom: 12px; min-height: 1.1em;
+    }
+
+    /* Power bar */
+    .power-label { text-align: center; font-weight: 700; color: #0d4a6b; margin-bottom: 7px; font-size: 0.9rem; }
+    .power-track {
+      position: relative; height: 38px; background: #e0e0e0;
+      border-radius: 19px; overflow: hidden;
+      box-shadow: inset 0 2px 6px rgba(0,0,0,0.18);
+    }
+    .power-fill {
+      height: 100%; border-radius: 19px;
+      background: linear-gradient(90deg,#43e97b 0%,#f7971e 60%,#e53935 100%);
+      transition: width 0.04s linear;
+    }
+    .power-green-zone {
+      position: absolute; top: 0; right: 0; bottom: 0; width: 30%;
+      background: rgba(67,233,123,0.28);
+      border-left: 2px dashed rgba(46,125,50,0.6);
+    }
+    .power-cursor {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      width: 8px; height: 34px; background: white; border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3); transition: left 0.04s linear;
+    }
+    .power-pct {
+      text-align: center; font-family: 'Fredoka One', cursive;
+      font-size: 1.5rem; color: #0288d1; margin: 4px 0;
+    }
+
+    /* ===== WAIT SCREEN ===== */
+    #waitScreen { position: relative; overflow: hidden; }
+    .wait-info {
+      position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+      z-index: 20; text-align: center; color: white;
+      background: rgba(0,0,0,0.4); padding: 9px 22px;
+      border-radius: 28px; backdrop-filter: blur(4px);
+      white-space: nowrap;
+    }
+    .wait-main { font-family: 'Fredoka One', cursive; font-size: 1rem; color: #b3e5fc; }
+    .wait-sub  { font-size: 0.78rem; color: rgba(255,255,255,0.62); margin-top: 1px; }
+
+    .bite-flash {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      font-family: 'Fredoka One', cursive;
+      font-size: clamp(2rem,8vw,3.5rem);
+      color: #ffeb3b; text-shadow: 0 0 24px rgba(255,235,0,0.85), 0 4px 0 #f57f17;
+      z-index: 30; opacity: 0; pointer-events: none;
+    }
+    .bite-flash.show { opacity: 1; animation: biteAnim 0.55s ease-out; }
+    @keyframes biteAnim {
+      0% { transform: translate(-50%,-50%) scale(0.4); }
+      55% { transform: translate(-50%,-50%) scale(1.25); }
+      100%{ transform: translate(-50%,-50%) scale(1); }
+    }
+
+    .bobber { position: absolute; z-index: 12; font-size: 1.7rem; animation: bobFloat 2s ease-in-out infinite; }
+    @keyframes bobFloat { 0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)} }
+    .bobber.bitten { animation: bobBite 0.28s ease-in-out infinite; }
+    @keyframes bobBite { 0%,100%{transform:translateY(0)}50%{transform:translateY(14px)} }
+
+    /* ===== FIGHT SCREEN ===== */
+    #fightScreen { position: relative; overflow: hidden; }
+
+    .fight-hud {
+      position: absolute; top: 0; left: 0; right: 0;
+      z-index: 20; padding: 12px 14px;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+    }
+    .fish-preview {
+      display: flex; align-items: center; gap: 10px;
+      background: rgba(0,0,0,0.48); padding: 8px 18px;
+      border-radius: 28px; color: white; backdrop-filter: blur(4px);
+    }
+    .fp-emoji { font-size: 1.8rem; }
+    .fp-name { font-family: 'Fredoka One', cursive; font-size: 1.05rem; }
+    .fp-hint { font-size: 0.78rem; color: #b3e5fc; }
+
+    /* Stamina bar */
+    .stamina-wrap { width: 100%; max-width: 380px; }
+    .stamina-label { text-align: center; color: white; font-weight: 700; font-size: 0.8rem; margin-bottom: 3px; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
+    .stamina-track { height: 13px; background: rgba(255,255,255,0.18); border-radius: 7px; overflow: hidden; box-shadow: inset 0 1px 4px rgba(0,0,0,0.3); }
+    .stamina-fill { height: 100%; border-radius: 7px; background: linear-gradient(90deg,#f44336,#ff9800,#4caf50); transition: width 0.1s; }
+
+    /* Fight boat (slightly turbulent) */
+    .fight-boat-container {
+      position: absolute; bottom: calc(42% - 8px); left: 50%;
+      transform: translateX(-50%); z-index: 10;
+      animation: boatFightRock 1.5s ease-in-out infinite;
+    }
+    @keyframes boatFightRock {
+      0%,100% { transform: translateX(-50%) rotate(-2.5deg) translateY(0); }
+      50%      { transform: translateX(-50%) rotate(2.5deg) translateY(-8px); }
+    }
+
+    /* Fish silhouette under water */
+    .fight-fish-sil {
+      position: absolute; font-size: clamp(2rem,5vw,3.2rem); z-index: 8;
+      filter: brightness(0) opacity(0.55);
+      animation: fishStruggle 0.7s ease-in-out infinite;
+    }
+    @keyframes fishStruggle {
+      0%,100% { transform: translate(0,0) rotate(-5deg) scaleX(1); }
+      25%  { transform: translate(14px,-9px) rotate(9deg) scaleX(-1); }
+      50%  { transform: translate(-9px,13px) rotate(-7deg) scaleX(1); }
+      75%  { transform: translate(18px,4px) rotate(5deg) scaleX(-1); }
+    }
+
+    /* Tension bar zone */
+    .tension-wrap {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      z-index: 20; padding: 18px 14px 20px;
+      background: linear-gradient(transparent,rgba(0,0,0,0.62));
+    }
+    .tension-instruction {
+      text-align: center; color: white;
+      font-family: 'Fredoka One', cursive;
+      font-size: clamp(0.95rem,3.2vw,1.3rem); margin-bottom: 10px;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    }
+    .tension-outer {
+      position: relative; height: 54px;
+      background: rgba(0,0,0,0.38); border-radius: 27px;
+      max-width: 580px; margin: 0 auto; overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.38), inset 0 2px 8px rgba(0,0,0,0.32);
+      border: 2px solid rgba(255,255,255,0.18);
+    }
+    .t-red-l { position: absolute; left: 0; top: 0; bottom: 0; background: rgba(244,67,54,0.48); border-radius: 27px 0 0 27px; }
+    .t-green  { position: absolute; top: 0; bottom: 0; background: rgba(76,175,80,0.52); border-left: 3px solid rgba(76,175,80,0.85); border-right: 3px solid rgba(76,175,80,0.85); }
+    .t-red-r  { position: absolute; right: 0; top: 0; bottom: 0; background: rgba(244,67,54,0.48); border-radius: 0 27px 27px 0; }
+    .t-indicator {
+      position: absolute; top: 50%; transform: translateY(-50%) translateX(-50%);
+      width: 30px; height: 30px; background: white; border-radius: 50%;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.38); transition: left 0.04s linear;
+    }
+    .t-indicator.danger { background: #f44336; animation: tPulse 0.28s ease infinite; }
+    @keyframes tPulse { 0%,100%{transform:translateY(-50%) translateX(-50%) scale(1)}50%{transform:translateY(-50%) translateX(-50%) scale(1.35)} }
+    .tension-outer.shake { animation: tShake 0.3s ease; }
+    @keyframes tShake { 0%{transform:translateX(0)}20%{transform:translateX(-5px)}40%{transform:translateX(5px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}100%{transform:translateX(0)} }
+
+    .grace-warn { text-align: center; color: #ff5722; font-family: 'Fredoka One', cursive; font-size: 1.05rem; margin-top: 7px; min-height: 26px; }
+
+    .surge-warn {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      font-family: 'Fredoka One', cursive; font-size: 2.4rem;
+      color: #ff5722; text-shadow: 0 0 24px rgba(255,87,34,0.85);
+      z-index: 30; opacity: 0; pointer-events: none;
+    }
+    .surge-warn.show { animation: surgeFlash 0.75s ease-out forwards; }
+    @keyframes surgeFlash {
+      0% { opacity: 1; transform: translate(-50%,-50%) scale(1.6); }
+      100%{ opacity: 0; transform: translate(-50%,-50%) scale(1); }
+    }
+
+    /* Splash effects */
+    .splash { position: absolute; pointer-events: none; z-index: 15; font-size: 1.4rem; animation: splashAnim 0.75s ease-out forwards; }
+    @keyframes splashAnim { 0%{opacity:1;transform:translateY(0) scale(0.5)}50%{opacity:1;transform:translateY(-22px) scale(1.2)}100%{opacity:0;transform:translateY(-44px) scale(0.8)} }
+
+    /* ===== RESULT SCREEN ===== */
+    #resultScreen { background: radial-gradient(ellipse at 50% 30%, #1a6b8a 0%, #083457 70%); }
+    .result-content { text-align: center; color: white; padding: 24px; z-index: 10; }
+    .result-icon  { font-size: 5rem; margin-bottom: 14px; }
+    .result-title { font-family: 'Fredoka One', cursive; font-size: 2.2rem; margin-bottom: 10px; }
+    .result-msg   { font-size: 1.05rem; color: #b3e5fc; margin-bottom: 22px; }
+
+    /* ===== GAMEOVER SCREEN ===== */
+    #gameoverScreen { background: radial-gradient(ellipse at 50% 30%, #1a3a5c 0%, #050e1a 70%); }
+    .go-content { text-align: center; color: white; padding: 24px; z-index: 10; max-width: 480px; }
+    .go-icon  { font-size: 5rem; margin-bottom: 14px; }
+    .go-title { font-family: 'Fredoka One', cursive; font-size: 2.1rem; margin-bottom: 8px; }
+    .go-sub   { color: #b3e5fc; margin-bottom: 16px; font-size: 1rem; }
+    .go-stats { background: rgba(255,255,255,0.08); border-radius: 16px; padding: 14px 18px; margin: 14px 0; }
+    .go-row   { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 0.93rem; }
+    .go-row:last-child { border-bottom: none; }
+    .go-val   { font-family: 'Fredoka One', cursive; font-size: 1.05rem; color: #43e97b; }
+
+    /* ===== CATCH POPUP ===== */
+    .popup-overlay {
+      display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.72); z-index: 100;
+      align-items: center; justify-content: center; padding: 16px;
+    }
+    .popup-overlay.show { display: flex; animation: fadeIn 0.25s ease; }
+    @keyframes fadeIn { from{opacity:0}to{opacity:1} }
+
+    .catch-card {
+      background: white; border-radius: 24px; padding: 26px 22px;
+      max-width: 390px; width: 100%; text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      animation: cardBounce 0.45s cubic-bezier(0.34,1.56,0.64,1);
+      position: relative; overflow: hidden; max-height: 92vh; overflow-y: auto;
+    }
+    @keyframes cardBounce {
+      from { opacity:0; transform: scale(0.4) translateY(60px); }
+      to   { opacity:1; transform: scale(1) translateY(0); }
+    }
+    .catch-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 6px;
+      background: linear-gradient(90deg,#43e97b,#38f9d7,#667eea,#f093fb);
+    }
+    .c-header  { font-family: 'Fredoka One', cursive; color: #0288d1; font-size: 1.05rem; margin-bottom: 2px; }
+    .c-emoji   { font-size: 3.8rem; margin: 8px 0; }
+    .c-name    { font-family: 'Fredoka One', cursive; font-size: 1.75rem; color: #0d4a6b; margin-bottom: 4px; }
+    .rarity-badge {
+      display: inline-block; padding: 3px 13px; border-radius: 20px;
+      font-weight: 700; font-size: 0.78rem; text-transform: uppercase;
+      letter-spacing: 1px; margin-bottom: 10px;
+    }
+    .r-common    { background: #e0e0e0; color: #546e7a; }
+    .r-uncommon  { background: #e3f2fd; color: #1565c0; }
+    .r-rare      { background: #f3e5f5; color: #6a1b9a; }
+    .r-legendary { background: linear-gradient(135deg,#ffd700,#ff8c00); color: white; }
+    .pb-badge {
+      background: linear-gradient(135deg,#ffd700,#ff8c00); color: white;
+      border-radius: 20px; padding: 3px 14px; font-weight: 700;
+      font-size: 0.82rem; display: none; margin: 4px auto 8px;
+    }
+    .c-stats { display: flex; gap: 10px; justify-content: center; margin: 10px 0; }
+    .stat-box { background: #f0f8ff; border-radius: 12px; padding: 8px 14px; min-width: 84px; }
+    .stat-val { font-family: 'Fredoka One', cursive; font-size: 1.35rem; color: #0288d1; }
+    .stat-lbl { font-size: 0.7rem; color: #78909c; text-transform: uppercase; letter-spacing: 0.5px; }
+    .c-habitat { font-size: 0.78rem; color: #78909c; margin: 6px 0; font-style: italic; }
+    .c-habitat span { font-weight: 700; color: #546e7a; font-style: normal; }
+    .c-facts { background: #f8f9fa; border-radius: 12px; padding: 11px 14px; text-align: left; margin: 10px 0; }
+    .c-facts h4 { font-family: 'Fredoka One', cursive; color: #0d4a6b; font-size: 0.9rem; margin-bottom: 6px; }
+    .c-facts li {
+      font-size: 0.8rem; color: #455a64; margin-bottom: 4px;
+      line-height: 1.4; list-style: none; padding-left: 18px; position: relative;
+    }
+    .c-facts li::before { content: '🔬'; position: absolute; left: 0; top: 0; font-size: 0.68rem; }
+
+    /* ===== CATCH LOG ===== */
+    .log-card {
+      background: white; border-radius: 20px; padding: 20px;
+      max-width: 400px; width: 100%; max-height: 82vh; overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+    .log-card h3 { font-family: 'Fredoka One', cursive; color: #0d4a6b; text-align: center; font-size: 1.35rem; margin-bottom: 12px; border-bottom: 2px solid #e3f4fe; padding-bottom: 8px; }
+    .log-entry { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 10px; }
+    .log-entry:hover { background: #f0f8ff; }
+    .log-name  { font-weight: 700; color: #0d4a6b; font-size: 0.88rem; }
+    .log-stats { font-size: 0.76rem; color: #78909c; }
+    .log-empty { text-align: center; color: #90a4ae; font-style: italic; padding: 20px; }
+
+    /* ===== HOW TO PLAY ===== */
+    .howto-card {
+      background: white; border-radius: 20px; padding: 22px;
+      max-width: 390px; width: 100%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4); max-height: 90vh; overflow-y: auto;
+    }
+    .howto-card h3 { font-family: 'Fredoka One', cursive; color: #0d4a6b; font-size: 1.45rem; text-align: center; margin-bottom: 14px; }
+    .ht-step { display: flex; gap: 10px; margin-bottom: 11px; align-items: flex-start; }
+    .ht-num {
+      background: #0288d1; color: white; width: 26px; height: 26px;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-family: 'Fredoka One', cursive; flex-shrink: 0; font-size: 0.9rem;
+    }
+    .ht-text { font-size: 0.88rem; color: #455a64; line-height: 1.5; }
+    .ht-text strong { color: #0d4a6b; }
+    .green-txt { color: #388e3c; font-weight: 700; }
+
+    /* ===== CONFETTI ===== */
+    .confetti-piece {
+      position: fixed; border-radius: 2px;
+      animation: confettiFall linear forwards;
+      pointer-events: none; z-index: 200;
+    }
+    @keyframes confettiFall {
+      0%  { opacity:1; transform: translateY(-20px) rotate(0deg); }
+      100%{ opacity:0; transform: translateY(120vh) rotate(720deg); }
+    }
+
+    /* ===== RIPPLE ===== */
+    .ripple {
+      position: absolute; border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.42);
+      animation: rippleOut 1.5s ease-out forwards; pointer-events: none; z-index: 8;
+    }
+    @keyframes rippleOut {
+      0%  { width:8px; height:5px; opacity:1; margin-left:-4px; margin-top:-2.5px; }
+      100%{ width:90px; height:36px; opacity:0; margin-left:-45px; margin-top:-18px; }
+    }
+
+    /* ===== FISH SHADOW ===== */
+    .fish-shadow {
+      position: absolute; z-index: 5; opacity: 0;
+      filter: brightness(0) opacity(0.14);
+      pointer-events: none; transition: all 3.5s ease; font-size: 1.8rem;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 480px) {
+      .sinker-row { gap: 7px; }
+      .sinker-btn { padding: 8px 5px; }
+      .boat-panel { padding: 14px; }
+      .catch-card { padding: 18px 14px; }
+      .session-cards { gap: 9px; }
+      .session-card { min-width: 130px; padding: 18px 10px; }
+      .c-stats { gap: 7px; }
+      .stat-box { min-width: 72px; padding: 7px 10px; }
+    }
+    @media (max-height: 500px) {
+      .boat-panel { padding: 10px 14px; }
+      .sinker-btn .si-icon { font-size: 1.3rem; }
+      .power-track { height: 30px; }
+      .panel-title { margin-bottom: 8px; font-size: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ====================================================
+     MENU SCREEN
+===================================================== -->
+<div id="menuScreen" class="screen active">
+  <div class="clouds" id="menuClouds"></div>
+  <div class="water-layer"><div class="water-base"></div></div>
+
+  <div class="menu-content">
+    <div class="menu-fish-row">🐟 🐠 🐡</div>
+    <h1 class="game-title">Focus Fishing</h1>
+    <p class="game-subtitle">Cast. Wait. Focus. Reel.</p>
+    <div class="btn-row" style="margin-bottom:14px">
+      <button class="btn btn-primary" onclick="showScreen('sessionScreen')">🎣 Play!</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="showPopup('howToPlayPopup')">📖 How to Play</button>
+      <button class="btn btn-secondary" onclick="showPopup('catchLogPopup')">🐟 Catch Log</button>
+    </div>
+  </div>
+
+  <div class="fish-shadow" id="mShadow1" style="bottom:28%;left:18%">🐟</div>
+  <div class="fish-shadow" id="mShadow2" style="bottom:18%;left:68%">🐠</div>
+</div>
+
+<!-- ====================================================
+     SESSION SCREEN
+===================================================== -->
+<div id="sessionScreen" class="screen">
+  <div class="bg-sky sky-day"></div>
+  <div class="water-layer"><div class="water-base"></div></div>
+
+  <div style="position:relative;z-index:10;text-align:center;padding:20px">
+    <h2 class="screen-title">Choose Your Session</h2>
+    <p class="screen-sub">How do you want to fish today?</p>
+
+    <div class="session-cards">
+      <div class="session-card" onclick="startSession('relaxed')">
+        <div class="s-icon">🌊</div>
+        <div class="s-name">Relaxed</div>
+        <div class="s-desc">No pressure — fish at your own pace, any time</div>
+      </div>
+      <div class="session-card" onclick="startSession('challenge')">
+        <div class="s-icon">🏆</div>
+        <div class="s-name">Challenge</div>
+        <div class="s-desc">Catch 5 fish before the 5-minute timer runs out!</div>
+      </div>
+      <div class="session-card" onclick="startSession('trophy')">
+        <div class="s-icon">🥇</div>
+        <div class="s-name">Trophy Hunt</div>
+        <div class="s-desc">3 casts only — land the biggest fish you can!</div>
+      </div>
+    </div>
+
+    <button class="btn btn-secondary" onclick="showScreen('menuScreen')">← Back</button>
+  </div>
+</div>
+
+<!-- ====================================================
+     BOAT SCREEN (cast setup)
+===================================================== -->
+<div id="boatScreen" class="screen">
+  <div class="bg-sky" id="boatSky"></div>
+  <div class="clouds" id="boatClouds"></div>
+  <div class="water-layer"><div class="water-base"></div></div>
+
+  <div class="top-bar">
+    <div class="badge" id="boatWeather">☀️ Sunny</div>
+    <div class="badge badge-score" id="boatScore">🐟 0 caught</div>
+    <button class="menu-btn" onclick="confirmQuit()">✕ Quit</button>
+  </div>
+
+  <div class="challenge-bar hidden" id="boatChalBar">
+    <div class="c-slots" id="boatSlots"></div>
+    <div class="c-timer" id="boatTimer">5:00</div>
+  </div>
+
+  <!-- Boat SVG -->
+  <div class="boat-container">
+    <svg class="boat-svg" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+      <path d="M20 80 Q100 100 180 80 L170 95 Q100 115 30 95 Z" fill="#8B4513" stroke="#5D2E0C" stroke-width="2"/>
+      <rect x="30" y="65" width="140" height="18" rx="4" fill="#D2691E" stroke="#8B4513" stroke-width="1.5"/>
+      <line x1="130" y1="52" x2="130" y2="68" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="130" cy="44" r="9" fill="#FDBCB4" stroke="#333" stroke-width="1.5"/>
+      <ellipse cx="130" cy="36" rx="12" ry="4" fill="#4CAF50"/>
+      <rect x="122" y="28" width="16" height="10" rx="2" fill="#388E3C"/>
+      <line x1="130" y1="58" x2="148" y2="51" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="130" y1="58" x2="118" y2="61" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="130" y1="68" x2="124" y2="80" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="130" y1="68" x2="136" y2="80" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="148" y1="51" x2="188" y2="14" stroke="#8B6914" stroke-width="3" stroke-linecap="round"/>
+      <rect x="50" y="61" width="28" height="14" rx="3" fill="#1565C0" stroke="#0D47A1" stroke-width="1"/>
+      <rect x="54" y="64" width="20" height="8" rx="2" fill="#1976D2"/>
+    </svg>
+  </div>
+
+  <!-- Ripple spot -->
+  <div id="rippleContainer" style="position:absolute;bottom:43%;left:64%;z-index:8;pointer-events:none"></div>
+
+  <!-- UI Panel -->
+  <div class="boat-ui">
+    <div class="boat-panel">
+
+      <!-- Step 1: Sinker -->
+      <div id="sinkerStep">
+        <div class="panel-title">🪝 Choose Your Sinker</div>
+        <div class="sinker-row">
+          <div class="sinker-btn selected" onclick="selectSinker(this,'shallow')" id="sk-shallow">
+            <div class="si-icon">🪶</div>
+            <div class="si-name">Light</div>
+            <div class="si-zone">Shallow</div>
+            <div class="si-diff diff-easy">Easy</div>
+          </div>
+          <div class="sinker-btn" onclick="selectSinker(this,'mid')" id="sk-mid">
+            <div class="si-icon">⚙️</div>
+            <div class="si-name">Medium</div>
+            <div class="si-zone">Mid-depth</div>
+            <div class="si-diff diff-medium">Medium</div>
+          </div>
+          <div class="sinker-btn" onclick="selectSinker(this,'deep')" id="sk-deep">
+            <div class="si-icon">🏋️</div>
+            <div class="si-name">Heavy</div>
+            <div class="si-zone">Deep</div>
+            <div class="si-diff diff-hard">Hard</div>
+          </div>
+        </div>
+        <div class="sinker-hint" id="sinkerHint">Shallow water: bluegill, sunfish, perch</div>
+        <div class="btn-row">
+          <button class="btn btn-action" onclick="startCasting()">⚡ Set Up Cast!</button>
+        </div>
+      </div>
+
+      <!-- Step 2: Power bar -->
+      <div id="castStep" class="hidden">
+        <div class="panel-title">🎯 Click when the bar hits the green zone!</div>
+        <div class="power-label">Cast Power</div>
+        <div class="power-track" id="powerTrack">
+          <div class="power-fill" id="powerFill" style="width:0%"></div>
+          <div class="power-green-zone"></div>
+          <div class="power-cursor" id="powerCursor" style="left:0%"></div>
+        </div>
+        <div class="power-pct" id="powerPct">0%</div>
+        <button class="btn btn-primary" id="castBtn" onclick="setCastPower()" style="width:100%;margin-top:4px">
+          🎣 CAST!
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ====================================================
+     WAIT SCREEN
+===================================================== -->
+<div id="waitScreen" class="screen">
+  <div class="bg-sky" id="waitSky"></div>
+  <div class="clouds" id="waitClouds"></div>
+  <div class="water-layer"><div class="water-base"></div></div>
+
+  <div class="top-bar">
+    <div class="badge" id="waitWeather">☀️ Sunny</div>
+    <div class="badge badge-score" id="waitScore">🐟 0 caught</div>
+    <button class="menu-btn" onclick="confirmQuit()">✕ Quit</button>
+  </div>
+
+  <div class="challenge-bar hidden" id="waitChalBar">
+    <div class="c-slots" id="waitSlots"></div>
+    <div class="c-timer" id="waitTimer">5:00</div>
+  </div>
+
+  <!-- Boat (waiting pose) -->
+  <div class="boat-container">
+    <svg class="boat-svg" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+      <path d="M20 80 Q100 100 180 80 L170 95 Q100 115 30 95 Z" fill="#8B4513" stroke="#5D2E0C" stroke-width="2"/>
+      <rect x="30" y="65" width="140" height="18" rx="4" fill="#D2691E" stroke="#8B4513" stroke-width="1.5"/>
+      <line x1="130" y1="52" x2="130" y2="68" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="130" cy="44" r="9" fill="#FDBCB4" stroke="#333" stroke-width="1.5"/>
+      <ellipse cx="130" cy="36" rx="12" ry="4" fill="#4CAF50"/>
+      <rect x="122" y="28" width="16" height="10" rx="2" fill="#388E3C"/>
+      <line x1="130" y1="58" x2="145" y2="53" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="130" y1="58" x2="118" y2="61" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="130" y1="68" x2="124" y2="80" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="130" y1="68" x2="136" y2="80" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>
+      <!-- relaxed rod angle -->
+      <line x1="145" y1="53" x2="188" y2="20" stroke="#8B6914" stroke-width="3" stroke-linecap="round"/>
+    </svg>
+  </div>
+
+  <!-- Line from rod tip to bobber (decorative) -->
+  <svg style="position:absolute;top:0;left:0;width:100%;height:100%;z-index:8;pointer-events:none" id="waitLineSvg">
+    <line id="waitLineEl" stroke="#aaa" stroke-width="1.2" stroke-dasharray="4,3"/>
+  </svg>
+
+  <!-- Bobber -->
+  <div id="waitBobber" class="bobber" style="bottom:44%;left:63%;position:absolute">🔴</div>
+
+  <div class="wait-info">
+    <div class="wait-main" id="waitMain">🎣 Waiting for a bite…</div>
+    <div class="wait-sub" id="waitSub"></div>
+  </div>
+
+  <div class="bite-flash" id="biteFlash">🐟 BITE!</div>
+
+  <div class="fish-shadow" id="wShadow1" style="bottom:26%;left:22%">🐟</div>
+  <div class="fish-shadow" id="wShadow2" style="bottom:16%;left:72%">🐠</div>
+</div>
+
+<!-- ====================================================
+     FIGHT SCREEN
+===================================================== -->
+<div id="fightScreen" class="screen">
+  <div class="bg-sky" id="fightSky"></div>
+  <div class="water-layer">
+    <div class="water-base" style="background:linear-gradient(180deg,rgba(1,87,155,0.9) 0%,rgba(0,55,110,0.98) 100%)"></div>
+  </div>
+
+  <!-- HUD -->
+  <div class="fight-hud">
+    <div class="fish-preview">
+      <span class="fp-emoji" id="fpEmoji">🐟</span>
+      <div>
+        <div class="fp-name" id="fpName">Mystery Fish!</div>
+        <div class="fp-hint" id="fpHint">Keep the dot in the green!</div>
+      </div>
+    </div>
+    <div class="stamina-wrap">
+      <div class="stamina-label">🐟 Fish Stamina (deplete it to win!)</div>
+      <div class="stamina-track"><div class="stamina-fill" id="staminaFill" style="width:100%"></div></div>
+    </div>
+  </div>
+
+  <!-- Boat (fighting pose — bent rod) -->
+  <div class="fight-boat-container">
+    <svg class="boat-svg" viewBox="0 0 220 130" xmlns="http://www.w3.org/2000/svg">
+      <path d="M20 80 Q110 102 190 80 L180 96 Q110 118 32 96 Z" fill="#8B4513" stroke="#5D2E0C" stroke-width="2"/>
+      <rect x="32" y="65" width="148" height="18" rx="4" fill="#D2691E" stroke="#8B4513" stroke-width="1.5"/>
+      <!-- Person leaning back -->
+      <line x1="128" y1="52" x2="125" y2="68" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="130" cy="44" r="9" fill="#FDBCB4" stroke="#333" stroke-width="1.5"/>
+      <ellipse cx="130" cy="36" rx="12" ry="4" fill="#4CAF50"/>
+      <rect x="122" y="28" width="16" height="10" rx="2" fill="#388E3C"/>
+      <!-- Arms raised / pulling -->
+      <line x1="125" y1="58" x2="144" y2="44" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="125" y1="58" x2="114" y2="55" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="125" y1="68" x2="119" y2="80" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="125" y1="68" x2="131" y2="80" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>
+      <!-- Bent rod -->
+      <path d="M144 44 Q180 32 196 52 Q202 68 190 82" stroke="#8B6914" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+      <!-- Line -->
+      <line x1="190" y1="82" x2="188" y2="115" stroke="#999" stroke-width="1.2"/>
+    </svg>
+  </div>
+
+  <!-- Fish silhouette underwater -->
+  <div class="fight-fish-sil" id="fightSil" style="bottom:18%;left:54%">🐟</div>
+
+  <!-- Surge warning -->
+  <div class="surge-warn" id="surgeWarn">⚡ SURGE!</div>
+
+  <!-- Tension bar -->
+  <div class="tension-wrap" id="tensionWrap">
+    <div class="tension-instruction" id="tensionInstr">
+      🖱️ <strong>Hold</strong> to reel — <strong>Release</strong> to ease tension
+    </div>
+    <div class="tension-outer" id="tensionBar">
+      <div class="t-red-l" id="tRedL"></div>
+      <div class="t-green"  id="tGreen"></div>
+      <div class="t-red-r"  id="tRedR"></div>
+      <div class="t-indicator" id="tIndicator"></div>
+    </div>
+    <div class="grace-warn" id="graceWarn"></div>
+  </div>
+</div>
+
+<!-- ====================================================
+     RESULT SCREEN (fish got away)
+===================================================== -->
+<div id="resultScreen" class="screen">
+  <div class="bg-sky sky-dusk"></div>
+  <div class="water-layer"><div class="water-base"></div></div>
+  <div class="result-content">
+    <div class="result-icon" id="rIcon">😢</div>
+    <div class="result-title" id="rTitle">The One That Got Away!</div>
+    <div class="result-msg"   id="rMsg">It shook the hook and dove deep...</div>
+    <div class="btn-row">
+      <button class="btn btn-primary"   onclick="goToBoat()">🎣 Try Again</button>
+      <button class="btn btn-secondary" onclick="showPopup('catchLogPopup')">📋 Catches</button>
+    </div>
+  </div>
+</div>
+
+<!-- ====================================================
+     GAMEOVER SCREEN
+===================================================== -->
+<div id="gameoverScreen" class="screen">
+  <div class="bg-sky sky-dusk"></div>
+  <div class="water-layer"><div class="water-base"></div></div>
+  <div class="go-content">
+    <div class="go-icon"  id="goIcon">🏆</div>
+    <div class="go-title" id="goTitle">Session Complete!</div>
+    <div class="go-sub"   id="goSub">What a great day on the water!</div>
+    <div class="go-stats" id="goStats"></div>
+    <div class="btn-row" style="margin-top:14px">
+      <button class="btn btn-primary"   onclick="showScreen('sessionScreen')">🎣 Play Again</button>
+      <button class="btn btn-secondary" onclick="showPopup('catchLogPopup')">🐟 Catches</button>
+      <button class="btn btn-secondary" onclick="showScreen('menuScreen')">🏠 Menu</button>
+    </div>
+  </div>
+</div>
+
+<!-- ====================================================
+     CATCH POPUP
+===================================================== -->
+<div class="popup-overlay" id="catchPopup">
+  <div class="catch-card">
+    <div class="c-header">🎉 Fish Caught!</div>
+    <div class="c-emoji" id="cEmoji">🐟</div>
+    <div class="c-name" id="cName">Rainbow Trout</div>
+    <div class="rarity-badge" id="cRarity">Common</div>
+    <div class="pb-badge" id="cPB">⭐ New Personal Best!</div>
+    <div class="c-stats">
+      <div class="stat-box"><div class="stat-val" id="cWeight">2.4 lbs</div><div class="stat-lbl">Weight</div></div>
+      <div class="stat-box"><div class="stat-val" id="cLength">14"</div><div class="stat-lbl">Length</div></div>
+      <div class="stat-box"><div class="stat-val" id="cStars">★★★</div><div class="stat-lbl">Challenge</div></div>
+    </div>
+    <div class="c-habitat" id="cHabitat"><span>Habitat:</span> —</div>
+    <div class="c-facts">
+      <h4>🔬 Fun Facts</h4>
+      <ul id="cFactsList"></ul>
+    </div>
+    <div class="btn-row" style="margin-top:12px">
+      <button class="btn btn-primary" onclick="closeCatchPopup()" style="flex:1">Keep Fishing! 🎣</button>
+    </div>
+  </div>
+</div>
+
+<!-- ====================================================
+     CATCH LOG POPUP
+===================================================== -->
+<div class="popup-overlay" id="catchLogPopup">
+  <div class="log-card">
+    <h3>🐟 Your Catch Log</h3>
+    <div id="catchLogEntries"><div class="log-empty">No fish yet — cast your line! 🎣</div></div>
+    <div class="btn-row" style="margin-top:14px">
+      <button class="btn btn-secondary" onclick="closePopup('catchLogPopup')" style="width:100%">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ====================================================
+     HOW TO PLAY POPUP
+===================================================== -->
+<div class="popup-overlay" id="howToPlayPopup">
+  <div class="howto-card">
+    <h3>🎣 How to Fish</h3>
+    <div class="ht-step">
+      <div class="ht-num">1</div>
+      <div class="ht-text"><strong>Choose a Sinker</strong> — Heavier sinkers reach deeper water with bigger, rarer fish. But harder to reel in!</div>
+    </div>
+    <div class="ht-step">
+      <div class="ht-num">2</div>
+      <div class="ht-text"><strong>Cast Your Line</strong> — Click/tap when the power bar hits the <span class="green-txt">green zone</span> for a long, accurate cast.</div>
+    </div>
+    <div class="ht-step">
+      <div class="ht-num">3</div>
+      <div class="ht-text"><strong>Wait for a Bite</strong> — Watch the bobber bob. Patience pays off!</div>
+    </div>
+    <div class="ht-step">
+      <div class="ht-num">4</div>
+      <div class="ht-text"><strong>Reel It In!</strong> — <strong>Hold</strong> the button/key to reel. <strong>Release</strong> to ease tension. Keep the dot in the <span class="green-txt">GREEN zone</span> to tire the fish out!</div>
+    </div>
+    <div class="ht-step">
+      <div class="ht-num">5</div>
+      <div class="ht-text"><strong>Watch out for Surges!</strong> — The fish will fight hard sometimes. React fast or it'll escape!</div>
+    </div>
+    <div class="ht-step">
+      <div class="ht-num">6</div>
+      <div class="ht-text"><strong>Don't lose it!</strong> — If the dot leaves the green, you have <strong>1.5 seconds</strong> to bring it back. After that — the fish wins!</div>
+    </div>
+    <div class="btn-row" style="margin-top:14px">
+      <button class="btn btn-primary" onclick="closePopup('howToPlayPopup')" style="width:100%">Got it! 🎣</button>
+    </div>
+  </div>
+</div>
+
+<!-- ====================================================
+     JAVASCRIPT
+===================================================== -->
+<script>
+// ====================================================
+// FISH DATA
+// ====================================================
+const FISH = {
+  bluegill: {
+    name:"Bluegill", emoji:"🐟", zone:"shallow", rarity:"common", difficulty:1,
+    weightRange:[0.1,0.5], lengthRange:[4,9],
+    habitat:"Ponds, lakes, and slow rivers across North America",
+    facts:[
+      "Bluegill are one of the most common freshwater fish in all of North America!",
+      "They build round, nest-shaped hollows in the sand to protect their eggs.",
+      "A bluegill can live up to 11 years in the wild.",
+      "Their name comes from the bright blue color on their gill cover."
+    ]
+  },
+  sunfish: {
+    name:"Pumpkinseed Sunfish", emoji:"🐠", zone:"shallow", rarity:"common", difficulty:1,
+    weightRange:[0.1,0.6], lengthRange:[4,8],
+    habitat:"Weedy ponds and lakes of eastern North America",
+    facts:[
+      "Pumpkinseed sunfish have stunning orange, blue, and green patterns!",
+      "They can crush snail shells with their strong jaws.",
+      "Males guard the nest and fan the eggs with their fins to keep them oxygenated.",
+      "They are one of the most colorful freshwater fish in North America."
+    ]
+  },
+  perch: {
+    name:"Yellow Perch", emoji:"🐟", zone:"shallow", rarity:"common", difficulty:2,
+    weightRange:[0.2,1.5], lengthRange:[6,14],
+    habitat:"Lakes and rivers of Canada and the northern United States",
+    facts:[
+      "Yellow perch travel in large schools — where there's one, there are many!",
+      "They have bold dark vertical stripes across their golden-yellow body.",
+      "Perch are one of the most popular fish to catch through the ice in winter.",
+      "They're often called one of the best-tasting freshwater fish in the world."
+    ]
+  },
+  bass: {
+    name:"Largemouth Bass", emoji:"🐟", zone:"mid", rarity:"common", difficulty:3,
+    weightRange:[0.5,8], lengthRange:[8,20],
+    habitat:"Lakes, ponds, and slow rivers across North America",
+    facts:[
+      "Largemouth bass can swallow prey up to half of their own body size!",
+      "They hide in weeds and logs, then burst out to ambush their prey.",
+      "Bass are so territorial they'll attack lures just out of anger.",
+      "The world record largemouth bass weighed an incredible 22 lbs 4 oz!"
+    ]
+  },
+  trout: {
+    name:"Rainbow Trout", emoji:"🐡", zone:"mid", rarity:"uncommon", difficulty:3,
+    weightRange:[0.5,5], lengthRange:[10,20],
+    habitat:"Cold, clear streams and lakes of the Pacific Northwest",
+    facts:[
+      "Rainbow trout can leap several feet out of the water when hooked!",
+      "They need cold, super-clean, oxygen-rich water to survive.",
+      "When rainbow trout migrate to the ocean, they're called Steelhead.",
+      "Their pinkish flesh comes from eating tiny shrimp and crustaceans."
+    ]
+  },
+  walleye: {
+    name:"Walleye", emoji:"🐟", zone:"mid", rarity:"uncommon", difficulty:3,
+    weightRange:[1,8], lengthRange:[12,24],
+    habitat:"Lakes and rivers of Canada and the northern United States",
+    facts:[
+      "Walleye have special reflective eyes that give them incredible night vision!",
+      "They're most active at dawn and dusk when their eyes give them an advantage.",
+      "Their name comes from a reflective layer in their eye — similar to 'wall-eyed'.",
+      "Walleye are the official state fish of both Minnesota and South Dakota!"
+    ]
+  },
+  carp: {
+    name:"Common Carp", emoji:"🐟", zone:"mid", rarity:"common", difficulty:3,
+    weightRange:[2,20], lengthRange:[14,30],
+    habitat:"Slow rivers, lakes, and ponds worldwide",
+    facts:[
+      "Carp can live for 20–30 years, making them some of the longest-lived fish!",
+      "They were brought to North America from Europe in the 1800s.",
+      "In Asia, carp are a symbol of perseverance and good fortune.",
+      "They stir up the lake bottom while feeding, which clouds the water."
+    ]
+  },
+  catfish: {
+    name:"Channel Catfish", emoji:"🐟", zone:"deep", rarity:"uncommon", difficulty:4,
+    weightRange:[1,15], lengthRange:[12,28],
+    habitat:"Rivers, lakes, and reservoirs across North America",
+    facts:[
+      "Catfish have thousands of taste buds all over their body — not just in their mouth!",
+      "Their whisker-like barbels help them find food in murky, dark water.",
+      "Channel catfish make grunting sounds when lifted out of the water.",
+      "They're one of the most widely caught fish in the entire United States."
+    ]
+  },
+  pike: {
+    name:"Northern Pike", emoji:"🐟", zone:"deep", rarity:"rare", difficulty:4,
+    weightRange:[2,20], lengthRange:[18,40],
+    habitat:"Cold, clear lakes and rivers of North America and Europe",
+    facts:[
+      "Northern pike have hundreds of sharp, backward-pointing teeth!",
+      "They can strike faster than the human eye can follow.",
+      "Pike have been documented eating ducks and even small mammals!",
+      "The world record Northern Pike weighed 55 lbs 1 oz."
+    ]
+  },
+  sturgeon: {
+    name:"Lake Sturgeon", emoji:"🐟", zone:"deep", rarity:"rare", difficulty:5,
+    weightRange:[10,80], lengthRange:[30,72],
+    habitat:"Deep lakes and rivers of the Great Lakes region",
+    facts:[
+      "Sturgeon can live over 150 years — older than the United States itself!",
+      "They've barely changed in 200 million years — true living dinosaurs!",
+      "Sturgeon eggs are called caviar, one of the world's most expensive foods.",
+      "Lake sturgeon can grow to over 300 lbs in the wild."
+    ]
+  },
+  muskie: {
+    name:"Muskellunge", emoji:"🐟", zone:"deep", rarity:"legendary", difficulty:5,
+    weightRange:[5,40], lengthRange:[24,54],
+    habitat:"Large, clear lakes of the northern United States and Canada",
+    facts:[
+      "Muskie are called 'the fish of ten thousand casts' — they're incredibly rare to catch!",
+      "They're the largest member of the pike family.",
+      "A Muskie can accelerate from zero to 30 mph in one body length!",
+      "The world record Muskellunge weighed a jaw-dropping 67 lbs 8 oz."
+    ]
+  }
+};
+
+// ====================================================
+// WEATHER / TIME
+// ====================================================
+const WEATHERS = [
+  { id:'sunny',  label:'☀️ Sunny',   skyClass:'sky-day',    biteBonus:1.0 },
+  { id:'cloudy', label:'🌤️ Cloudy',  skyClass:'sky-cloudy', biteBonus:1.25 },
+  { id:'rainy',  label:'🌧️ Rainy',   skyClass:'sky-rainy',  biteBonus:1.6 },
+  { id:'dawn',   label:'🌅 Dawn',    skyClass:'sky-dawn',   biteBonus:1.35 },
+  { id:'dusk',   label:'🌆 Dusk',    skyClass:'sky-dusk',   biteBonus:1.2 },
+];
+const SINKER_HINTS = {
+  shallow: 'Shallow: bluegill, sunfish, perch',
+  mid:     'Mid-depth: bass, trout, walleye, carp',
+  deep:    'Deep: catfish, pike, sturgeon, muskie 🏆'
+};
+
+// ====================================================
+// GAME STATE
+// ====================================================
+let G = {
+  session: 'relaxed',
+  sinker: 'shallow',
+  castPower: 0,
+  castDist: 'mid',       // short | mid | long
+  weather: null,
+  fish: null,            // current fish object
+  catchLog: [],
+  chalCaught: 0,
+  chalTarget: 5,
+  chalTimeLeft: 300,
+  trophyCastsLeft: 3,
+  // power bar
+  pBarVal: 0,
+  pBarDir: 1,
+  pBarAnim: null,
+  // fight
+  fActive: false,
+  fHeld: false,
+  fPos: 50,              // indicator 0-100%
+  fGreenL: 35,
+  fGreenR: 65,
+  fGreenW: 30,
+  fDrift: 0,             // %/sec leftward drift (fish pulling)
+  fHoldSpd: 58,          // %/sec rightward (player reeling)
+  fStamina: 100,
+  fOutTime: 0,
+  fGrace: 1.5,
+  fAnimId: null,
+  fLastT: null,
+  surgeTimeout: null,
+  chalInterval: null,
+};
+
+const PB_KEY = 'focusFishing_pb';
+function loadPBs() { try { return JSON.parse(localStorage.getItem(PB_KEY)) || {}; } catch { return {}; } }
+function savePB(id, weight) {
+  const pbs = loadPBs();
+  if (!pbs[id] || weight > pbs[id]) { pbs[id] = weight; localStorage.setItem(PB_KEY, JSON.stringify(pbs)); return true; }
+  return false;
+}
+
+// ====================================================
+// SCREEN / POPUP HELPERS
+// ====================================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function showPopup(id) {
+  if (id === 'catchLogPopup') renderCatchLog();
+  document.getElementById(id).classList.add('show');
+}
+function closePopup(id) { document.getElementById(id).classList.remove('show'); }
+
+// ====================================================
+// CLOUDS
+// ====================================================
+function spawnClouds(containerId, count) {
+  const c = document.getElementById(containerId);
+  if (!c) return; c.innerHTML = '';
+  for (let i = 0; i < count; i++) {
+    const div = document.createElement('div');
+    div.className = 'cloud';
+    const w = 58 + Math.random() * 85, h = 18 + Math.random() * 22;
+    const top = 4 + Math.random() * 34, dur = 22 + Math.random() * 32, delay = -Math.random() * dur;
+    div.style.cssText = `width:${w}px;height:${h}px;top:${top}%;animation-duration:${dur}s;animation-delay:${delay}s;opacity:${0.6+Math.random()*0.35}`;
+    div.style.left = '-220px';
+    const b1 = document.createElement('div'), b2 = document.createElement('div');
+    b1.style.cssText = `width:${w*.5}px;height:${h*1.5}px;background:inherit;border-radius:50%;top:${-h*.3}px;left:${w*.18}px;position:absolute`;
+    b2.style.cssText = `width:${w*.36}px;height:${h*1.3}px;background:inherit;border-radius:50%;top:${-h*.15}px;left:${w*.5}px;position:absolute`;
+    div.appendChild(b1); div.appendChild(b2); c.appendChild(div);
+  }
+}
+
+// ====================================================
+// SESSION START
+// ====================================================
+function startSession(mode) {
+  G.session = mode;
+  G.catchLog = [];
+  G.chalCaught = 0;
+  G.chalTimeLeft = 300;
+  G.trophyCastsLeft = 3;
+  G.weather = WEATHERS[Math.floor(Math.random() * WEATHERS.length)];
+  goToBoat();
+}
+
+// ====================================================
+// BOAT SCREEN
+// ====================================================
+function goToBoat() {
+  if (G.session === 'challenge' && G.chalCaught >= G.chalTarget) { showGameOver(true); return; }
+  if (G.session === 'trophy' && G.trophyCastsLeft <= 0) { showGameOver(false, true); return; }
+
+  showScreen('boatScreen');
+  const sky = document.getElementById('boatSky');
+  sky.className = 'bg-sky ' + G.weather.skyClass;
+
+  document.getElementById('boatWeather').textContent = G.weather.label;
+  document.getElementById('boatScore').textContent = `🐟 ${G.catchLog.length} caught`;
+  spawnClouds('boatClouds', 4);
+
+  // Reset steps
+  document.getElementById('sinkerStep').classList.remove('hidden');
+  document.getElementById('castStep').classList.add('hidden');
+  document.querySelectorAll('.sinker-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('sk-shallow').classList.add('selected');
+  G.sinker = 'shallow';
+  document.getElementById('sinkerHint').textContent = SINKER_HINTS.shallow;
+  stopPBar();
+
+  if (G.session === 'challenge') startChalTimer();
+  updateChalBar('boatChalBar', 'boatSlots', 'boatTimer');
+}
+
+function selectSinker(el, zone) {
+  document.querySelectorAll('.sinker-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  G.sinker = zone;
+  document.getElementById('sinkerHint').textContent = SINKER_HINTS[zone];
+}
+
+// ====================================================
+// POWER BAR
+// ====================================================
+function startCasting() {
+  document.getElementById('sinkerStep').classList.add('hidden');
+  document.getElementById('castStep').classList.remove('hidden');
+  G.pBarVal = 0; G.pBarDir = 1;
+  animPBar();
+}
+function animPBar() {
+  const spd = 1.4;
+  function frame() {
+    G.pBarVal += G.pBarDir * spd;
+    if (G.pBarVal >= 100) { G.pBarVal = 100; G.pBarDir = -1; }
+    if (G.pBarVal <= 0)   { G.pBarVal = 0;   G.pBarDir = 1; }
+    const p = G.pBarVal;
+    document.getElementById('powerFill').style.width   = p + '%';
+    document.getElementById('powerCursor').style.left  = p + '%';
+    document.getElementById('powerPct').textContent    = Math.round(p) + '%';
+    G.pBarAnim = requestAnimationFrame(frame);
+  }
+  G.pBarAnim = requestAnimationFrame(frame);
+}
+function stopPBar() { if (G.pBarAnim) { cancelAnimationFrame(G.pBarAnim); G.pBarAnim = null; } }
+
+function setCastPower() {
+  stopPBar();
+  G.castPower = Math.round(G.pBarVal);
+  G.castDist = G.castPower < 30 ? 'short' : G.castPower < 70 ? 'mid' : 'long';
+  const btn = document.getElementById('castBtn');
+  btn.textContent = '🎣 Casting…';
+  btn.classList.add('disabled');
+  addRipples();
+  setTimeout(goToWait, 700);
+}
+
+function addRipples() {
+  const c = document.getElementById('rippleContainer');
+  for (let i = 0; i < 3; i++) {
+    setTimeout(() => {
+      const r = document.createElement('div'); r.className = 'ripple';
+      c.appendChild(r); setTimeout(() => r.remove(), 1500);
+    }, i * 200);
+  }
+}
+
+// ====================================================
+// PICK FISH
+// ====================================================
+function pickFish() {
+  const pool = Object.entries(FISH).filter(([,f]) => f.zone === G.sinker);
+  const rw = G.castDist === 'short' ? {common:10,uncommon:3,rare:1,legendary:0.05}
+           : G.castDist === 'mid'   ? {common:6,uncommon:5,rare:2,legendary:0.3}
+           :                          {common:3,uncommon:5,rare:4,legendary:1};
+
+  if (G.weather.id === 'dawn' || G.weather.id === 'dusk') {
+    rw.rare = (rw.rare || 1) * 1.6; rw.legendary = (rw.legendary || 0.1) * 1.8;
+  }
+  if (G.weather.id === 'rainy') { rw.uncommon = (rw.uncommon||1)*1.3; rw.rare=(rw.rare||1)*1.3; }
+
+  const weighted = [];
+  pool.forEach(([id,f]) => {
+    const w = Math.round((rw[f.rarity] || 1) * 10);
+    for (let i = 0; i < w; i++) weighted.push(id);
+  });
+
+  if (!weighted.length) {
+    const all = Object.entries(FISH).filter(([,f]) => f.zone==='shallow');
+    const [id,f] = all[Math.floor(Math.random()*all.length)];
+    return { id, ...f };
+  }
+  const chosen = weighted[Math.floor(Math.random()*weighted.length)];
+  return { id: chosen, ...FISH[chosen] };
+}
+
+// ====================================================
+// WAIT SCREEN
+// ====================================================
+function goToWait() {
+  showScreen('waitScreen');
+  const sky = document.getElementById('waitSky');
+  sky.className = 'bg-sky ' + G.weather.skyClass;
+  document.getElementById('waitWeather').textContent = G.weather.label;
+  document.getElementById('waitScore').textContent = `🐟 ${G.catchLog.length} caught`;
+  spawnClouds('waitClouds', 3);
+  updateChalBar('waitChalBar', 'waitSlots', 'waitTimer');
+
+  G.fish = pickFish();
+  document.getElementById('waitMain').innerHTML = '🎣 Waiting for a bite…';
+
+  const distLabel = {short:`Short cast (${G.castPower}%)`, mid:`Medium cast (${G.castPower}%)`, long:`Long cast! (${G.castPower}%) 🎯`};
+  document.getElementById('waitSub').textContent = distLabel[G.castDist];
+
+  // Draw fishing line decoratively
+  drawWaitLine();
+
+  // Bite timing
+  const base = 3000 + Math.random() * 6000;
+  setTimeout(triggerBite, base / G.weather.biteBonus);
+
+  // Animate fish shadows
+  animShadows();
+}
+
+function drawWaitLine() {
+  // Rod tip approximate screen position to bobber
+  const svg = document.getElementById('waitLineSvg');
+  const line = document.getElementById('waitLineEl');
+  // Rough percentages based on boat and bobber positions
+  const W = window.innerWidth, H = window.innerHeight;
+  const rodX = W * 0.5 + W * 0.08; // ~58% from left
+  const rodY = H * (1 - 0.42) - 80; // above waterline
+  const bobX = W * 0.63;
+  const bobY = H * (1 - 0.44) - 10;
+  line.setAttribute('x1', rodX); line.setAttribute('y1', rodY);
+  line.setAttribute('x2', bobX); line.setAttribute('y2', bobY);
+}
+
+function triggerBite() {
+  const flash = document.getElementById('biteFlash');
+  flash.classList.add('show');
+  document.getElementById('waitBobber').classList.add('bitten');
+  setTimeout(() => { flash.classList.remove('show'); startFight(); }, 820);
+}
+
+// ====================================================
+// FIGHT SCREEN
+// ====================================================
+function startFight() {
+  showScreen('fightScreen');
+  const f = G.fish;
+
+  document.getElementById('fpEmoji').textContent = f.emoji;
+  document.getElementById('fpName').textContent = '??? — keep the dot in the green!';
+  document.getElementById('fpHint').textContent = getSizeHint(f.difficulty);
+  document.getElementById('fightSil').textContent = f.emoji;
+  document.getElementById('fightSky').className = 'bg-sky ' + G.weather.skyClass;
+
+  // Green zone width by difficulty
+  const greenW = [0,50,38,28,20,13][f.difficulty] || 28;
+  G.fGreenW = greenW;
+  G.fGreenL = (100 - greenW) / 2;
+  G.fGreenR = G.fGreenL + greenW;
+
+  document.getElementById('tGreen').style.left  = G.fGreenL + '%';
+  document.getElementById('tGreen').style.width = greenW + '%';
+  document.getElementById('tRedL').style.width  = G.fGreenL + '%';
+  document.getElementById('tRedR').style.width  = (100 - G.fGreenR) + '%';
+
+  // Drift speed by difficulty (% per second)
+  G.fDrift = [0, 11, 17, 24, 32, 40][f.difficulty] || 17;
+
+  // Reset
+  G.fPos = 50; G.fStamina = 100; G.fOutTime = 0; G.fHeld = false;
+  G.fActive = true; G.fLastT = null;
+
+  document.getElementById('graceWarn').textContent = '';
+  document.getElementById('tIndicator').classList.remove('danger');
+  updateIndicator();
+  updateStamBar();
+
+  if (G.fAnimId) cancelAnimationFrame(G.fAnimId);
+  G.fAnimId = requestAnimationFrame(fightLoop);
+  scheduleSurge();
+}
+
+function getSizeHint(d) {
+  return ['','🤏 Tiny — easy reel!','🐟 Small — steady now!','💪 Medium — keep your focus!',
+          '⚡ Big one — stay in the green!','🏋️ Monster — don\'t let it win!!'][d] || 'Keep going!';
+}
+
+function fightLoop(ts) {
+  if (!G.fActive) return;
+  const dt = G.fLastT ? (ts - G.fLastT) / 1000 : 0.016;
+  G.fLastT = ts;
+
+  // Drift left (fish fighting), hold to pull right
+  if (G.fHeld) G.fPos += G.fHoldSpd * dt;
+  G.fPos -= G.fDrift * dt;
+  G.fPos = Math.max(0, Math.min(100, G.fPos));
+
+  const inGreen = G.fPos >= G.fGreenL && G.fPos <= G.fGreenR;
+
+  if (inGreen) {
+    G.fStamina -= 8 * dt;
+    G.fOutTime = 0;
+    document.getElementById('graceWarn').textContent = '';
+    document.getElementById('tIndicator').classList.remove('danger');
+  } else {
+    G.fOutTime += dt;
+    document.getElementById('tIndicator').classList.add('danger');
+    const left = G.fGrace - G.fOutTime;
+    if (left > 0) {
+      document.getElementById('graceWarn').textContent = `⚠️ Back in the green! ${left.toFixed(1)}s`;
+      const bar = document.getElementById('tensionBar');
+      if (!bar.classList.contains('shake')) {
+        bar.classList.add('shake'); setTimeout(() => bar.classList.remove('shake'), 310);
+      }
+      G.fStamina = Math.min(100, G.fStamina + 3 * dt); // fish recovers
+    } else {
+      fishLost(); return;
+    }
+  }
+
+  G.fStamina = Math.max(0, Math.min(100, G.fStamina));
+  updateIndicator();
+  updateStamBar();
+
+  if (G.fStamina <= 0) { fishCaught(); return; }
+  G.fAnimId = requestAnimationFrame(fightLoop);
+}
+
+function updateIndicator() {
+  document.getElementById('tIndicator').style.left = G.fPos + '%';
+}
+function updateStamBar() {
+  const fill = document.getElementById('staminaFill');
+  fill.style.width = G.fStamina + '%';
+  fill.style.background = G.fStamina > 60
+    ? 'linear-gradient(90deg,#f44336,#ff9800,#4caf50)'
+    : G.fStamina > 28
+      ? 'linear-gradient(90deg,#f44336,#ff9800)'
+      : '#4caf50';
+}
+
+function scheduleSurge() {
+  const delay = 2800 + Math.random() * 4200;
+  G.surgeTimeout = setTimeout(() => {
+    if (!G.fActive) return;
+    G.fPos = Math.max(0, G.fPos - (18 + Math.random() * 16));
+    const el = document.getElementById('surgeWarn');
+    el.classList.add('show'); setTimeout(() => el.classList.remove('show'), 780);
+    addSplash();
+    scheduleSurge();
+  }, delay);
+}
+
+function addSplash() {
+  const s = document.createElement('div'); s.className = 'splash'; s.textContent = '💦';
+  s.style.left = (44 + Math.random() * 18) + '%';
+  s.style.bottom = (41 + Math.random() * 9) + '%';
+  document.getElementById('fightScreen').appendChild(s);
+  setTimeout(() => s.remove(), 780);
+}
+
+// ====================================================
+// FIGHT OUTCOMES
+// ====================================================
+function fishCaught() {
+  stopFight();
+  const f = G.fish;
+  const weight = parseFloat((f.weightRange[0] + Math.random() * (f.weightRange[1] - f.weightRange[0])).toFixed(1));
+  const length = Math.round(f.lengthRange[0] + Math.random() * (f.lengthRange[1] - f.lengthRange[0]));
+  const entry = {
+    id: f.id, name: f.name, emoji: f.emoji,
+    weight, length, rarity: f.rarity, difficulty: f.difficulty,
+    time: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})
+  };
+  G.catchLog.push(entry);
+  G.chalCaught++;
+  if (G.session === 'trophy') G.trophyCastsLeft--;
+  const isPB = savePB(f.id, weight);
+  spawnConfetti();
+  showCatchPopup(entry, isPB);
+}
+
+function fishLost() {
+  stopFight();
+  if (G.session === 'trophy') G.trophyCastsLeft--;
+  showScreen('resultScreen');
+  document.getElementById('rIcon').textContent = '😢';
+  document.getElementById('rTitle').textContent = 'The One That Got Away!';
+  const msgs = [
+    'It shook the hook and dove deep...',
+    'The line went slack — it broke free!',
+    'Too much tension — it snapped the line!',
+    'Almost had it! The fish wins this round.',
+    'It fought too hard. Better luck next time!'
+  ];
+  document.getElementById('rMsg').textContent = msgs[Math.floor(Math.random()*msgs.length)];
+}
+
+function stopFight() {
+  G.fActive = false;
+  if (G.fAnimId) { cancelAnimationFrame(G.fAnimId); G.fAnimId = null; }
+  if (G.surgeTimeout) { clearTimeout(G.surgeTimeout); G.surgeTimeout = null; }
+}
+
+// ====================================================
+// CATCH POPUP
+// ====================================================
+function showCatchPopup(entry, isPB) {
+  const f = FISH[entry.id];
+  document.getElementById('cEmoji').textContent  = entry.emoji;
+  document.getElementById('cName').textContent   = entry.name;
+  document.getElementById('cWeight').textContent = entry.weight + ' lbs';
+  document.getElementById('cLength').textContent = entry.length + '"';
+  document.getElementById('cStars').textContent  = '★'.repeat(entry.difficulty) + '☆'.repeat(5-entry.difficulty);
+  document.getElementById('cHabitat').innerHTML  = `<span>Habitat:</span> ${f.habitat}`;
+  document.getElementById('cPB').style.display   = isPB ? 'block' : 'none';
+
+  const rb = document.getElementById('cRarity');
+  const r = entry.rarity;
+  rb.textContent  = r.charAt(0).toUpperCase() + r.slice(1);
+  rb.className = 'rarity-badge r-' + r;
+
+  const facts = [...f.facts].sort(()=>Math.random()-0.5).slice(0,2);
+  document.getElementById('cFactsList').innerHTML = facts.map(fc=>`<li>${fc}</li>`).join('');
+
+  document.getElementById('catchPopup').classList.add('show');
+}
+
+function closeCatchPopup() {
+  closePopup('catchPopup');
+  if (G.session === 'challenge' && G.chalCaught >= G.chalTarget) { stopChalTimer(); showGameOver(true); return; }
+  if (G.session === 'trophy' && G.trophyCastsLeft <= 0)          { showGameOver(false, true); return; }
+  goToBoat();
+}
+
+// ====================================================
+// CATCH LOG
+// ====================================================
+function renderCatchLog() {
+  const c = document.getElementById('catchLogEntries');
+  if (!G.catchLog.length) { c.innerHTML = '<div class="log-empty">No fish yet — cast your line! 🎣</div>'; return; }
+  c.innerHTML = G.catchLog.map(e=>`
+    <div class="log-entry">
+      <span style="font-size:1.5rem">${e.emoji}</span>
+      <div>
+        <div class="log-name">${e.name}</div>
+        <div class="log-stats">${e.weight} lbs &bull; ${e.length}" &bull; ${e.rarity} &bull; ${e.time}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ====================================================
+// GAMEOVER
+// ====================================================
+function showGameOver(won, isTrophy = false) {
+  stopChalTimer();
+  showScreen('gameoverScreen');
+  const total = G.catchLog.reduce((s,e)=>s+e.weight,0);
+  const best  = G.catchLog.length ? G.catchLog.reduce((m,e)=>e.weight>m.weight?e:m) : null;
+
+  if (G.session === 'challenge') {
+    document.getElementById('goIcon').textContent  = won ? '🏆' : '⏰';
+    document.getElementById('goTitle').textContent = won ? 'Challenge Complete!' : "Time's Up!";
+    document.getElementById('goSub').textContent   = won
+      ? `You caught all ${G.chalTarget} fish — incredible!`
+      : `You caught ${G.chalCaught} of ${G.chalTarget} fish.`;
+  } else if (isTrophy) {
+    document.getElementById('goIcon').textContent  = best ? '🏆' : '🎣';
+    document.getElementById('goTitle').textContent = 'Trophy Hunt Over!';
+    document.getElementById('goSub').textContent   = best
+      ? `Best catch: ${best.emoji} ${best.name} at ${best.weight} lbs!`
+      : 'No trophy today — but the fish are waiting!';
+  } else {
+    document.getElementById('goIcon').textContent  = G.catchLog.length ? '🎣' : '🌊';
+    document.getElementById('goTitle').textContent = 'Session Complete!';
+    document.getElementById('goSub').textContent   = G.catchLog.length ? 'Great day on the water!' : 'The fish were sleeping today!';
+  }
+
+  document.getElementById('goStats').innerHTML = `
+    <div class="go-row"><span>Fish Caught</span><span class="go-val">${G.catchLog.length}</span></div>
+    <div class="go-row"><span>Total Weight</span><span class="go-val">${total.toFixed(1)} lbs</span></div>
+    ${best ? `<div class="go-row"><span>Best Catch</span><span class="go-val">${best.emoji} ${best.weight} lbs</span></div>` : ''}
+    ${best ? `<div class="go-row"><span>Species</span><span class="go-val">${best.name}</span></div>` : ''}
+  `;
+}
+
+// ====================================================
+// CHALLENGE TIMER
+// ====================================================
+function startChalTimer() {
+  if (G.session !== 'challenge' || G.chalInterval) return;
+  G.chalInterval = setInterval(() => {
+    G.chalTimeLeft--;
+    refreshTimerDisplays();
+    if (G.chalTimeLeft <= 0) {
+      stopChalTimer();
+      if (G.fActive) stopFight();
+      showGameOver(false);
+    }
+  }, 1000);
+  refreshTimerDisplays();
+}
+function stopChalTimer() {
+  if (G.chalInterval) { clearInterval(G.chalInterval); G.chalInterval = null; }
+}
+function refreshTimerDisplays() {
+  const m = Math.floor(G.chalTimeLeft/60), s = G.chalTimeLeft%60;
+  const str = `${m}:${s.toString().padStart(2,'0')}`;
+  ['boatTimer','waitTimer'].forEach(id => {
+    const el = document.getElementById(id); if (!el) return;
+    el.textContent = str;
+    el.classList.toggle('urgent', G.chalTimeLeft <= 30);
+  });
+  ['boatSlots','waitSlots'].forEach(id => {
+    const el = document.getElementById(id); if (!el) return;
+    el.innerHTML = Array.from({length:G.chalTarget},(_,i)=>
+      `<span class="c-slot ${i<G.chalCaught?'caught':''}">🐟</span>`).join('');
+  });
+}
+function updateChalBar(barId, slotsId, timerId) {
+  const bar = document.getElementById(barId); if (!bar) return;
+  if (G.session === 'challenge') { bar.classList.remove('hidden'); refreshTimerDisplays(); }
+  else bar.classList.add('hidden');
+}
+
+// ====================================================
+// CONFETTI
+// ====================================================
+function spawnConfetti() {
+  const cols = ['#ff6b6b','#ffd93d','#6bcb77','#4d96ff','#ff922b','#cc5de8','#ff6fd8'];
+  for (let i = 0; i < 55; i++) {
+    setTimeout(() => {
+      const p = document.createElement('div'); p.className = 'confetti-piece';
+      p.style.cssText = `left:${15+Math.random()*70}vw;top:-22px;background:${cols[Math.floor(Math.random()*cols.length)]};
+        width:${6+Math.random()*9}px;height:${6+Math.random()*9}px;
+        animation-duration:${1.4+Math.random()*2}s;animation-delay:${Math.random()*0.5}s;
+        border-radius:${Math.random()>0.5?'50%':'2px'};`;
+      document.body.appendChild(p); setTimeout(()=>p.remove(), 3200);
+    }, i * 28);
+  }
+}
+
+// ====================================================
+// FISH SHADOWS ANIMATION
+// ====================================================
+function animShadows() {
+  ['mShadow1','mShadow2','wShadow1','wShadow2'].forEach(id => {
+    const el = document.getElementById(id); if (!el) return;
+    el.style.left   = (5 + Math.random() * 82) + '%';
+    el.style.bottom = (8 + Math.random() * 28) + '%';
+    el.style.opacity = Math.random() > 0.45 ? '0.15' : '0';
+  });
+}
+setInterval(animShadows, 3500);
+
+// ====================================================
+// QUIT
+// ====================================================
+function confirmQuit() {
+  if (confirm('End the session and return to the menu?')) {
+    stopFight(); stopChalTimer(); showScreen('menuScreen');
+  }
+}
+
+// ====================================================
+// INPUT — FIGHT HOLD
+// ====================================================
+// Keyboard
+document.addEventListener('keydown', e => {
+  if ((e.code === 'Space' || e.code === 'Enter') && G.fActive && !e.repeat) { e.preventDefault(); G.fHeld = true; }
+});
+document.addEventListener('keyup', e => {
+  if (e.code === 'Space' || e.code === 'Enter') G.fHeld = false;
+});
+
+// Mouse — whole fight screen
+document.getElementById('fightScreen').addEventListener('mousedown', () => { if (G.fActive) G.fHeld = true; });
+document.addEventListener('mouseup', () => { G.fHeld = false; });
+
+// Touch — whole fight screen
+document.getElementById('fightScreen').addEventListener('touchstart', e => {
+  e.preventDefault(); if (G.fActive) G.fHeld = true;
+}, { passive: false });
+document.addEventListener('touchend', () => { G.fHeld = false; });
+
+// ====================================================
+// INIT
+// ====================================================
+spawnClouds('menuClouds', 5);
+
+// Set touch instruction label
+if ('ontouchstart' in window) {
+  document.getElementById('tensionInstr').innerHTML =
+    '👆 <strong>Hold</strong> to reel — <strong>Release</strong> to ease tension';
+}
+</script>
+</body>
+</html>
