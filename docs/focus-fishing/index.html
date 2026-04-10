@@ -55,10 +55,23 @@
     }
     #sceneWater::after { top: 8px; animation: waveTop 5.5s ease-in-out infinite reverse; opacity: 0.6; }
     @keyframes waveTop { 0%,100%{transform:translateX(0) scaleY(1)}50%{transform:translateX(4%) scaleY(1.25)} }
+    /* Jumping fish in water */
+    .water-fish {
+      position: absolute; bottom: 20%; font-size: 1.4rem; opacity: 0; pointer-events: none;
+      animation: fishJump 1.1s ease-out forwards;
+    }
+    @keyframes fishJump {
+      0%  { transform: translateY(0) scaleX(1) rotate(0deg); opacity: 1; }
+      40% { transform: translateY(-55px) scaleX(-1) rotate(-30deg); opacity: 1; }
+      100%{ transform: translateY(10px) scaleX(1) rotate(10deg); opacity: 0; }
+    }
+    /* Tension bar green glow pulse */
+    @keyframes greenGlow { 0%,100%{box-shadow:inset 0 0 12px rgba(46,204,113,0.4)}50%{box-shadow:inset 0 0 22px rgba(46,204,113,0.8),0 0 8px rgba(46,204,113,0.5)} }
+    .t-green { animation: greenGlow 1.4s ease-in-out infinite; }
 
     /* Shared boat container */
     #sceneBoat {
-      position: absolute; bottom: calc(43% - 7px); left: 50%;
+      position: absolute; bottom: calc(43% - 22px); left: 50%;
       transform: translateX(-50%); z-index: 3;
       animation: boatRock 4s ease-in-out infinite;
     }
@@ -80,9 +93,15 @@
 
     /* Shared bobber */
     #bobberEl {
-      position: absolute; z-index: 5; font-size: 1.6rem;
+      position: absolute; z-index: 5; font-size: 1.8rem;
       transform: translate(-50%, -50%); display: none;
-      pointer-events: none;
+      pointer-events: none; will-change: transform, left, top;
+      transition: transform 0.05s;
+    }
+    #bobberEl.fight-bob { animation: bobberFight 0.22s ease-in-out infinite alternate; }
+    @keyframes bobberFight {
+      from { transform: translate(-50%,-50%) scale(0.85) rotate(-10deg); }
+      to   { transform: translate(-50%,-50%) scale(1.2)  rotate(10deg); }
     }
 
     /* Fish silhouette under water */
@@ -222,7 +241,7 @@
     }
     .power-fill { height: 100%; border-radius: 19px; background: linear-gradient(90deg,#43e97b 0%,#ffd200 60%,#f44336 100%); transition: width 0.04s linear; }
     .power-gz { position: absolute; top: 0; right: 0; bottom: 0; width: 30%; background: rgba(76,175,80,0.22); border-left: 2px dashed rgba(76,175,80,0.75); pointer-events: none; }
-    .power-cursor { position: absolute; top: 50%; transform: translateY(-50%); width: 7px; height: 34px; background: white; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.4); transition: left 0.04s linear; }
+    .power-cursor { position: absolute; top: 50%; transform: translateY(-50%) translateX(-50%); width: 7px; height: 34px; background: white; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.4); transition: left 0.04s linear; }
     .power-pct { text-align: center; font-family: 'Fredoka One', cursive; font-size: 1.6rem; color: #ffd200; margin: 6px 0; }
     .cast-btn {
       width: 100%; border: none; border-radius: 13px; padding: 12px;
@@ -239,13 +258,14 @@
 
     /* ===== WAIT SCREEN ===== */
     .wait-box {
-      position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+      position: absolute; top: 56px; left: 50%; transform: translateX(-50%);
       z-index: 20; text-align: center;
-      background: rgba(0,0,0,0.44); border-radius: 26px;
-      padding: 8px 22px; backdrop-filter: blur(5px); white-space: nowrap;
+      background: rgba(0,0,0,0.55); border-radius: 30px;
+      padding: 10px 28px; backdrop-filter: blur(6px); white-space: nowrap;
+      border: 1px solid rgba(255,255,255,0.12);
     }
-    .wait-main { font-family: 'Fredoka One', cursive; font-size: 0.96rem; color: #b3e5fc; }
-    .wait-sub  { font-size: 0.75rem; color: rgba(255,255,255,0.6); margin-top: 1px; }
+    .wait-main { font-family: 'Fredoka One', cursive; font-size: 1.15rem; color: #b3e5fc; }
+    .wait-sub  { font-size: 0.85rem; color: rgba(255,255,255,0.65); margin-top: 3px; }
     .bite-flash {
       position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
       font-family: 'Fredoka One', cursive; font-size: clamp(2rem,8vw,3.5rem);
@@ -289,10 +309,24 @@
     .fp-emoji { font-size: 1.8rem; }
     .fp-name  { font-family: 'Fredoka One', cursive; font-size: 1rem; }
     .fp-hint  { font-size: 0.75rem; color: #b3e5fc; }
-    .stamina-wrap { width: 100%; max-width: 440px; }
-    .stamina-label { text-align: center; color: white; font-weight: 700; font-size: 0.76rem; margin-bottom: 3px; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
-    .stamina-track { height: 12px; background: rgba(255,255,255,0.18); border-radius: 6px; overflow: hidden; }
-    .stamina-fill  { height: 100%; border-radius: 6px; background: linear-gradient(90deg,#f44336,#ff9800,#4caf50); transition: width 0.1s; }
+    .stamina-wrap { width: 100%; max-width: 480px; }
+    .stamina-label { text-align: center; color: #b3e5fc; font-family: 'Fredoka One', cursive; font-size: 0.82rem; margin-bottom: 4px; letter-spacing: 0.5px; }
+    .stamina-ends { display: flex; justify-content: space-between; font-size: 1.1rem; margin-bottom: 2px; }
+    .stamina-track {
+      height: 18px; background: rgba(0,0,0,0.35); border-radius: 9px; overflow: hidden;
+      box-shadow: inset 0 2px 6px rgba(0,0,0,0.4), 0 1px 0 rgba(255,255,255,0.1);
+    }
+    .stamina-fill {
+      height: 100%; border-radius: 9px;
+      background: linear-gradient(90deg,#e53935 0%,#ff7043 40%,#29b6f6 70%,#26c6da 100%);
+      transition: width 0.12s; position: relative; overflow: hidden;
+    }
+    .stamina-fill::after {
+      content:''; position:absolute; top:0; left:-60%; width:40%; height:100%;
+      background: linear-gradient(90deg,transparent,rgba(255,255,255,0.3),transparent);
+      animation: shimmer 1.8s linear infinite;
+    }
+    @keyframes shimmer { to { left: 160%; } }
 
     /* Tension bar — FULL WIDTH, no max-width limit */
     .tension-wrap {
@@ -313,9 +347,9 @@
       box-shadow: 0 4px 20px rgba(0,0,0,0.4), inset 0 2px 8px rgba(0,0,0,0.35);
       border: 2px solid rgba(255,255,255,0.15);
     }
-    .t-red-l { position: absolute; left: 0; top: 0; bottom: 0; background: rgba(244,67,54,0.52); border-radius: 30px 0 0 30px; }
-    .t-green  { position: absolute; top: 0; bottom: 0; background: rgba(76,175,80,0.55); border-left: 3px solid rgba(76,175,80,0.9); border-right: 3px solid rgba(76,175,80,0.9); }
-    .t-red-r  { position: absolute; right: 0; top: 0; bottom: 0; background: rgba(244,67,54,0.52); border-radius: 0 30px 30px 0; }
+    .t-red-l { position: absolute; left: 0; top: 0; bottom: 0; background: rgba(220,50,30,0.72); border-radius: 30px 0 0 30px; transition: width 0.12s; }
+    .t-green  { position: absolute; top: 0; bottom: 0; background: rgba(46,204,113,0.75); border-left: 3px solid #2ecc71; border-right: 3px solid #2ecc71; box-shadow: inset 0 0 12px rgba(46,204,113,0.4); transition: left 0.12s, width 0.12s; }
+    .t-red-r  { position: absolute; right: 0; top: 0; bottom: 0; background: rgba(220,50,30,0.72); border-radius: 0 30px 30px 0; transition: width 0.12s; }
     .t-dot {
       position: absolute; top: 50%; transform: translateY(-50%) translateX(-50%);
       width: 34px; height: 34px; background: white; border-radius: 50%;
@@ -721,7 +755,8 @@
         </div>
       </div>
       <div class="stamina-wrap">
-        <div class="stamina-label">🐟 Fish Stamina — deplete it to win!</div>
+        <div class="stamina-label">🎣 LINE LEFT — reel it all in to land the fish!</div>
+        <div class="stamina-ends"><span>🐟</span><span>🎣</span></div>
         <div class="stamina-track"><div class="stamina-fill" id="staminaFill" style="width:100%"></div></div>
       </div>
     </div>
@@ -794,7 +829,7 @@
     <h3>🐟 Catch Log</h3>
     <div id="catchLogEntries"><div class="log-empty">No fish yet! Cast your line! 🎣</div></div>
     <div class="btn-row" style="margin-top:13px">
-      <button class="btn btn-secondary" onclick="closePopup('catchLogPopup')" style="width:100%">Close</button>
+      <button class="btn btn-primary" onclick="closePopup('catchLogPopup')" style="width:100%">Close 🎣</button>
     </div>
   </div>
 </div>
@@ -858,6 +893,7 @@ let G = {
   fDrift:0, fHoldSpd:58,
   fStamina:100, fOutTime:0, fGrace:1.5,
   fAnimId:null, fLastT:null,
+  fZoneCenter:50, fZoneDir:1, fZoneSpd:0, fZonePulseT:0,
   surgeTimeout:null, chalInterval:null,
 };
 const PB_KEY = 'focusFishing_pb';
@@ -923,16 +959,18 @@ function getMetrics(){
   const boatW = Math.max(200, Math.min(W*0.30, 290));
   const boatH = boatW*(155/300);
   const waterlineY = H*0.57;
-  const boatTopY = waterlineY - boatH + 7;
+  const boatTopY = waterlineY - boatH + 22;
   const boatLeftX = (W-boatW)/2;
-  // Rod tip at SVG (294,11) of viewBox(0,0,300,155)
+  // Normal rod tip at SVG (294,11); fight rod tip at SVG (262,72)
   const rodTipX = boatLeftX + boatW*(294/300);
   const rodTipY = boatTopY  + boatH*(11/155);
+  const fightTipX = boatLeftX + boatW*(262/300);
+  const fightTipY = boatTopY  + boatH*(72/155);
   // Bobber horizontal by cast distance
   const offsets = { short: Math.min(55, W*0.07), mid: Math.min(130,W*0.14), long: Math.min(220,W*0.22) };
   const bX = Math.min(rodTipX + (offsets[G.castDist]||130), W-22);
   const bY = waterlineY - 4;
-  return { W, H, rodTipX, rodTipY, waterlineY, bobberX:bX, bobberY:bY };
+  return { W, H, boatLeftX, boatTopY, boatW, boatH, rodTipX, rodTipY, fightTipX, fightTipY, waterlineY, bobberX:bX, bobberY:bY };
 }
 
 function drawLine(fromX,fromY,toX,toY,taut=false){
@@ -1037,7 +1075,7 @@ function setCastPower(){
   const m=getMetrics();
   // Show line + bobber starting at rod tip
   const lineSvg=document.getElementById('lineSvg');
-  lineSvg.style.display='';
+  lineSvg.style.display='block';
   const bobber=document.getElementById('bobberEl');
   bobber.style.left=m.rodTipX+'px';
   bobber.style.top=m.rodTipY+'px';
@@ -1128,11 +1166,15 @@ function goToWait(){
   function waitAnim(ts){
     if(!G.waitStart)G.waitStart=ts;
     const t=(ts-G.waitStart)/1000;
-    const bob=Math.sin(t*Math.PI)*7;
-    const bY=G.bobberY+bob;
-    document.getElementById('bobberEl').style.left=G.bobberX+'px';
-    document.getElementById('bobberEl').style.top=bY+'px';
-    drawLine(m.rodTipX,m.rodTipY,G.bobberX,bY,false);
+    // Primary bob + secondary ripple + gentle lateral sway
+    const bob  = Math.sin(t*1.8)*6 + Math.sin(t*3.1)*2;
+    const sway = Math.sin(t*0.7)*3;
+    const bY = G.bobberY + bob;
+    const bX = G.bobberX + sway;
+    const bobberEl = document.getElementById('bobberEl');
+    bobberEl.style.left = bX+'px';
+    bobberEl.style.top  = bY+'px';
+    drawLine(m.rodTipX,m.rodTipY,bX,bY,false);
     G.waitAnimId=requestAnimationFrame(waitAnim);
   }
   G.waitAnimId=requestAnimationFrame(waitAnim);
@@ -1162,7 +1204,7 @@ function triggerBite(){
 function startCountdown(){
   showScreen('readyScreen');
   // Keep line + bobber visible
-  document.getElementById('lineSvg').style.display='';
+  document.getElementById('lineSvg').style.display='block';
   document.getElementById('bobberEl').style.display='block';
   // Show fish hint
   document.getElementById('readyEmoji').textContent=G.fish.emoji;
@@ -1214,8 +1256,10 @@ function startFight(){
   sil.style.left=(G.bobberX-20)+'px';
   sil.style.top=(G.bobberY+30)+'px';
   // Update line + bobber visibility
-  document.getElementById('lineSvg').style.display='';
-  document.getElementById('bobberEl').style.display='block';
+  document.getElementById('lineSvg').style.display='block';
+  const bobberEl2=document.getElementById('bobberEl');
+  bobberEl2.style.display='block';
+  bobberEl2.classList.add('fight-bob');
   // HUD
   document.getElementById('fpEmoji').textContent=f.emoji;
   document.getElementById('fpName').textContent='??? — keep the dot in the green!';
@@ -1232,6 +1276,10 @@ function startFight(){
   // Reset state
   G.fPos=50; G.fStamina=100; G.fOutTime=0; G.fHeld=false;
   G.fActive=true; G.fLastT=null;
+  // Zone drift — speed scales with difficulty
+  G.fZoneCenter=50; G.fZoneDir=1;
+  G.fZoneSpd=[0,4,7,10,13,16][f.difficulty]||7;
+  G.fZonePulseT=0;
   document.getElementById('graceWarn').textContent='';
   document.getElementById('tDot').classList.remove('danger');
   updateDot(); updateStam();
@@ -1247,6 +1295,23 @@ function fightLoop(ts){
   if(G.fHeld)G.fPos+=G.fHoldSpd*dt;
   G.fPos-=G.fDrift*dt;
   G.fPos=Math.max(0,Math.min(100,G.fPos));
+  // Drift the green zone left and right
+  if(G.fZoneSpd>0){
+    G.fZoneCenter+=G.fZoneDir*G.fZoneSpd*dt;
+    const half=G.fGreenW/2;
+    if(G.fZoneCenter+half>=92){G.fZoneCenter=92-half;G.fZoneDir=-1;}
+    if(G.fZoneCenter-half<=8){G.fZoneCenter=8+half;G.fZoneDir=1;}
+    G.fGreenL=G.fZoneCenter-half;
+    G.fGreenR=G.fZoneCenter+half;
+    // Pulse zone width slightly based on time
+    G.fZonePulseT+=dt;
+    const pulse=Math.sin(G.fZonePulseT*2.5)*1.5;
+    const pw=G.fGreenW+pulse;
+    document.getElementById('tGreen').style.left=G.fGreenL+'%';
+    document.getElementById('tGreen').style.width=pw+'%';
+    document.getElementById('tRedL').style.width=G.fGreenL+'%';
+    document.getElementById('tRedR').style.width=(100-G.fGreenR)+'%';
+  }
   const inGreen=G.fPos>=G.fGreenL&&G.fPos<=G.fGreenR;
   if(inGreen){
     G.fStamina-=8*dt; G.fOutTime=0;
@@ -1268,8 +1333,7 @@ function fightLoop(ts){
   // Update line with jitter
   const jit=(Math.random()-0.5)*5;
   const m=getMetrics();
-  const fightRodTipY=m.rodTipY+8; // rod tip is higher when bent
-  drawLine(m.rodTipX,fightRodTipY,G.bobberX+jit,G.bobberY+jit,true);
+  drawLine(m.fightTipX,m.fightTipY,G.bobberX+jit,G.bobberY+jit,true);
   if(G.fStamina<=0){fishCaught();return;}
   G.fAnimId=requestAnimationFrame(fightLoop);
 }
@@ -1285,9 +1349,25 @@ function scheduleSurge(){
   const delay=2800+Math.random()*4200;
   G.surgeTimeout=setTimeout(()=>{
     if(!G.fActive)return;
-    G.fPos=Math.max(0,G.fPos-(18+Math.random()*16));
-    const el=document.getElementById('surgeWarn');
-    el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),780);
+    const type=Math.random();
+    const surgeEl=document.getElementById('surgeWarn');
+    if(type<0.5){
+      // Fish yanks left
+      G.fPos=Math.max(0,G.fPos-(18+Math.random()*16));
+      surgeEl.textContent='⚡ SURGE!';
+    } else if(type<0.75){
+      // Fish thrashes right
+      G.fPos=Math.min(100,G.fPos+(14+Math.random()*12));
+      surgeEl.textContent='💥 THRASH!';
+    } else {
+      // Zone snaps to a new random position
+      const half=G.fGreenW/2;
+      G.fZoneCenter=15+Math.random()*70;
+      G.fZoneCenter=Math.max(half+8,Math.min(92-half,G.fZoneCenter));
+      G.fGreenL=G.fZoneCenter-half; G.fGreenR=G.fZoneCenter+half;
+      surgeEl.textContent='🌀 SHIFT!';
+    }
+    surgeEl.classList.add('show'); setTimeout(()=>surgeEl.classList.remove('show'),780);
     addSplashFight();
     scheduleSurge();
   },delay);
@@ -1321,6 +1401,16 @@ function fishCaught(){
 function fishLost(){
   stopFight();
   if(G.session==='trophy')G.trophyCastsLeft--;
+  // Relaxed: no fail screen, just flash a message and return to boat
+  if(G.session==='relaxed'){
+    const msgs=['Got away! 🐟','The One That Got Away!','It shook loose!','So close! Try again!'];
+    const toast=document.createElement('div');
+    toast.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.72);color:#ffd200;font-family:Fredoka One,cursive;font-size:1.8rem;padding:14px 28px;border-radius:24px;z-index:999;pointer-events:none';
+    toast.textContent=msgs[Math.floor(Math.random()*msgs.length)];
+    document.body.appendChild(toast);
+    setTimeout(()=>{toast.remove();goToBoat();},1400);
+    return;
+  }
   showScreen('resultScreen');
   document.getElementById('rIcon').textContent='😢';
   document.getElementById('rTitle').textContent='The One That Got Away!';
@@ -1332,6 +1422,7 @@ function stopFight(){
   if(G.fAnimId){cancelAnimationFrame(G.fAnimId);G.fAnimId=null;}
   if(G.surgeTimeout){clearTimeout(G.surgeTimeout);G.surgeTimeout=null;}
   if(G.waitAnimId){cancelAnimationFrame(G.waitAnimId);G.waitAnimId=null;}
+  document.getElementById('bobberEl').classList.remove('fight-bob');
 }
 
 // =============================================
@@ -1456,6 +1547,22 @@ function animShadows(){
   });
 }
 setInterval(animShadows,3500);
+
+// =============================================
+// WATER LIFE — random jumping fish
+// =============================================
+function spawnWaterFish(){
+  const water=document.getElementById('sceneWater');
+  if(!water||water.style.visibility==='hidden')return;
+  const fish=['🐟','🐠','🐡'];
+  const el=document.createElement('div');
+  el.className='water-fish';
+  el.textContent=fish[Math.floor(Math.random()*fish.length)];
+  el.style.left=(10+Math.random()*80)+'%';
+  water.appendChild(el);
+  setTimeout(()=>el.remove(),1200);
+}
+setInterval(()=>{if(Math.random()<0.45)spawnWaterFish();},3200);
 
 // =============================================
 // POPUP HELPERS
