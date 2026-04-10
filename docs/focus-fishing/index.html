@@ -71,13 +71,13 @@
 
     /* Shared boat container */
     #sceneBoat {
-      position: absolute; bottom: calc(43% - 22px); left: 50%;
-      transform: translateX(-50%); z-index: 3;
-      animation: boatRock 4s ease-in-out infinite;
+      position: absolute; bottom: 43%; left: 50%;
+      z-index: 3; animation: boatRock 4s ease-in-out infinite;
     }
     #sceneBoat.fight-rock { animation: boatFightRock 1.5s ease-in-out infinite; }
-    @keyframes boatRock     { 0%,100%{transform:translateX(-50%) rotate(-1deg) translateY(0)}50%{transform:translateX(-50%) rotate(1deg) translateY(-5px)} }
-    @keyframes boatFightRock{ 0%,100%{transform:translateX(-50%) rotate(-2.5deg) translateY(0)}50%{transform:translateX(-50%) rotate(2.5deg) translateY(-9px)} }
+    /* translateY(15%) sinks the hull into the waterline at every screen size */
+    @keyframes boatRock     { 0%,100%{transform:translateX(-50%) translateY(15%) rotate(-1.2deg)}50%{transform:translateX(-50%) translateY(15%) rotate(1.2deg)} }
+    @keyframes boatFightRock{ 0%,100%{transform:translateX(-50%) translateY(15%) rotate(-2.5deg)}50%{transform:translateX(-50%) translateY(15%) rotate(2.5deg)} }
     #boatSvg { width: clamp(200px, 30vw, 290px); height: auto; display: block; }
 
     /* Rod cast animation — targets the rod+arm group */
@@ -98,10 +98,11 @@
       pointer-events: none; will-change: transform, left, top;
       transition: transform 0.05s;
     }
-    #bobberEl.fight-bob { animation: bobberFight 0.22s ease-in-out infinite alternate; }
+    #bobberEl.fight-bob { animation: bobberFight 0.16s ease-in-out infinite alternate; }
     @keyframes bobberFight {
-      from { transform: translate(-50%,-50%) scale(0.85) rotate(-10deg); }
-      to   { transform: translate(-50%,-50%) scale(1.2)  rotate(10deg); }
+      0%   { transform: translate(-50%,-50%) scale(0.65) rotate(-25deg); filter: brightness(1.4); }
+      50%  { transform: translate(-50%,-50%) scale(1.5)  rotate(0deg);   filter: brightness(2); }
+      100% { transform: translate(-50%,-50%) scale(0.65) rotate(25deg);  filter: brightness(1.4); }
     }
 
     /* Fish silhouette under water */
@@ -241,18 +242,7 @@
     }
     .power-fill { height: 100%; border-radius: 19px; background: linear-gradient(90deg,#43e97b 0%,#ffd200 60%,#f44336 100%); transition: width 0.04s linear; }
     .power-gz { position: absolute; top: 0; right: 0; bottom: 0; width: 30%; background: rgba(76,175,80,0.22); border-left: 2px dashed rgba(76,175,80,0.75); pointer-events: none; }
-    .power-cursor { position: absolute; top: 50%; transform: translateY(-50%) translateX(-50%); width: 7px; height: 34px; background: white; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.4); transition: left 0.04s linear; }
     .power-pct { text-align: center; font-family: 'Fredoka One', cursive; font-size: 1.6rem; color: #ffd200; margin: 6px 0; }
-    .cast-btn {
-      width: 100%; border: none; border-radius: 13px; padding: 12px;
-      background: linear-gradient(135deg,#f7971e,#ffd200);
-      font-family: 'Fredoka One', cursive; font-size: 1.3rem; color: #5c3800;
-      cursor: pointer; margin-top: 8px;
-      box-shadow: 0 4px 16px rgba(247,151,30,0.5);
-      transition: transform 0.1s, filter 0.1s;
-    }
-    .cast-btn:active { transform: scale(0.96); }
-    .cast-btn:hover { filter: brightness(1.08); }
     /* Distance tooltip that appears above the bar */
     .dist-label { text-align: center; font-size: 0.8rem; color: rgba(255,255,255,0.6); margin-bottom: 6px; min-height: 1.2em; }
 
@@ -267,13 +257,13 @@
     .wait-main { font-family: 'Fredoka One', cursive; font-size: 1.15rem; color: #b3e5fc; }
     .wait-sub  { font-size: 0.85rem; color: rgba(255,255,255,0.65); margin-top: 3px; }
     .bite-flash {
-      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      position: absolute; bottom: 38%; left: 50%; transform: translateX(-50%);
       font-family: 'Fredoka One', cursive; font-size: clamp(2rem,8vw,3.5rem);
       color: #ffeb3b; text-shadow: 0 0 24px rgba(255,235,0,0.9), 0 4px 0 #f57f17;
       z-index: 25; opacity: 0; pointer-events: none;
     }
     .bite-flash.show { opacity: 1; animation: biteAnim 0.55s ease-out; }
-    @keyframes biteAnim { 0%{transform:translate(-50%,-50%) scale(0.4)}55%{transform:translate(-50%,-50%) scale(1.25)}100%{transform:translate(-50%,-50%) scale(1)} }
+    @keyframes biteAnim { 0%{transform:translateX(-50%) scale(0.4)}55%{transform:translateX(-50%) scale(1.25)}100%{transform:translateX(-50%) scale(1)} }
     /* shadow fish passing */
     .fish-shadow { position: absolute; z-index: 2; opacity: 0; filter: brightness(0) opacity(0.12); pointer-events: none; transition: all 3.5s ease; font-size: 1.8rem; }
 
@@ -284,7 +274,7 @@
       color: white; text-shadow: 0 0 40px rgba(255,235,0,0.8), 0 6px 0 rgba(0,0,0,0.3);
       line-height: 1; display: block;
     }
-    .ready-count.pop { animation: countPop 0.72s cubic-bezier(0.34,1.56,0.64,1); }
+    .ready-count.pop { animation: countPop 0.36s cubic-bezier(0.34,1.56,0.64,1); }
     @keyframes countPop { 0%{transform:scale(2);opacity:0}60%{transform:scale(1.05)}100%{transform:scale(1);opacity:1} }
     .ready-label { font-family: 'Fredoka One', cursive; color: #ffd200; font-size: clamp(1rem,4vw,1.6rem); text-shadow: 0 2px 8px rgba(0,0,0,0.5); margin-top: 8px; display: block; }
     .ready-fish-hint {
@@ -298,7 +288,7 @@
 
     /* ===== FIGHT SCREEN ===== */
     .fight-hud {
-      position: absolute; top: 0; left: 0; right: 0; z-index: 20;
+      position: absolute; top: 0; left: 0; right: 64px; z-index: 20;
       padding: 10px 14px; display: flex; flex-direction: column; align-items: center; gap: 6px;
     }
     .fish-preview {
@@ -328,38 +318,39 @@
     }
     @keyframes shimmer { to { left: 160%; } }
 
-    /* Tension bar — FULL WIDTH, no max-width limit */
+    /* Tension bar — VERTICAL right-side column */
     .tension-wrap {
-      position: absolute; bottom: 0; left: 0; right: 0;
-      z-index: 20; padding: 14px 10px 18px;
-      background: linear-gradient(transparent,rgba(0,0,0,0.68));
+      position: absolute; right: 0; top: 70px; bottom: 0; width: 62px;
+      z-index: 20; padding: 6px 6px 14px;
+      display: flex; flex-direction: column; align-items: center; gap: 5px;
+      background: linear-gradient(to left, rgba(0,0,0,0.50), transparent);
     }
     .tension-instr {
-      text-align: center; color: white; font-family: 'Fredoka One', cursive;
-      font-size: clamp(0.88rem,3vw,1.2rem); margin-bottom: 9px;
-      text-shadow: 0 2px 6px rgba(0,0,0,0.5);
+      color: rgba(255,255,255,0.85); font-family: 'Fredoka One', cursive;
+      font-size: 0.58rem; text-align: center; line-height: 1.3;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.6); flex-shrink: 0;
     }
     .tension-outer {
-      position: relative; height: 60px;
-      background: rgba(0,0,0,0.36); border-radius: 30px;
-      width: 100%; /* FULL WIDTH */
+      position: relative; width: 50px; flex: 1;
+      background: rgba(0,0,0,0.36); border-radius: 25px;
       overflow: hidden;
       box-shadow: 0 4px 20px rgba(0,0,0,0.4), inset 0 2px 8px rgba(0,0,0,0.35);
       border: 2px solid rgba(255,255,255,0.15);
     }
-    .t-red-l { position: absolute; left: 0; top: 0; bottom: 0; background: rgba(220,50,30,0.72); border-radius: 30px 0 0 30px; transition: width 0.12s; }
-    .t-green  { position: absolute; top: 0; bottom: 0; background: rgba(46,204,113,0.75); border-left: 3px solid #2ecc71; border-right: 3px solid #2ecc71; box-shadow: inset 0 0 12px rgba(46,204,113,0.4); transition: left 0.12s, width 0.12s; }
-    .t-red-r  { position: absolute; right: 0; top: 0; bottom: 0; background: rgba(220,50,30,0.72); border-radius: 0 30px 30px 0; transition: width 0.12s; }
+    /* t-red-l = TOP red, t-green = sweet spot, t-red-r = BOTTOM red */
+    .t-red-l { position: absolute; left: 0; right: 0; top: 0; background: rgba(220,50,30,0.72); border-radius: 25px 25px 0 0; transition: height 0.12s; }
+    .t-green  { position: absolute; left: 0; right: 0; background: rgba(46,204,113,0.75); border-top: 3px solid #2ecc71; border-bottom: 3px solid #2ecc71; box-shadow: inset 0 0 12px rgba(46,204,113,0.4); transition: top 0.12s, height 0.12s; animation: greenGlow 1.4s ease-in-out infinite; }
+    .t-red-r  { position: absolute; left: 0; right: 0; bottom: 0; background: rgba(220,50,30,0.72); border-radius: 0 0 25px 25px; transition: height 0.12s; }
     .t-dot {
-      position: absolute; top: 50%; transform: translateY(-50%) translateX(-50%);
+      position: absolute; left: 50%; transform: translateX(-50%) translateY(-50%);
       width: 34px; height: 34px; background: white; border-radius: 50%;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.4); transition: left 0.04s linear;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.4); transition: top 0.04s linear;
     }
     .t-dot.danger { background: #f44336; animation: dotPulse 0.28s ease infinite; }
-    @keyframes dotPulse { 0%,100%{transform:translateY(-50%) translateX(-50%) scale(1)}50%{transform:translateY(-50%) translateX(-50%) scale(1.45)} }
+    @keyframes dotPulse { 0%,100%{transform:translateX(-50%) translateY(-50%) scale(1)}50%{transform:translateX(-50%) translateY(-50%) scale(1.45)} }
     .tension-outer.shake { animation: tShake 0.32s ease; }
-    @keyframes tShake { 0%{transform:none}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}100%{transform:none} }
-    .grace-warn { text-align: center; color: #ff5722; font-family: 'Fredoka One', cursive; font-size: 1rem; margin-top: 7px; min-height: 24px; }
+    @keyframes tShake { 0%{transform:none}20%{transform:translateY(-6px)}40%{transform:translateY(6px)}60%{transform:translateY(-3px)}80%{transform:translateY(3px)}100%{transform:none} }
+    .grace-warn { text-align: center; color: #ff5722; font-family: 'Fredoka One', cursive; font-size: 0.72rem; writing-mode: vertical-rl; line-height: 1; flex-shrink: 0; min-height: 16px; }
     .surge-warn {
       position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
       font-family: 'Fredoka One', cursive; font-size: 2.5rem;
@@ -699,14 +690,12 @@
     <!-- Cast HUD (overlay on boat scene) -->
     <div class="cast-hud" id="castHud">
       <div class="dist-label" id="distLabel"></div>
-      <div class="cast-hint">⚡ Click when bar hits the <em>green zone</em> for a long cast!</div>
+      <div class="cast-hint">👆 <strong>Tap anywhere</strong> when bar hits the <em>green zone</em> for a long cast!</div>
       <div class="power-track" id="powerTrack">
         <div class="power-fill" id="powerFill" style="width:0%"></div>
         <div class="power-gz"></div>
-        <div class="power-cursor" id="powerCursor" style="left:0%"></div>
       </div>
       <div class="power-pct" id="powerPct">0%</div>
-      <button class="cast-btn" id="castBtn" onclick="setCastPower()">🎣 CAST!</button>
     </div>
     <!-- Ripple anchor (at bobber landing point) -->
     <div id="rippleAnchor" style="position:absolute;z-index:6;pointer-events:none"></div>
@@ -762,7 +751,7 @@
     </div>
     <div class="surge-warn" id="surgeWarn">⚡ SURGE!</div>
     <div class="tension-wrap">
-      <div class="tension-instr" id="tensionInstr">🖱️ <strong>Hold</strong> to reel — <strong>Release</strong> to ease tension</div>
+      <div class="tension-instr" id="tensionInstr">HOLD to pull ↑ RELEASE to ease</div>
       <div class="tension-outer" id="tensionBar">
         <div class="t-red-l" id="tRedL"></div>
         <div class="t-green"  id="tGreen"></div>
@@ -894,6 +883,7 @@ let G = {
   fStamina:100, fOutTime:0, fGrace:1.5,
   fAnimId:null, fLastT:null,
   fZoneCenter:50, fZoneDir:1, fZoneSpd:0, fZonePulseT:0,
+  bobberDip:false,
   surgeTimeout:null, chalInterval:null,
 };
 const PB_KEY = 'focusFishing_pb';
@@ -959,7 +949,8 @@ function getMetrics(){
   const boatW = Math.max(200, Math.min(W*0.30, 290));
   const boatH = boatW*(155/300);
   const waterlineY = H*0.57;
-  const boatTopY = waterlineY - boatH + 22;
+  // CSS bottom:43% + translateY(15%) → visual top = waterlineY - boatH*(1-0.15) = waterlineY - boatH*0.85
+  const boatTopY = waterlineY - boatH * 0.85;
   const boatLeftX = (W-boatW)/2;
   // Normal rod tip at SVG (294,11); fight rod tip at SVG (262,72)
   const rodTipX = boatLeftX + boatW*(294/300);
@@ -1017,11 +1008,8 @@ function goToBoat(){
   // Reset cast UI
   stopPBar();
   document.getElementById('powerFill').style.width='0%';
-  document.getElementById('powerCursor').style.left='0%';
   document.getElementById('powerPct').textContent='0%';
   document.getElementById('distLabel').textContent='';
-  document.getElementById('castBtn').textContent='🎣 CAST!';
-  document.getElementById('castBtn').disabled=false;
   document.getElementById('castHud').style.opacity='1';
   document.getElementById('boatSvg').classList.remove('casting');
   // Challenge bar
@@ -1040,7 +1028,6 @@ function startPBar(){
     if(G.pBarVal<=0){G.pBarVal=0;G.pBarDir=1;}
     const p=G.pBarVal;
     document.getElementById('powerFill').style.width=p+'%';
-    document.getElementById('powerCursor').style.left=p+'%';
     document.getElementById('powerPct').textContent=Math.round(p)+'%';
     // Update dist label
     const dist=p<30?'Short cast':p<70?'Medium cast':'Long cast 🎯';
@@ -1051,8 +1038,6 @@ function startPBar(){
 }
 function stopPBar(){ if(G.pBarAnim){cancelAnimationFrame(G.pBarAnim);G.pBarAnim=null;} }
 
-// Auto-start the power bar when boat screen appears
-document.addEventListener('DOMContentLoaded',()=>{});
 // Start power bar when boat screen becomes active
 const boatScreenEl=document.getElementById('boatScreen');
 const boatObserver=new MutationObserver(()=>{
@@ -1061,14 +1046,17 @@ const boatObserver=new MutationObserver(()=>{
   }else{stopPBar();}
 });
 boatObserver.observe(boatScreenEl,{attributes:true,attributeFilter:['class']});
+// Tap anywhere on boat screen to cast
+boatScreenEl.addEventListener('click', ()=>setCastPower());
+boatScreenEl.addEventListener('touchstart', e=>{e.preventDefault();setCastPower();},{passive:false});
 
 function setCastPower(){
+  if(!G.pBarAnim)return; // guard against double-tap
   stopPBar();
   G.castPower=Math.round(G.pBarVal);
   G.castDist=G.castPower<30?'short':G.castPower<70?'mid':'long';
-  const castBtn=document.getElementById('castBtn');
-  castBtn.textContent='🎣 Casting…';
-  castBtn.disabled=true;
+  document.getElementById('castHud').style.opacity='0.3';
+  document.getElementById('powerPct').textContent='🎣 Casting…';
   // Trigger rod swing animation
   document.getElementById('boatSvg').classList.add('casting');
   // Get scene metrics
@@ -1166,14 +1154,26 @@ function goToWait(){
   function waitAnim(ts){
     if(!G.waitStart)G.waitStart=ts;
     const t=(ts-G.waitStart)/1000;
-    // Primary bob + secondary ripple + gentle lateral sway
-    const bob  = Math.sin(t*1.8)*6 + Math.sin(t*3.1)*2;
-    const sway = Math.sin(t*0.7)*3;
+    // Primary bob + secondary ripple + lateral sway
+    const bob  = Math.sin(t*1.8)*7 + Math.sin(t*3.7)*2.5;
+    const sway = Math.sin(t*0.8)*4;
     const bY = G.bobberY + bob;
     const bX = G.bobberX + sway;
-    const bobberEl = document.getElementById('bobberEl');
-    bobberEl.style.left = bX+'px';
-    bobberEl.style.top  = bY+'px';
+    const bobberEl2 = document.getElementById('bobberEl');
+    // Occasional random tease dip (fish nibbling)
+    if(!G.bobberDip && Math.random()<0.003){
+      G.bobberDip=true;
+      bobberEl2.style.transition='top 0.08s ease-in';
+      bobberEl2.style.top=(G.bobberY+28)+'px';
+      setTimeout(()=>{
+        bobberEl2.style.transition='top 0.2s ease-out';
+        bobberEl2.style.top=bY+'px';
+        setTimeout(()=>{bobberEl2.style.transition='';G.bobberDip=false;},230);
+      },110);
+    } else if(!G.bobberDip){
+      bobberEl2.style.left = bX+'px';
+      bobberEl2.style.top  = bY+'px';
+    }
     drawLine(m.rodTipX,m.rodTipY,bX,bY,false);
     G.waitAnimId=requestAnimationFrame(waitAnim);
   }
@@ -1223,11 +1223,11 @@ function startCountdown(){
       el.textContent=count;
       lbl.textContent='Get ready!';
       count--;
-      setTimeout(tick,900);
+      setTimeout(tick,450);
     } else {
       el.textContent='🎣';
       lbl.textContent='REEL IT IN!';
-      setTimeout(startFight,750);
+      setTimeout(startFight,375);
     }
   }
   tick();
@@ -1242,6 +1242,7 @@ function getSizeHint(d){
 // FIGHT SCREEN
 // =============================================
 function startFight(){
+  cacheFightEls();
   const f=G.fish;
   showScreen('fightScreen');
   // Switch boat to fight pose
@@ -1267,10 +1268,10 @@ function startFight(){
   // Set tension bar green zone
   const gw=[0,50,38,28,20,13][f.difficulty]||28;
   G.fGreenW=gw; G.fGreenL=(100-gw)/2; G.fGreenR=G.fGreenL+gw;
-  document.getElementById('tGreen').style.left=G.fGreenL+'%';
-  document.getElementById('tGreen').style.width=gw+'%';
-  document.getElementById('tRedL').style.width=G.fGreenL+'%';
-  document.getElementById('tRedR').style.width=(100-G.fGreenR)+'%';
+  document.getElementById('tGreen').style.top=G.fGreenL+'%';
+  document.getElementById('tGreen').style.height=gw+'%';
+  document.getElementById('tRedL').style.height=G.fGreenL+'%';
+  document.getElementById('tRedR').style.height=(100-G.fGreenR)+'%';
   // Drift speed
   G.fDrift=[0,11,17,24,32,40][f.difficulty]||17;
   // Reset state
@@ -1286,6 +1287,18 @@ function startFight(){
   if(G.fAnimId)cancelAnimationFrame(G.fAnimId);
   G.fAnimId=requestAnimationFrame(fightLoop);
   scheduleSurge();
+}
+
+// Cache fight-screen DOM refs once for perf (set in startFight)
+let _tGreen,_tRedL,_tRedR,_tDot,_tensionBar,_graceWarn,_bobberEl;
+function cacheFightEls(){
+  _tGreen=document.getElementById('tGreen');
+  _tRedL=document.getElementById('tRedL');
+  _tRedR=document.getElementById('tRedR');
+  _tDot=document.getElementById('tDot');
+  _tensionBar=document.getElementById('tensionBar');
+  _graceWarn=document.getElementById('graceWarn');
+  _bobberEl=document.getElementById('bobberEl');
 }
 
 function fightLoop(ts){
@@ -1307,38 +1320,40 @@ function fightLoop(ts){
     G.fZonePulseT+=dt;
     const pulse=Math.sin(G.fZonePulseT*2.5)*1.5;
     const pw=G.fGreenW+pulse;
-    document.getElementById('tGreen').style.left=G.fGreenL+'%';
-    document.getElementById('tGreen').style.width=pw+'%';
-    document.getElementById('tRedL').style.width=G.fGreenL+'%';
-    document.getElementById('tRedR').style.width=(100-G.fGreenR)+'%';
+    _tGreen.style.top=G.fGreenL+'%';
+    _tGreen.style.height=pw+'%';
+    _tRedL.style.height=G.fGreenL+'%';
+    _tRedR.style.height=(100-G.fGreenR)+'%';
   }
   const inGreen=G.fPos>=G.fGreenL&&G.fPos<=G.fGreenR;
   if(inGreen){
     G.fStamina-=8*dt; G.fOutTime=0;
-    document.getElementById('graceWarn').textContent='';
-    document.getElementById('tDot').classList.remove('danger');
+    _graceWarn.textContent='';
+    _tDot.classList.remove('danger');
   } else {
     G.fOutTime+=dt;
-    document.getElementById('tDot').classList.add('danger');
+    _tDot.classList.add('danger');
     const left=G.fGrace-G.fOutTime;
     if(left>0){
-      document.getElementById('graceWarn').textContent=`⚠️ Back in the green! ${left.toFixed(1)}s`;
-      const bar=document.getElementById('tensionBar');
-      if(!bar.classList.contains('shake')){bar.classList.add('shake');setTimeout(()=>bar.classList.remove('shake'),330);}
+      _graceWarn.textContent=`⚠️ Back in the green! ${left.toFixed(1)}s`;
+      if(!_tensionBar.classList.contains('shake')){_tensionBar.classList.add('shake');setTimeout(()=>_tensionBar.classList.remove('shake'),330);}
       G.fStamina=Math.min(100,G.fStamina+3*dt);
     } else {fishLost();return;}
   }
   G.fStamina=Math.max(0,Math.min(100,G.fStamina));
   updateDot(); updateStam();
-  // Update line with jitter
-  const jit=(Math.random()-0.5)*5;
+  // Update line with aggressive fight jitter
+  const jitX=(Math.random()-0.5)*28;
+  const jitY=(Math.random()-0.5)*20;
+  const bxF=G.bobberX+jitX, byF=G.bobberY+jitY;
+  _bobberEl.style.left=bxF+'px'; _bobberEl.style.top=byF+'px';
   const m=getMetrics();
-  drawLine(m.fightTipX,m.fightTipY,G.bobberX+jit,G.bobberY+jit,true);
+  drawLine(m.fightTipX,m.fightTipY,bxF,byF,true);
   if(G.fStamina<=0){fishCaught();return;}
   G.fAnimId=requestAnimationFrame(fightLoop);
 }
 
-function updateDot(){ document.getElementById('tDot').style.left=G.fPos+'%'; }
+function updateDot(){ _tDot.style.top=G.fPos+'%'; }
 function updateStam(){
   const f=document.getElementById('staminaFill');
   f.style.width=G.fStamina+'%';
@@ -1365,6 +1380,10 @@ function scheduleSurge(){
       G.fZoneCenter=15+Math.random()*70;
       G.fZoneCenter=Math.max(half+8,Math.min(92-half,G.fZoneCenter));
       G.fGreenL=G.fZoneCenter-half; G.fGreenR=G.fZoneCenter+half;
+      document.getElementById('tGreen').style.top=G.fGreenL+'%';
+      document.getElementById('tGreen').style.height=G.fGreenW+'%';
+      document.getElementById('tRedL').style.height=G.fGreenL+'%';
+      document.getElementById('tRedR').style.height=(100-G.fGreenR)+'%';
       surgeEl.textContent='🌀 SHIFT!';
     }
     surgeEl.classList.add('show'); setTimeout(()=>surgeEl.classList.remove('show'),780);
@@ -1597,7 +1616,7 @@ document.addEventListener('touchend',()=>{G.fHeld=false;});
 
 // Touch instruction
 if('ontouchstart' in window){
-  document.getElementById('tensionInstr').innerHTML='👆 <strong>Hold</strong> to reel — <strong>Release</strong> to ease tension';
+  document.getElementById('tensionInstr').textContent='TAP+HOLD to reel · RELEASE to ease';
 }
 
 // =============================================
