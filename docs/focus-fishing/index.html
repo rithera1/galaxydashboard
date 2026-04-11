@@ -3,14 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-<title>Focus Fishing · Deep Dive</title>
+<title>Focus Fishing &middot; Deep Dive</title>
 <style>
-/* RESET */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{width:100%;height:100%;overflow:hidden;background:#010608}
 body{font-family:'Segoe UI',system-ui,sans-serif;color:#e0f0ff;touch-action:none;user-select:none;-webkit-user-select:none}
-
-/* APP */
 #app{position:relative;width:100%;height:100%;overflow:hidden}
 
 /* NAV */
@@ -41,14 +38,10 @@ body{font-family:'Segoe UI',system-ui,sans-serif;color:#e0f0ff;touch-action:none
 /* SCENE */
 #scene{position:absolute;top:44px;left:0;right:0;bottom:0;display:none;overflow:hidden}
 #scene.active{display:block}
-
-/* VIEWPORT */
 #vp{position:absolute;inset:0;overflow:hidden}
-
-/* SCROLLING WORLD */
 #world{position:absolute;top:0;left:0;right:0;height:3700px;will-change:transform}
 
-/* SURFACE AREA */
+/* SURFACE */
 #surf{position:absolute;top:0;left:0;right:0;height:100px;z-index:2;background:linear-gradient(180deg,#08203c 0%,#0c3a68 65%,#0a4d7e 100%)}
 #waterline{position:absolute;bottom:0;left:0;right:0;height:10px;background:linear-gradient(180deg,#29b6f6,#0288d1);opacity:.85}
 #waterline::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0,transparent 18px,rgba(255,255,255,.18) 18px,rgba(255,255,255,.18) 36px)}
@@ -60,88 +53,139 @@ body{font-family:'Segoe UI',system-ui,sans-serif;color:#e0f0ff;touch-action:none
 #z2{position:absolute;top:1400px;height:1200px;left:0;right:0;background:linear-gradient(180deg,#020812,#010508)}
 #z3{position:absolute;top:2600px;height:1100px;left:0;right:0;background:linear-gradient(180deg,#010508,#010203)}
 
-/* ROCK WALLS */
-.wall{position:absolute;top:100px;bottom:0;width:56px;z-index:5;background:linear-gradient(180deg,#22607a 0px,#1a5070 500px,#0a1e35 500px,#060f1a 1300px,#030a12 1300px,#020508 2500px,#010304 2500px,#010203 3600px)}
-.wall::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(180deg,transparent 0px,transparent 20px,rgba(0,0,0,.22) 20px,rgba(0,0,0,.22) 22px)}
+/* ROCK WALLS — jagged clip-path applied via JS */
+.wall{position:absolute;top:100px;bottom:0;width:82px;z-index:5;
+  background:linear-gradient(180deg,#2a6080 0px,#1e4a65 320px,#122e48 700px,#0a1e35 1300px,#061220 2000px,#030c18 2800px,#010508 3700px)}
+.wall::before{content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(180deg,transparent 0,transparent 28px,rgba(0,0,0,.15) 28px,rgba(0,0,0,.15) 30px),
+             repeating-linear-gradient(90deg,transparent 0,transparent 14px,rgba(0,0,0,.09) 14px,rgba(0,0,0,.09) 16px)}
 #wl{left:0}
 #wr{right:0}
 
-/* CREATURE AND DECO LAYERS */
-#clayer,#dlayer{position:absolute;inset:0;pointer-events:none}
-#clayer{z-index:6;pointer-events:auto}
-#dlayer{z-index:4}
-
-/* CREATURES */
-.cr{position:absolute;cursor:pointer;font-size:1.8rem;z-index:6;transition:filter .15s;filter:drop-shadow(0 0 5px rgba(70,170,255,.2))}
-.cr:hover,.cr:active{filter:drop-shadow(0 0 14px rgba(70,210,255,.75)) !important;transform:scale(1.2) !important}
-.cr.biolum{animation:bpulse 2.5s ease-in-out infinite alternate}
-@keyframes bpulse{from{filter:drop-shadow(0 0 4px rgba(80,255,180,.3))}to{filter:drop-shadow(0 0 18px rgba(80,255,180,.95))}}
-.cr.swim{animation:swm var(--dur,7s) ease-in-out var(--del,0s) infinite alternate}
+/* CREATURE WRAPPERS — split swim & hover to different elements to fix teleport */
+.crw{position:absolute;z-index:6;cursor:pointer}
+.crw.swim{animation:swm var(--dur,7s) ease-in-out var(--del,0s) infinite alternate}
 @keyframes swm{from{transform:translateX(0)}to{transform:translateX(var(--dx,40px))}}
+.cem{display:inline-block;font-size:1.8rem;line-height:1;transition:transform .15s,filter .15s;
+  filter:drop-shadow(0 0 5px rgba(70,170,255,.2))}
+.cem:hover,.cem:active{transform:scale(1.2);filter:drop-shadow(0 0 14px rgba(70,210,255,.75))}
+.crw.biolum .cem{animation:bpulse 2.5s ease-in-out infinite alternate}
+@keyframes bpulse{from{filter:drop-shadow(0 0 4px rgba(80,255,180,.3))}to{filter:drop-shadow(0 0 18px rgba(80,255,180,.9))}}
 
 /* SINKER */
-#sinker{position:absolute;width:13px;height:19px;z-index:7;background:radial-gradient(circle at 40% 35%,#c5e6ff,#7898b8 40%,#385e7a);border-radius:3px 3px 7px 7px;box-shadow:0 0 10px rgba(70,180,255,.5);transform:translateX(-50%)}
-#sinker::before{content:'';position:absolute;top:-5px;left:50%;transform:translateX(-50%);width:2px;height:6px;background:rgba(255,255,255,.45);border-radius:2px}
+#sinker{position:absolute;width:13px;height:19px;z-index:7;
+  background:radial-gradient(circle at 40% 35%,#c5e6ff,#7898b8 40%,#385e7a);
+  border-radius:3px 3px 7px 7px;box-shadow:0 0 10px rgba(70,180,255,.5);transform:translateX(-50%)}
+#sinker::before{content:'';position:absolute;top:-5px;left:50%;transform:translateX(-50%);
+  width:2px;height:6px;background:rgba(255,255,255,.45);border-radius:2px}
 
-/* BATTLE FISH */
-#bfish{position:absolute;z-index:8;font-size:2.4rem;display:none;animation:bwiggle .4s ease-in-out infinite alternate}
-@keyframes bwiggle{from{transform:translateX(-60%) rotate(-9deg) scale(1)}to{transform:translateX(-40%) rotate(9deg) scale(1.12)}}
+/* BATTLE FISH (mystery silhouette) */
+#bfish{position:absolute;z-index:8;display:none;
+  animation:bwiggle .5s ease-in-out infinite alternate}
+@keyframes bwiggle{from{transform:translateX(-50%) rotate(-7deg)}to{transform:translateX(-50%) rotate(7deg) scale(1.07)}}
 
-/* FISHING LINE SVG */
+/* FISHING LINE */
 #lsvg,#asvg{position:absolute;inset:0;pointer-events:none;z-index:9;overflow:visible}
 .fline{stroke:rgba(210,235,255,.75);stroke-width:1.5;fill:none;filter:drop-shadow(0 0 2px rgba(80,200,255,.4))}
-.aline{stroke:rgba(255,255,255,.42);stroke-width:1.5;stroke-dasharray:8,5;fill:none}
 
 /* BIOLUMINESCENT PARTICLES */
-.bp{position:absolute;border-radius:50%;background:rgba(80,255,180,.7);animation:bpf var(--dur,3s) ease-in-out var(--del,0s) infinite alternate}
-@keyframes bpf{from{transform:translate(0,0);opacity:.22}to{transform:translate(var(--dx,8px),var(--dy,-12px));opacity:.85}}
+.bp{position:absolute;border-radius:50%;background:rgba(80,255,180,.7);
+  animation:bpf var(--dur,3s) ease-in-out var(--del,0s) infinite alternate}
+@keyframes bpf{from{transform:translate(0,0);opacity:.2}to{transform:translate(var(--dx,8px),var(--dy,-12px));opacity:.85}}
 
 /* DEPTH HUD */
-#dhud{position:absolute;top:7px;left:50%;transform:translateX(-50%);background:rgba(1,6,18,.88);border:1px solid rgba(41,182,246,.3);border-radius:18px;padding:3px 14px;font-size:.72rem;font-weight:700;color:#29b6f6;z-index:50;display:none;white-space:nowrap;text-align:center}
+#dhud{position:absolute;top:7px;left:50%;transform:translateX(-50%);
+  background:rgba(1,6,18,.88);border:1px solid rgba(41,182,246,.3);border-radius:18px;
+  padding:3px 14px;font-size:.72rem;font-weight:700;color:#29b6f6;z-index:50;
+  display:none;white-space:nowrap;text-align:center}
 #dhud span{color:#e0f0ff}
 
 /* CAST HUD */
-#chud{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);background:rgba(1,6,18,.8);border:1px solid rgba(41,182,246,.28);border-radius:18px;padding:5px 16px;font-size:.78rem;color:rgba(200,230,255,.7);z-index:50;display:none;text-align:center;animation:cpulse 1.8s ease-in-out infinite}
-@keyframes cpulse{0%,100%{opacity:.55}50%{opacity:1}}
+#chud{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);
+  background:rgba(1,6,18,.8);border:1px solid rgba(41,182,246,.28);border-radius:18px;
+  padding:5px 16px;font-size:.78rem;color:rgba(200,230,255,.7);z-index:50;
+  display:none;text-align:center;animation:cpulse 1.8s ease-in-out infinite}
+@keyframes cpulse{0%,100%{opacity:.5}50%{opacity:1}}
 
 /* ZONE BANNER */
-#zbanner{position:absolute;top:50%;left:0;right:0;transform:translateY(-50%);display:flex;flex-direction:column;align-items:center;z-index:60;pointer-events:none;opacity:0;transition:opacity .4s;text-shadow:0 2px 20px rgba(0,0,0,.9)}
+#zbanner{position:absolute;top:50%;left:0;right:0;transform:translateY(-50%);
+  display:flex;flex-direction:column;align-items:center;z-index:60;
+  pointer-events:none;opacity:0;transition:opacity .4s;text-shadow:0 2px 20px rgba(0,0,0,.9)}
 #zbanner.on{opacity:1}
 #zb-name{font-size:1.5rem;font-weight:700;letter-spacing:.1em}
 #zb-sub{font-size:.75rem;color:rgba(190,220,255,.7);margin-top:.15rem}
 #zb-fact{font-size:.65rem;color:rgba(160,210,255,.5);margin-top:.25rem;max-width:270px;text-align:center;line-height:1.45}
 
-/* REEL HUD */
-#rhud{position:absolute;right:8px;bottom:14px;display:none;flex-direction:column;align-items:center;gap:5px;z-index:55}
-#rhud.on{display:flex}
-#tbar{width:12px;height:108px;background:rgba(1,6,18,.8);border:1px solid rgba(41,182,246,.3);border-radius:6px;overflow:hidden;position:relative}
-#tbar-fill{position:absolute;bottom:0;left:0;right:0;transition:height .09s}
-#tbar-lbl{font-size:.44rem;color:rgba(200,230,255,.42);letter-spacing:.06em}
-#rwheel{width:66px;height:66px;cursor:pointer;touch-action:none}
-#rwheel svg{width:100%;height:100%}
-.rhint{font-size:.5rem;font-weight:700;color:rgba(200,230,255,.48);text-align:center;margin-top:-2px}
+/* BATTLE HUD — replaces old reel wheel */
+#bhud{position:absolute;bottom:0;left:0;right:0;display:none;
+  flex-direction:column;gap:7px;padding:8px 12px 10px;
+  background:rgba(1,6,18,.93);border-top:1px solid rgba(41,182,246,.28);z-index:55}
+#bhud.on{display:flex}
+#miss-row{display:flex;align-items:center;gap:8px}
+.miss-lbl{font-size:.52rem;font-weight:700;color:rgba(180,220,255,.38);letter-spacing:.09em}
+#miss-dots{display:flex;gap:5px}
+.mdot{width:12px;height:12px;border-radius:50%;
+  background:rgba(60,120,180,.18);border:1.5px solid rgba(41,182,246,.4);transition:all .2s}
+.mdot.used{background:#c62828;border-color:#ef5350;box-shadow:0 0 7px rgba(239,83,80,.55)}
+#ten-wrap{position:relative;height:32px;border-radius:5px;border:1px solid rgba(255,255,255,.12);overflow:hidden;
+  background:linear-gradient(90deg,#1b5e20 0%,#388e3c 38%,#f57c00 43%,#e65100 65%,#c62828 70%,#7f0000 100%)}
+#ten-zones{position:absolute;inset:0;display:flex;align-items:center;
+  justify-content:space-between;padding:0 7px;pointer-events:none}
+.tz-lbl{font-size:.44rem;font-weight:700;letter-spacing:.06em;opacity:.7}
+#ten-needle{position:absolute;top:-3px;bottom:-3px;width:4px;left:0%;
+  background:white;border-radius:3px;box-shadow:0 0 9px rgba(255,255,255,.95),0 0 3px #fff;
+  transition:left .08s linear;transform:translateX(-50%);z-index:2}
+#reel-btn{width:100%;padding:10px 0;
+  background:linear-gradient(135deg,#0277bd,#00838f);
+  color:#fff;border:none;border-radius:7px;font-size:.9rem;font-weight:700;
+  cursor:pointer;touch-action:none;letter-spacing:.05em}
+#reel-btn.active{background:linear-gradient(135deg,#00acc1,#00bcd4);
+  box-shadow:0 0 16px rgba(0,188,212,.6)}
+
+/* BUBBLE TARGETS */
+#bubble-layer{position:absolute;inset:0;pointer-events:none;z-index:57}
+.bbl{position:absolute;border-radius:50%;pointer-events:auto;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transform:translate(-50%,-50%)}
+.bbl-ring{position:absolute;inset:0;border-radius:50%;
+  border:3px solid rgba(80,210,255,.9);
+  animation:bbshrink var(--bbl-dur,3s) linear forwards}
+@keyframes bbshrink{from{transform:scale(1);opacity:.95}to{transform:scale(.1);opacity:0}}
+.bbl-icon{font-size:.9rem;z-index:1;pointer-events:none;color:rgba(120,220,255,.9);font-weight:700}
 
 /* TAP HINT */
-#thint{position:absolute;bottom:74px;left:50%;transform:translateX(-50%);background:rgba(1,6,18,.78);border:1px solid rgba(41,182,246,.22);border-radius:11px;padding:3px 11px;font-size:.62rem;color:rgba(150,200,255,.6);z-index:51;display:none;animation:thfade 4.5s ease-in-out forwards}
+#thint{position:absolute;bottom:84px;left:50%;transform:translateX(-50%);
+  background:rgba(1,6,18,.78);border:1px solid rgba(41,182,246,.22);border-radius:11px;
+  padding:3px 11px;font-size:.62rem;color:rgba(150,200,255,.6);z-index:51;
+  display:none;animation:thfade 4.5s ease-in-out forwards}
 @keyframes thfade{0%{opacity:0}12%{opacity:1}75%{opacity:1}100%{opacity:0}}
 
 /* FACT CARD */
-#fcard{position:absolute;inset:0;display:none;align-items:center;justify-content:center;z-index:150;background:rgba(0,5,20,.72);backdrop-filter:blur(4px)}
+#fcard{position:absolute;inset:0;display:none;align-items:center;justify-content:center;
+  z-index:150;background:rgba(0,5,20,.72);backdrop-filter:blur(4px)}
 #fcard.on{display:flex}
-.fc-in{background:rgba(2,12,32,.97);border:1px solid rgba(41,182,246,.42);border-radius:1.2rem;padding:1.4rem 1.6rem;max-width:310px;width:88%;text-align:center;animation:cpop .22s cubic-bezier(.175,.885,.32,1.275)}
+.fc-in{background:rgba(2,12,32,.97);border:1px solid rgba(41,182,246,.42);border-radius:1.2rem;
+  padding:1.4rem 1.6rem;max-width:310px;width:88%;text-align:center;
+  animation:cpop .22s cubic-bezier(.175,.885,.32,1.275)}
 @keyframes cpop{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}
 .fc-em{font-size:2.8rem;margin-bottom:.4rem}
 .fc-n{font-size:1.05rem;font-weight:700;color:#29b6f6;margin-bottom:.15rem}
 .fc-d{font-size:.67rem;color:rgba(150,200,255,.55);margin-bottom:.65rem}
 .fc-t{font-size:.82rem;color:rgba(200,230,255,.85);line-height:1.5;margin-bottom:.9rem}
-.fc-ok{background:rgba(41,182,246,.18);border:1px solid rgba(41,182,246,.4);color:#29b6f6;border-radius:.5rem;padding:.35rem 1.4rem;cursor:pointer;font-size:.82rem}
+.fc-ok{background:rgba(41,182,246,.18);border:1px solid rgba(41,182,246,.4);color:#29b6f6;
+  border-radius:.5rem;padding:.35rem 1.4rem;cursor:pointer;font-size:.82rem}
 .fc-ok:hover{background:rgba(41,182,246,.32)}
 
-/* CATCH OVERLAY */
-#cov,#lov{position:absolute;inset:0;display:none;align-items:center;justify-content:center;z-index:200;background:rgba(0,4,16,.8)}
+/* CATCH / LOST OVERLAYS */
+#cov,#lov{position:absolute;inset:0;display:none;align-items:center;justify-content:center;
+  z-index:200;background:rgba(0,4,16,.82)}
 #cov.on,#lov.on{display:flex}
-.co-in{background:linear-gradient(135deg,rgba(2,12,32,.98),rgba(4,20,50,.98));border:2px solid rgba(41,182,246,.45);border-radius:1.3rem;padding:1.4rem 1.8rem;max-width:330px;width:88%;text-align:center;animation:cpop .28s cubic-bezier(.175,.885,.32,1.275)}
-.lo-in{background:rgba(2,12,32,.97);border:1px solid rgba(244,67,54,.42);border-radius:1.2rem;padding:1.4rem 1.8rem;max-width:300px;width:88%;text-align:center;animation:cpop .22s cubic-bezier(.175,.885,.32,1.275)}
+.co-in{background:linear-gradient(135deg,rgba(2,12,32,.98),rgba(4,20,50,.98));
+  border:2px solid rgba(41,182,246,.45);border-radius:1.3rem;
+  padding:1.4rem 1.8rem;max-width:330px;width:88%;text-align:center;
+  animation:cpop .28s cubic-bezier(.175,.885,.32,1.275)}
+.lo-in{background:rgba(2,12,32,.97);border:1px solid rgba(244,67,54,.42);border-radius:1.2rem;
+  padding:1.4rem 1.8rem;max-width:300px;width:88%;text-align:center;
+  animation:cpop .22s cubic-bezier(.175,.885,.32,1.275)}
 .co-ttl{font-size:.72rem;letter-spacing:.15em;color:rgba(41,182,246,.65);margin-bottom:.25rem}
 .co-name{font-size:1.25rem;font-weight:700;color:#fff;margin-bottom:.15rem}
 .co-rare{font-size:.68rem;letter-spacing:.1em;font-weight:700;margin-bottom:.4rem}
@@ -151,23 +195,28 @@ body{font-family:'Segoe UI',system-ui,sans-serif;color:#e0f0ff;touch-action:none
 .co-fact{font-size:.78rem;color:rgba(200,230,255,.82);line-height:1.5;margin-bottom:.7rem}
 .co-pb{font-size:.68rem;color:#ffd54f;font-weight:700;margin-bottom:.45rem;display:none}
 .co-btns{display:flex;gap:.45rem;justify-content:center}
-.co-main{flex:1;padding:.55rem;background:linear-gradient(135deg,#0288d1,#0097a7);color:#fff;border:none;border-radius:.55rem;font-size:.88rem;font-weight:700;cursor:pointer}
-.co-back{padding:.55rem .9rem;background:rgba(255,255,255,.07);color:rgba(200,230,255,.7);border:1px solid rgba(255,255,255,.14);border-radius:.55rem;font-size:.82rem;cursor:pointer}
+.co-main{flex:1;padding:.55rem;background:linear-gradient(135deg,#0288d1,#0097a7);
+  color:#fff;border:none;border-radius:.55rem;font-size:.88rem;font-weight:700;cursor:pointer}
+.co-back{padding:.55rem .9rem;background:rgba(255,255,255,.07);color:rgba(200,230,255,.7);
+  border:1px solid rgba(255,255,255,.14);border-radius:.55rem;font-size:.82rem;cursor:pointer}
 .lo-in h3{color:#ef5350;font-size:1.1rem;margin-bottom:.35rem}
 .lo-in p{color:rgba(200,220,255,.7);font-size:.82rem;margin-bottom:.9rem}
 
 /* CONFETTI */
-.cf{position:fixed;width:7px;height:7px;border-radius:2px;z-index:500;animation:cffall var(--dur,1.4s) ease-out forwards}
-@keyframes cffall{0%{transform:translateY(0) rotate(0deg);opacity:1}100%{transform:translateY(var(--dy,180px)) rotate(var(--rot,360deg));opacity:0}}
+.cf{position:fixed;width:7px;height:7px;border-radius:2px;z-index:500;
+  animation:cffall var(--dur,1.4s) ease-out forwards}
+@keyframes cffall{0%{transform:translateY(0) rotate(0deg);opacity:1}
+  100%{transform:translateY(var(--dy,180px)) rotate(var(--rot,360deg));opacity:0}}
 
 /* SPLASH */
-@keyframes splash{0%{transform:translateX(-50%) scale(.3);opacity:1}55%{transform:translateX(-50%) scale(1.3);opacity:.9}100%{transform:translateX(-50%) scale(1.6);opacity:0}}
+@keyframes splash{0%{transform:translateX(-50%) scale(.3);opacity:1}
+  55%{transform:translateX(-50%) scale(1.3);opacity:.9}
+  100%{transform:translateX(-50%) scale(1.6);opacity:0}}
 </style>
 </head>
 <body>
 <div id="app">
 
-<!-- NAV -->
 <nav class="site-nav">
   <a href="/docs/index.html">&#8592; Home</a>
   <span class="nav-title">&#127907; Focus Fishing</span>
@@ -198,8 +247,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;color:#e0f0ff;touch-action:none
         <span class="si">&#127942;</span><span class="sl">TROPHY</span><span class="sd">Rare finds, deep water</span>
       </div>
     </div>
-    <button class="btn btn-p" style="align-self:center" onclick="startGame()">CAST OFF &#9875;</button>
-    <button class="btn btn-s" style="align-self:center" onclick="showScreen('mscreen')">Back</button>
+    <button class="btn btn-p" onclick="startGame()">CAST OFF &#9875;</button>
+    <button class="btn btn-s" onclick="showScreen('mscreen')">Back</button>
     <div class="pb-line" id="pbline">No personal best yet</div>
   </div>
 </div>
@@ -224,11 +273,9 @@ body{font-family:'Segoe UI',system-ui,sans-serif;color:#e0f0ff;touch-action:none
     <svg id="asvg" xmlns="http://www.w3.org/2000/svg"></svg>
   </div>
 
-  <!-- Fixed HUD -->
   <div id="dhud">Depth: <span id="dval">0</span>m &mdash; <span id="zval">Surface</span></div>
-  <div id="chud">Drag anywhere &middot; release to cast</div>
+  <div id="chud">Pull back &middot; release to cast!</div>
 
-  <!-- Zone crossing banner -->
   <div id="zbanner">
     <div id="zb-name"></div>
     <div id="zb-sub"></div>
@@ -237,25 +284,29 @@ body{font-family:'Segoe UI',system-ui,sans-serif;color:#e0f0ff;touch-action:none
 
   <div id="thint">&#128070; Tap sea creatures to learn about them!</div>
 
-  <!-- Reel HUD -->
-  <div id="rhud">
-    <div id="tbar"><div id="tbar-fill"></div></div>
-    <div id="tbar-lbl">TENSION</div>
-    <div id="rwheel">
-      <svg viewBox="0 0 66 66">
-        <circle cx="33" cy="33" r="30" fill="rgba(1,8,24,.93)" stroke="rgba(41,182,246,.65)" stroke-width="2"/>
-        <g id="spokes">
-          <line x1="33" y1="5" x2="33" y2="61" stroke="rgba(41,182,246,.55)" stroke-width="2" stroke-linecap="round"/>
-          <line x1="5" y1="33" x2="61" y2="33" stroke="rgba(41,182,246,.55)" stroke-width="2" stroke-linecap="round"/>
-          <line x1="12" y1="12" x2="54" y2="54" stroke="rgba(41,182,246,.55)" stroke-width="2" stroke-linecap="round"/>
-          <line x1="54" y1="12" x2="12" y2="54" stroke="rgba(41,182,246,.55)" stroke-width="2" stroke-linecap="round"/>
-        </g>
-        <circle cx="33" cy="33" r="9" fill="rgba(2,116,180,.85)" stroke="rgba(41,182,246,.8)" stroke-width="1.5"/>
-        <text x="33" y="36.5" text-anchor="middle" fill="white" font-size="7.5" font-weight="bold" font-family="sans-serif">REEL</text>
-      </svg>
+  <!-- BATTLE HUD -->
+  <div id="bhud">
+    <div id="miss-row">
+      <span class="miss-lbl">CHANCES</span>
+      <div id="miss-dots">
+        <div class="mdot" id="md0"></div>
+        <div class="mdot" id="md1"></div>
+        <div class="mdot" id="md2"></div>
+      </div>
     </div>
-    <div class="rhint">HOLD</div>
+    <div id="ten-wrap">
+      <div id="ten-zones">
+        <span class="tz-lbl" style="color:#a5d6a7">SAFE</span>
+        <span class="tz-lbl" style="color:#ffcc80">CAUTION</span>
+        <span class="tz-lbl" style="color:#ef9a9a">DANGER</span>
+      </div>
+      <div id="ten-needle"></div>
+    </div>
+    <button id="reel-btn">&#9660; HOLD TO REEL &#9660;</button>
   </div>
+
+  <!-- Bubble targets layer -->
+  <div id="bubble-layer"></div>
 
   <!-- Fact card -->
   <div id="fcard">
@@ -272,11 +323,11 @@ body{font-family:'Segoe UI',system-ui,sans-serif;color:#e0f0ff;touch-action:none
   <div id="cov">
     <div class="co-in">
       <div class="co-ttl">FISH CAUGHT!</div>
-      <div class="co-name" id="co-name">&#8211;</div>
+      <div class="co-name" id="co-name">&ndash;</div>
       <div class="co-rare rc" id="co-rare">COMMON</div>
-      <div class="co-dep" id="co-dep">&#8211;</div>
+      <div class="co-dep" id="co-dep">&ndash;</div>
       <svg class="co-svg" id="co-svg" viewBox="0 0 110 64"></svg>
-      <div class="co-fact" id="co-fact">&#8211;</div>
+      <div class="co-fact" id="co-fact">&ndash;</div>
       <div class="co-pb" id="co-pb">&#127942; NEW PERSONAL BEST DEPTH!</div>
       <div class="co-btns">
         <button class="co-main" onclick="castAgain()">Cast Again!</button>
@@ -297,8 +348,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;color:#e0f0ff;touch-action:none
     </div>
   </div>
 </div><!-- #scene -->
-
 </div><!-- #app -->
+
 <script>
 'use strict';
 
@@ -306,104 +357,104 @@ body{font-family:'Segoe UI',system-ui,sans-serif;color:#e0f0ff;touch-action:none
 //  CONSTANTS
 // ═══════════════════════════════════════════
 const WORLD_H   = 3700;
-const SURF_Y    = 100;   // world-Y of water surface
-const BOAT_FRAC = 0.28;  // boat X as fraction of viewport width
-const SINK_SPD  = 90;    // px/s descent
-const SINK_FRAC = 0.5;   // sinker stays at this fraction of viewport height
+const SURF_Y    = 100;
+const BOAT_FRAC = 0.28;
+const SINK_SPD  = 90;
+const SINK_FRAC = 0.5;
 
 const ZONES = [
-  { id:'sunlight', name:'Sunlight Zone',  sub:'Epipelagic \u00b7 0\u2013200m',    color:'#29b6f6',
+  { id:'sunlight', name:'Sunlight Zone',  sub:'Epipelagic \u00b7 0\u2013200m',      color:'#29b6f6',
     fact:'Sunlight reaches this layer. Most ocean life depends on this warm, bright zone.',
-    y0:100,  y1:600,  m0:0,    m1:200  },
-  { id:'twilight', name:'Twilight Zone',  sub:'Mesopelagic \u00b7 200\u20131000m', color:'#7e57c2',
+    y0:100,  y1:600,  m0:0,    m1:200   },
+  { id:'twilight', name:'Twilight Zone',  sub:'Mesopelagic \u00b7 200\u20131000m',  color:'#7e57c2',
     fact:'Only faint blue light filters here. Many creatures make their own light to hunt and hide!',
-    y0:600,  y1:1400, m0:200,  m1:1000 },
-  { id:'midnight', name:'Midnight Zone',  sub:'Bathypelagic \u00b7 1000\u20134000m', color:'#ef5350',
+    y0:600,  y1:1400, m0:200,  m1:1000  },
+  { id:'midnight', name:'Midnight Zone',  sub:'Bathypelagic \u00b7 1000\u20134000m',color:'#ef5350',
     fact:'Total darkness. Crushing pressure. Temperatures near freezing. Life here is truly bizarre.',
-    y0:1400, y1:2600, m0:1000, m1:4000 },
-  { id:'abyss',    name:'Abyssal Zone',   sub:'Abyssopelagic \u00b7 4000m+',     color:'#ff8a65',
+    y0:1400, y1:2600, m0:1000, m1:4000  },
+  { id:'abyss',    name:'Abyssal Zone',   sub:'Abyssopelagic \u00b7 4000m+',        color:'#ff8a65',
     fact:'One of the least-explored places on Earth. Only the most extreme life survives here.',
     y0:2600, y1:3700, m0:4000, m1:11000 },
 ];
 
 const SESS = {
-  relaxed:   { biteMin:5,  biteMax:14, tensRate:.72, reelRate:1.3,  surgeBase:13 },
-  challenge: { biteMin:10, biteMax:26, tensRate:1.0, reelRate:1.0,  surgeBase:22 },
-  trophy:    { biteMin:18, biteMax:48, tensRate:1.35,reelRate:.78,  surgeBase:36 },
+  relaxed:   { biteMin:5,  biteMax:14, tensRate:.6,  reelRate:1.4, surgeBase:10 },
+  challenge: { biteMin:10, biteMax:26, tensRate:1.0, reelRate:1.0, surgeBase:17 },
+  trophy:    { biteMin:18, biteMax:48, tensRate:1.3, reelRate:.8,  surgeBase:26 },
 };
 
 // ═══════════════════════════════════════════
 //  CREATURE DATA
 // ═══════════════════════════════════════════
 const CREATURES = [
-  // Sunlight Zone (worldY 100-600)
-  { id:'tuna',    em:'\u{1F41F}', name:'Bluefin Tuna',         zone:0, yRange:[120,540], depth:'0\u2013200m',
+  // Sunlight Zone (100–600)
+  { id:'tuna',    em:'\u{1F41F}', name:'Bluefin Tuna',        zone:0, yRange:[120,540], depth:'0\u2013200m',
     fact:'Bluefin tuna can swim at 70 km/h and keep their body warmer than the surrounding water \u2014 nearly warm-blooded! They can weigh as much as a small car.',
-    catchable:true,  diff:3, rarity:'rare',      swim:true, dx:55 },
-  { id:'manta',   em:'\u{1F98B}', name:'Manta Ray',             zone:0, yRange:[140,480], depth:'0\u2013200m',
+    catchable:true,  diff:3, rarity:'rare',     swim:true, dx:55 },
+  { id:'manta',   em:'\u{1F988}', name:'Manta Ray',            zone:0, yRange:[140,480], depth:'0\u2013200m',
     fact:'Manta rays have the largest brains of any fish and can recognise themselves in a mirror! Their wingspan can reach 7 metres \u2014 wider than a minivan.',
     catchable:false, swim:true, dx:45 },
-  { id:'turtle',  em:'\u{1F422}', name:'Green Sea Turtle',      zone:0, yRange:[115,420], depth:'0\u2013180m',
+  { id:'turtle',  em:'\u{1F422}', name:'Green Sea Turtle',     zone:0, yRange:[115,420], depth:'0\u2013180m',
     fact:'Sea turtles have navigated Earth\'s oceans for over 100 million years! They find their way home using Earth\'s magnetic field like a built-in GPS.',
     catchable:false, swim:true, dx:38 },
-  { id:'clown',   em:'\u{1F420}', name:'Clownfish',              zone:0, yRange:[180,575], depth:'0\u201330m',
+  { id:'clown',   em:'\u{1F420}', name:'Clownfish',             zone:0, yRange:[180,575], depth:'0\u201330m',
     fact:'All clownfish are born male. The largest in any group can change to female! They are immune to anemone stings and shelter inside the stinging tentacles.',
-    catchable:true,  diff:1, rarity:'common',    swim:true, dx:20 },
-  { id:'dolphin', em:'\u{1F42C}', name:'Bottlenose Dolphin',    zone:0, yRange:[105,190], depth:'0\u2013150m',
+    catchable:true,  diff:1, rarity:'common',   swim:true, dx:20 },
+  { id:'dolphin', em:'\u{1F42C}', name:'Bottlenose Dolphin',   zone:0, yRange:[105,190], depth:'0\u2013150m',
     fact:'Dolphins sleep with one eye open and half their brain still awake! They also have unique whistle "names" and call each other by name to get attention.',
     catchable:false, swim:true, dx:85 },
-  { id:'flyfish', em:'\u{1F41F}', name:'Flying Fish',            zone:0, yRange:[100,230], depth:'0\u201360m',
+  { id:'flyfish', em:'\u{1F41F}', name:'Flying Fish',           zone:0, yRange:[100,230], depth:'0\u201360m',
     fact:'Flying fish can glide over 200 metres through the air! They leap at 60 km/h and spread wing-like fins to soar above the waves and escape predators.',
-    catchable:true,  diff:2, rarity:'uncommon',  swim:true, dx:80 },
-  { id:'sardine', em:'\u{1F41F}', name:'Pacific Sardine',        zone:0, yRange:[145,530], depth:'0\u2013200m',
+    catchable:true,  diff:2, rarity:'uncommon', swim:true, dx:80 },
+  { id:'sardine', em:'\u{1F41F}', name:'Pacific Sardine',       zone:0, yRange:[145,530], depth:'0\u2013200m',
     fact:'Sardines school in groups of millions! Their perfectly timed flocking movement makes them look like one giant creature, confusing predators trying to target a single fish.',
-    catchable:true,  diff:1, rarity:'common',    swim:true, dx:65 },
+    catchable:true,  diff:1, rarity:'common',   swim:true, dx:65 },
 
-  // Twilight Zone (worldY 600-1400)
-  { id:'viper',   em:'\u{1F40D}', name:'Viperfish',              zone:1, yRange:[625,1370], depth:'200\u20131000m',
-    fact:'The viperfish has the longest teeth relative to body size of any known fish \u2014 so large they curve outside its mouth like curved daggers! It lures prey with a bioluminescent tip.',
-    catchable:true,  diff:3, rarity:'rare',      swim:true, dx:28, biolum:true },
-  { id:'hatchet', em:'\u{1F41F}', name:'Hatchetfish',            zone:1, yRange:[680,1360], depth:'200\u20131000m',
+  // Twilight Zone (600–1400)
+  { id:'viper',   em:'\u{1F421}', name:'Viperfish',             zone:1, yRange:[625,1370], depth:'200\u20131000m',
+    fact:'The viperfish has the longest teeth relative to body size of any known fish \u2014 so large they curve outside its mouth like daggers! It lures prey with a bioluminescent tip on its dorsal spine.',
+    catchable:true,  diff:3, rarity:'rare',     swim:true, dx:28, biolum:true },
+  { id:'hatchet', em:'\u{1F41F}', name:'Hatchetfish',           zone:1, yRange:[680,1360], depth:'200\u20131000m',
     fact:'Hatchetfish glow from rows of tiny organs on their belly called photophores. This "counter-illumination" matches dim sunlight from above, making them nearly invisible from below!',
-    catchable:true,  diff:2, rarity:'uncommon',  swim:true, dx:22, biolum:true },
-  { id:'lantern', em:'\u{1F420}', name:'Lanternfish',             zone:1, yRange:[720,1380], depth:'200\u20131000m',
+    catchable:true,  diff:2, rarity:'uncommon', swim:true, dx:22, biolum:true },
+  { id:'lantern', em:'\u{1F41F}', name:'Lanternfish',            zone:1, yRange:[720,1380], depth:'200\u20131000m',
     fact:'Lanternfish may be the most numerous fish on Earth \u2014 billions exist! Every night they migrate hundreds of metres upward to feed on plankton, then return to the deep by dawn.',
-    catchable:true,  diff:1, rarity:'common',    swim:true, dx:30, biolum:true },
-  { id:'sword',   em:'\u{1F41F}', name:'Swordfish',               zone:1, yRange:[650,1240], depth:'200\u2013600m',
+    catchable:true,  diff:1, rarity:'common',   swim:true, dx:30, biolum:true },
+  { id:'sword',   em:'\u{1F41F}', name:'Swordfish',              zone:1, yRange:[650,1240], depth:'200\u2013600m',
     fact:'Swordfish can heat their eyes and brain to see clearly in cold dark water! They slash through schools of fish at high speed using their sword-shaped bill.',
-    catchable:true,  diff:4, rarity:'rare',      swim:true, dx:50 },
-  { id:'squid',   em:'\u{1F991}', name:'Giant Squid',             zone:1, yRange:[820,1400], depth:'300\u20131000m',
+    catchable:true,  diff:4, rarity:'rare',     swim:true, dx:50 },
+  { id:'squid',   em:'\u{1F991}', name:'Giant Squid',            zone:1, yRange:[820,1400], depth:'300\u20131000m',
     fact:'Giant squid have eyes 30 cm across \u2014 the size of a dinner plate! They can grow up to 13 metres long and are the favourite meal of sperm whales.',
     catchable:false, swim:true, dx:18 },
 
-  // Midnight Zone (worldY 1400-2600)
-  { id:'angler',  em:'\u{1F421}', name:'Anglerfish',              zone:2, yRange:[1460,2540], depth:'1000\u20134000m',
+  // Midnight Zone (1400–2600)
+  { id:'angler',  em:'\u{1F421}', name:'Anglerfish',             zone:2, yRange:[1460,2540], depth:'1000\u20134000m',
     fact:'The female anglerfish dangles a glowing lure to attract prey in total darkness. The tiny male bites into her side and fuses permanently \u2014 sharing her bloodstream for life!',
     catchable:true,  diff:5, rarity:'legendary', swim:true, dx:12, biolum:true },
-  { id:'gulper',  em:'\u{1F40D}', name:'Gulper Eel',              zone:2, yRange:[1510,2460], depth:'1000\u20134000m',
+  { id:'gulper',  em:'\u{1F991}', name:'Gulper Eel',             zone:2, yRange:[1510,2460], depth:'1000\u20134000m',
     fact:'The gulper eel can open its enormous jaw wide enough to swallow prey much bigger than itself! Its expandable pelican-like pouch makes it one of the deep\'s most bizarre hunters.',
     catchable:true,  diff:4, rarity:'rare',      swim:true, dx:18 },
-  { id:'barrel',  em:'\u{1F441}\uFE0F', name:'Barreleye Fish',   zone:2, yRange:[1610,2510], depth:'600\u20132500m',
-    fact:'The barreleye has a completely transparent head filled with clear fluid! Those bright green dome-shapes visible through its forehead ARE its eyes \u2014 rotating upward to spot prey silhouettes above.',
+  { id:'barrel',  em:'\u{1F420}', name:'Barreleye Fish',         zone:2, yRange:[1610,2510], depth:'600\u20132500m',
+    fact:'The barreleye has a completely transparent head filled with clear fluid! Those bright green dome-shapes visible through its forehead ARE its eyes \u2014 they rotate upward to spot prey silhouettes above.',
     catchable:true,  diff:3, rarity:'rare',      swim:true, dx:16, biolum:true },
-  { id:'vampsq',  em:'\u{1F991}', name:'Vampire Squid',           zone:2, yRange:[1800,2560], depth:'600\u20133000m',
-    fact:'Despite its name, the vampire squid is neither squid nor octopus \u2014 it\'s in its own ancient order! When threatened, it flips its webbed arms revealing spiky "vampire cape" fleshy spines.',
+  { id:'vampsq',  em:'\u{1F991}', name:'Vampire Squid',          zone:2, yRange:[1800,2560], depth:'600\u20133000m',
+    fact:'Despite its name, the vampire squid is neither squid nor octopus \u2014 it\'s in its own ancient order! When threatened it flips its webbed arms over its body, revealing spiky fleshy spines.',
     catchable:false, swim:true, dx:14, biolum:true },
-  { id:'isopod',  em:'\u{1F990}', name:'Giant Isopod',            zone:2, yRange:[2010,2600], depth:'170\u20132500m',
+  { id:'isopod',  em:'\u{1F99E}', name:'Giant Isopod',           zone:2, yRange:[2010,2600], depth:'170\u20132500m',
     fact:'Giant isopods are deep-sea relatives of the common pill bug! One held in captivity went without food for 5 years and 43 days. They can survive almost anything.',
     catchable:false, swim:false },
 
-  // Abyssal Zone (worldY 2600-3700)
-  { id:'snail',   em:'\u{1F41F}', name:'Hadal Snailfish',         zone:3, yRange:[2720,3640], depth:'6000\u20138336m',
+  // Abyssal Zone (2600–3700)
+  { id:'snail',   em:'\u{1F41F}', name:'Hadal Snailfish',        zone:3, yRange:[2720,3640], depth:'6000\u20138336m',
     fact:'The deepest fish ever found \u2014 8,336 metres below the surface! To survive the crushing pressure, its body is packed with special fluid instead of a gas-filled swim bladder.',
     catchable:true,  diff:5, rarity:'legendary', swim:true, dx:9 },
-  { id:'cucum',   em:'\u{1F952}', name:'Sea Cucumber',             zone:3, yRange:[2720,3700], depth:'4000m+',
+  { id:'cucum',   em:'\u{1F952}', name:'Sea Cucumber',            zone:3, yRange:[2720,3700], depth:'4000m+',
     fact:'Sea cucumbers make up 90% of all animal weight on the deep ocean floor! When attacked, they expel their own organs as a distraction \u2014 then slowly grow them back.',
     catchable:false, swim:false },
-  { id:'dumbo',   em:'\u{1F419}', name:'Dumbo Octopus',            zone:3, yRange:[2820,3650], depth:'3000\u20137000m',
+  { id:'dumbo',   em:'\u{1F419}', name:'Dumbo Octopus',           zone:3, yRange:[2820,3650], depth:'3000\u20137000m',
     fact:'Named after the Disney elephant, dumbo octopuses flap ear-like fins to glide elegantly through the deep. They\'re the deepest-living known octopus and swallow prey whole.',
     catchable:true,  diff:4, rarity:'rare',      swim:true, dx:11 },
-  { id:'zombie',  em:'\u{1FAB1}', name:'Bone-Eating Worm',         zone:3, yRange:[3020,3700], depth:'4000m+',
+  { id:'zombie',  em:'\u{1FAB1}', name:'Bone-Eating Worm',        zone:3, yRange:[3020,3700], depth:'4000m+',
     fact:'Osedax worms (nicknamed "zombie worms") drill into whale bones using acid-secreting roots! The microscopic males live permanently inside tubes within the female\'s body.',
     catchable:false, swim:false },
 ];
@@ -412,33 +463,31 @@ const CREATURES = [
 //  GAME STATE
 // ═══════════════════════════════════════════
 let G = {
-  st:'menu',
-  mode:'challenge',
-  sinkX:0, sinkY:0,
-  camY:0,
+  st:'menu', mode:'challenge',
+  sinkX:0, sinkY:0, camY:0,
   raf:null, t0:null,
-  biteT:0,
-  fish:null,
-  depthM:0,
-  fishY:0,
-  tension:0, holding:false,
-  reelRot:0, surgeT:0,
-  curZone:-1,
-  dragging:false, dragX:0, dragY:0,
+  biteT:0, fish:null, depthM:0,
+  fishY:0, tension:0, holding:false,
+  surgeT:0, curZone:-1,
+  slinging:false, slingX:0, slingY:0,
+  missCount:0, redT:0,
+  bubbles:[], bubbleTimer:0,
 };
 
 // ═══════════════════════════════════════════
 //  DOM REFS
 // ═══════════════════════════════════════════
-const $     = id => document.getElementById(id);
-const vp    = $('vp'), wld = $('world');
-const snk   = $('sinker'), bf = $('bfish');
-const lsvg  = $('lsvg'), asvg = $('asvg');
-const dhud  = $('dhud'), chud = $('chud'), rhud = $('rhud');
-const dval  = $('dval'), zval = $('zval');
-const tbarF = $('tbar-fill'), spokes = $('spokes');
-const zbanner=$('zbanner'), zbN=$('zb-name'), zbS=$('zb-sub'), zbF=$('zb-fact');
-const fcard =$('fcard'), cov=$('cov'), lov=$('lov'), thint=$('thint');
+const $ = id => document.getElementById(id);
+const vp = $('vp'), wld = $('world');
+const snk = $('sinker'), bf = $('bfish');
+const lsvg = $('lsvg'), asvg = $('asvg');
+const dhud = $('dhud'), chud = $('chud'), bhud = $('bhud');
+const dval = $('dval'), zval = $('zval');
+const tenNeedle = $('ten-needle');
+const zbanner = $('zbanner'), zbN = $('zb-name'), zbS = $('zb-sub'), zbF = $('zb-fact');
+const fcard = $('fcard'), cov = $('cov'), lov = $('lov'), thint = $('thint');
+const bubLayer = $('bubble-layer');
+const reelBtn = $('reel-btn');
 
 // ═══════════════════════════════════════════
 //  COORDINATE HELPERS
@@ -447,12 +496,10 @@ function rodScr() {
   return { x: vp.offsetWidth * BOAT_FRAC + 14, y: 68 - G.camY };
 }
 function worldYToM(y) {
-  const dp = y - SURF_Y;
-  if (dp <= 0) return 0;
-  for (const z of ZONES) {
+  if (y <= SURF_Y) return 0;
+  for (const z of ZONES)
     if (y >= z.y0 && y < z.y1)
       return Math.round(z.m0 + (y - z.y0) / (z.y1 - z.y0) * (z.m1 - z.m0));
-  }
   return ZONES[ZONES.length-1].m1;
 }
 function getZone(y) {
@@ -471,10 +518,16 @@ function drawLine() {
   lsvg.innerHTML = '<path class="fline" d="M' + r.x + ',' + r.y + ' Q' + mx + ',' + my + ' ' + sx + ',' + sy + '"/>';
 }
 function clearLine() { lsvg.innerHTML = ''; }
-function drawAim(ex, ey) {
+
+function drawSlingshot(sx, sy) {
   const r = rodScr();
-  asvg.innerHTML = '<line class="aline" x1="' + r.x + '" y1="' + r.y + '" x2="' + ex + '" y2="' + ey + '"/>' +
-    '<circle cx="' + ex + '" cy="' + ey + '" r="7" fill="none" stroke="rgba(255,255,255,.38)" stroke-width="1.5" stroke-dasharray="4,4"/>';
+  asvg.innerHTML =
+    '<line x1="' + (r.x-5) + '" y1="' + (r.y-4) + '" x2="' + sx + '" y2="' + sy +
+      '" stroke="rgba(190,150,70,.85)" stroke-width="2.5" stroke-linecap="round"/>' +
+    '<line x1="' + (r.x+5) + '" y1="' + (r.y-4) + '" x2="' + sx + '" y2="' + sy +
+      '" stroke="rgba(190,150,70,.85)" stroke-width="2.5" stroke-linecap="round"/>' +
+    '<circle cx="' + sx + '" cy="' + sy + '" r="6" fill="rgba(190,150,70,.3)" ' +
+      'stroke="rgba(210,170,90,.7)" stroke-width="1.5"/>';
 }
 function clearAim() { asvg.innerHTML = ''; }
 
@@ -500,6 +553,90 @@ function showBanner(z) {
 }
 
 // ═══════════════════════════════════════════
+//  SVG FISH ICONS (world creatures)
+// ═══════════════════════════════════════════
+function makeFishSVG(c) {
+  var pals = {
+    common:    ['#5b9bd5','#1a4a8c','#aad0f0'],
+    uncommon:  ['#4db6ac','#006064','#a7e8e4'],
+    rare:      ['#ab47bc','#6a1b9a','#e1a8eb'],
+    legendary: ['#ffca28','#e65100','#fff0a0'],
+  };
+  var p = pals[c.rarity] || pals.common;
+  var z = c.zone || 0;
+  var rx = 13 + z * 1.4;          // body half-width: deeper = more elongated
+  var ry = Math.max(4, 9 - z);    // body half-height: deeper = flatter
+  var cx = rx + 6;
+  var vw = cx + rx + 5;
+  var vh = 28;
+  var eyeX = Math.round(cx + rx * 0.5);
+  var eyeY = Math.round(vh * 0.4);
+  var biolumDot = c.biolum
+    ? '<circle cx="' + (cx - rx + 5) + '" cy="' + (vh/2 - 3) + '" r="2.5" fill="rgba(80,255,180,.9)">' +
+      '<animate attributeName="opacity" values="0.2;1;0.2" dur="1.8s" repeatCount="indefinite"/></circle>'
+    : '';
+  return '<svg viewBox="0 0 ' + vw + ' ' + vh + '" width="' + Math.round(vw * 1.15) + '" height="' + Math.round(vh * 1.15) + '" xmlns="http://www.w3.org/2000/svg">' +
+    '<polygon points="' + (cx-rx) + ',' + (vh/2) + ' ' + (cx-rx-8) + ',' + (vh/2-6) + ' ' + (cx-rx-8) + ',' + (vh/2+6) + '" fill="' + p[1] + '" opacity="0.9"/>' +
+    '<ellipse cx="' + cx + '" cy="' + (vh/2) + '" rx="' + rx + '" ry="' + ry + '" fill="' + p[0] + '"/>' +
+    '<ellipse cx="' + (cx+1) + '" cy="' + (vh/2-1) + '" rx="' + Math.round(rx*.42) + '" ry="' + Math.round(ry*.42) + '" fill="' + p[2] + '" opacity="0.45"/>' +
+    biolumDot +
+    '<circle cx="' + eyeX + '" cy="' + eyeY + '" r="3" fill="white"/>' +
+    '<circle cx="' + (eyeX+0.5) + '" cy="' + eyeY + '" r="1.6" fill="#111"/>' +
+    '</svg>';
+}
+
+// ═══════════════════════════════════════════
+//  MYSTERY FISH SILHOUETTE (shown on bite)
+// ═══════════════════════════════════════════
+function makeMysteryFishSVG(zone) {
+  var glows = ['#29b6f6','#7e57c2','rgba(80,255,180,1)','#ff8a65'];
+  var ec = glows[zone] || glows[0];
+  var bc = zone >= 2 ? '#030c1a' : '#071525';
+  var biolumLine = zone >= 2
+    ? '<circle cx="28" cy="19" r="2.8" fill="rgba(80,255,130,.3)"><animate attributeName="opacity" values="0.1;0.7;0.1" dur="1.8s" repeatCount="indefinite"/></circle>'
+    : '';
+  return '<svg viewBox="0 0 90 52" width="90" height="52" xmlns="http://www.w3.org/2000/svg">' +
+    '<polygon points="16,26 3,14 3,38" fill="' + bc + '" opacity="0.96"/>' +
+    '<ellipse cx="48" cy="26" rx="36" ry="19" fill="' + bc + '" opacity="0.96"/>' +
+    '<ellipse cx="43" cy="22" rx="15" ry="7" fill="' + bc + '" opacity="0.45" style="filter:brightness(2)"/>' +
+    biolumLine +
+    '<circle cx="62" cy="21" r="6" fill="rgba(15,25,50,.9)"/>' +
+    '<circle cx="62" cy="21" r="4" fill="' + ec + '" opacity="0.85"><animate attributeName="opacity" values="0.4;1;0.4" dur="1.1s" repeatCount="indefinite"/></circle>' +
+    '<circle cx="62" cy="21" r="1.8" fill="rgba(255,255,255,.75)"/>' +
+    '<text x="44" y="46" text-anchor="middle" fill="rgba(200,220,255,.18)" font-size="10" font-family="sans-serif" font-weight="bold">?</text>' +
+    '</svg>';
+}
+
+// ═══════════════════════════════════════════
+//  JAGGED ROCK WALLS
+// ═══════════════════════════════════════════
+function buildJaggedWalls() {
+  function genPath(side) {
+    var pts = [], steps = 38;
+    if (side === 'left') {
+      pts.push('0% 0%');
+      for (var i = 0; i <= steps; i++) {
+        var y = (i / steps * 100).toFixed(1) + '%';
+        var x = (46 + Math.random() * 44).toFixed(1) + '%';
+        pts.push(x + ' ' + y);
+      }
+      pts.push('0% 100%');
+    } else {
+      pts.push('100% 0%');
+      pts.push('100% 100%');
+      for (var i = steps; i >= 0; i--) {
+        var y = (i / steps * 100).toFixed(1) + '%';
+        var x = (10 + Math.random() * 44).toFixed(1) + '%';
+        pts.push(x + ' ' + y);
+      }
+    }
+    return 'polygon(' + pts.join(',') + ')';
+  }
+  $('wl').style.clipPath = genPath('left');
+  $('wr').style.clipPath = genPath('right');
+}
+
+// ═══════════════════════════════════════════
 //  WORLD POPULATION
 // ═══════════════════════════════════════════
 function buildWorld() {
@@ -507,68 +644,149 @@ function buildWorld() {
   $('dlayer').innerHTML = '';
 
   CREATURES.forEach(function(c) {
-    const n = c.catchable ? 3 : 2;
-    for (let i = 0; i < n; i++) {
-      const wy   = c.yRange[0] + Math.random() * (c.yRange[1] - c.yRange[0]);
-      const left = Math.random() < .5;
-      const xp   = left ? (8 + Math.random() * 17) : (50 + Math.random() * 36);
-      const el   = document.createElement('div');
-      el.className = 'cr' + (c.biolum ? ' biolum' : '') + (c.swim ? ' swim' : '');
-      el.textContent = c.em;
-      el.title = c.name;
+    var n = c.catchable ? 3 : 2;
+    for (var i = 0; i < n; i++) {
+      var wy   = c.yRange[0] + Math.random() * (c.yRange[1] - c.yRange[0]);
+      var left = Math.random() < .5;
+      var xp   = left ? (9 + Math.random() * 17) : (52 + Math.random() * 34);
+
+      // OUTER wrapper handles swim translateX (isolates from hover transform)
+      var wrap = document.createElement('div');
+      wrap.className = 'crw' + (c.swim ? ' swim' : '') + (c.biolum ? ' biolum' : '');
+      wrap.style.top  = wy + 'px';
+      wrap.style.left = xp + '%';
       if (c.swim) {
-        const dur = 4.5 + Math.random() * 7;
-        const dx  = (left ? 1 : -1) * (c.dx || 28) * (.6 + Math.random() * .8);
-        el.style.setProperty('--dur', dur + 's');
-        el.style.setProperty('--dx',  dx  + 'px');
-        el.style.setProperty('--del', (-Math.random() * dur) + 's');
+        var dur = 4.5 + Math.random() * 7;
+        var dx  = (left ? 1 : -1) * (c.dx || 28) * (.6 + Math.random() * .8);
+        wrap.style.setProperty('--dur', dur + 's');
+        wrap.style.setProperty('--dx',  dx  + 'px');
+        wrap.style.setProperty('--del', (-Math.random() * dur) + 's');
       }
-      el.style.top      = wy + 'px';
-      el.style.left     = xp + '%';
-      el.style.fontSize = (1.3 + Math.random() * .7) + 'rem';
-      el.dataset.cid    = c.id;
-      (function(creature){ el.addEventListener('pointerdown', function(e) {
-        if (G.st === 'battle') return;
-        e.stopPropagation();
-        showFact(creature);
-      }); })(c);
-      $('clayer').appendChild(el);
+
+      // INNER element handles hover scale (on a different element — no transform conflict)
+      var inner = document.createElement('div');
+      inner.className = 'cem';
+
+      if (c.catchable) {
+        // SVG fish icon for catchable creatures
+        inner.innerHTML = makeFishSVG(c);
+        inner.style.lineHeight = '0';
+      } else {
+        // Emoji for ambient creatures
+        inner.textContent = c.em;
+        inner.style.fontSize = (1.25 + Math.random() * .65) + 'rem';
+      }
+
+      wrap.appendChild(inner);
+
+      // Tap handler
+      (function(creature) {
+        wrap.addEventListener('pointerdown', function(e) {
+          if (G.st === 'battle') return;
+          e.stopPropagation();
+          showFact(creature);
+        });
+      })(c);
+
+      $('clayer').appendChild(wrap);
     }
   });
 
-  // Decorative elements
-  var decoSets = [
-    { emojis:['\u{1FAB8}','\u{1F33F}','\u{1F41A}','\u2605','\u{1F980}'], yRange:[150,1200], count:26 },
-    { emojis:['\u{1FAA8}'],                                                 yRange:[1400,3700], count:22 },
-  ];
-  decoSets.forEach(function(d) {
-    for (let i = 0; i < d.count; i++) {
-      const wy = d.yRange[0] + Math.random() * (d.yRange[1] - d.yRange[0]);
-      const left = Math.random() < .5;
-      const xp  = left ? (6 + Math.random() * 17) : (63 + Math.random() * 26);
-      const em  = d.emojis[Math.floor(Math.random() * d.emojis.length)];
-      const el  = document.createElement('div');
-      el.style.cssText = 'position:absolute;top:' + wy + 'px;left:' + xp + '%;font-size:' + (.75+Math.random()*.7) + 'rem;opacity:' + (.32+Math.random()*.38) + ';pointer-events:none;';
+  // Decorative bottom elements
+  [
+    { emojis:['\u{1FAB8}','\u{1F33F}','\u{1F41A}','\u2605','\u{1F980}'], yRange:[150,1200], count:28 },
+    { emojis:['\u{1FAA8}'],                                                yRange:[1400,3700], count:18 },
+  ].forEach(function(d) {
+    for (var i = 0; i < d.count; i++) {
+      var wy  = d.yRange[0] + Math.random() * (d.yRange[1] - d.yRange[0]);
+      var lft = Math.random() < .5;
+      var xp  = lft ? (6 + Math.random() * 16) : (64 + Math.random() * 25);
+      var em  = d.emojis[Math.floor(Math.random() * d.emojis.length)];
+      var el  = document.createElement('div');
+      el.style.cssText = 'position:absolute;top:' + wy + 'px;left:' + xp + '%;' +
+        'font-size:' + (.65+Math.random()*.7) + 'rem;opacity:' + (.28+Math.random()*.38) + ';pointer-events:none;z-index:4';
       el.textContent = em;
       $('dlayer').appendChild(el);
     }
   });
 
+  // Rock outcroppings (midnight + abyss zones)
+  buildRockOutcroppings();
+
   // Bioluminescent particles
-  for (let i = 0; i < 50; i++) {
-    const wy = 600 + Math.random() * 2000;
-    const xp = 10 + Math.random() * 80;
-    const sz = 2 + Math.random() * 3.5;
-    const dur = 2 + Math.random() * 4;
-    const el  = document.createElement('div');
+  for (var i = 0; i < 55; i++) {
+    var wy  = 600  + Math.random() * 2600;
+    var xp  = 12   + Math.random() * 76;
+    var sz  = 2    + Math.random() * 3.5;
+    var dur = 2    + Math.random() * 4.5;
+    var el  = document.createElement('div');
     el.className = 'bp';
     el.style.cssText = 'top:' + wy + 'px;left:' + xp + '%;width:' + sz + 'px;height:' + sz + 'px;';
     el.style.setProperty('--dur', dur + 's');
     el.style.setProperty('--del', (-Math.random() * dur) + 's');
-    el.style.setProperty('--dx',  ((Math.random()-.5)*16) + 'px');
-    el.style.setProperty('--dy',  (-7 - Math.random()*13) + 'px');
+    el.style.setProperty('--dx',  ((Math.random()-.5)*18) + 'px');
+    el.style.setProperty('--dy',  (-7 - Math.random()*15) + 'px');
     $('dlayer').appendChild(el);
   }
+
+  buildJaggedWalls();
+}
+
+function buildRockOutcroppings() {
+  var dl = $('dlayer');
+
+  // Triangular rock ledges jutting from walls
+  var configs = [
+    { yMin:1400, yMax:2600, count:12, col:'#0d2035' },
+    { yMin:2600, yMax:3700, count:9,  col:'#060c18' },
+  ];
+  configs.forEach(function(cfg) {
+    for (var i = 0; i < cfg.count; i++) {
+      var wy  = cfg.yMin + Math.random() * (cfg.yMax - cfg.yMin);
+      var lft = Math.random() < .5;
+      var w   = 24 + Math.random() * 52;
+      var h   = 18 + Math.random() * 58;
+      var el  = document.createElement('div');
+      el.style.position = 'absolute';
+      el.style.top      = wy + 'px';
+      el.style.width    = w + 'px';
+      el.style.height   = h + 'px';
+      el.style.background = cfg.col;
+      el.style.pointerEvents = 'none';
+      el.style.zIndex   = '5';
+      el.style.opacity  = (.55 + Math.random() * .35).toFixed(2);
+      if (lft) {
+        el.style.left     = (58 + Math.random() * 12) + 'px';
+        el.style.clipPath = 'polygon(0% 50%,100% 0%,100% 100%)';
+      } else {
+        el.style.right    = (58 + Math.random() * 12) + 'px';
+        el.style.clipPath = 'polygon(100% 50%,0% 0%,0% 100%)';
+      }
+      dl.appendChild(el);
+    }
+  });
+
+  // Stalactite/stalagmite columns
+  var stalCfgs = [
+    { yMin:1400, yMax:2600, count:9,  col:'#0a1a2e' },
+    { yMin:2600, yMax:3700, count:7,  col:'#04080f' },
+  ];
+  stalCfgs.forEach(function(cfg) {
+    for (var i = 0; i < cfg.count; i++) {
+      var wy   = cfg.yMin + Math.random() * (cfg.yMax - cfg.yMin);
+      var lft  = Math.random() < .5;
+      var w    = 8 + Math.random() * 26;
+      var h    = 28 + Math.random() * 85;
+      var el   = document.createElement('div');
+      var xpos = (60 + Math.random() * 14) + 'px';
+      el.style.cssText = 'position:absolute;top:' + wy + 'px;' +
+        (lft ? 'left:' + xpos : 'right:' + xpos) + ';' +
+        'width:' + w + 'px;height:' + h + 'px;' +
+        'background:' + cfg.col + ';pointer-events:none;z-index:5;opacity:0.72;' +
+        'clip-path:polygon(50% 100%,0% 0%,100% 0%)';
+      dl.appendChild(el);
+    }
+  });
 }
 
 // ═══════════════════════════════════════════
@@ -603,34 +821,37 @@ function startGame() {
 
 function beginCast() {
   if (G.raf) { cancelAnimationFrame(G.raf); G.raf = null; }
-  G.t0      = null;
-  G.st      = 'casting';
-  G.sinkX   = vp.offsetWidth * BOAT_FRAC;
-  G.sinkY   = SURF_Y + 3;
-  G.camY    = 0;
-  G.curZone = -1;
-  G.tension = 0;
-  G.holding = false;
-  G.reelRot = 0;
-  G.fish    = null;
-  G.dragging= false;
+  G.t0        = null;
+  G.st        = 'casting';
+  G.sinkX     = vp.offsetWidth * BOAT_FRAC;
+  G.sinkY     = SURF_Y + 3;
+  G.camY      = 0;
+  G.curZone   = -1;
+  G.tension   = 0;
+  G.holding   = false;
+  G.fish      = null;
+  G.slinging  = false;
+  G.missCount = 0;
+  G.redT      = 0;
+  clearBubbles();
 
-  wld.style.transform = 'translateY(0px)';
-  snk.style.left    = G.sinkX + 'px';
-  snk.style.top     = G.sinkY + 'px';
-  snk.style.display = 'block';
-  snk.style.transform = 'translateX(-50%)';
-  bf.style.display  = 'none';
+  wld.style.transform  = 'translateY(0px)';
+  snk.style.left       = G.sinkX + 'px';
+  snk.style.top        = G.sinkY + 'px';
+  snk.style.display    = 'block';
+  snk.style.transition = '';
+  snk.style.transform  = 'translateX(-50%)';
+  bf.style.display     = 'none';
 
   clearLine(); clearAim();
   dhud.style.display = 'none';
   chud.style.display = 'block';
-  rhud.classList.remove('on');
+  bhud.classList.remove('on');
   zbanner.classList.remove('on');
   cov.classList.remove('on');
   lov.classList.remove('on');
-  spokes.style.transform = '';
-  tbarF.style.height = '0%';
+  reelBtn.classList.remove('active');
+  updateMissDots();
 
   setTimeout(function(){
     thint.style.display = 'block';
@@ -639,56 +860,102 @@ function beginCast() {
 }
 
 // ═══════════════════════════════════════════
-//  CAST DRAG MECHANIC
+//  SLINGSHOT CAST
 // ═══════════════════════════════════════════
 function onDown(e) {
   if (G.st !== 'casting') return;
-  G.dragging = true;
-  G.dragX = e.clientX; G.dragY = e.clientY;
+  G.slinging = true;
+  var sr = $('scene').getBoundingClientRect();
+  G.slingX = Math.max(10, Math.min(vp.offsetWidth  - 10, e.clientX - sr.left));
+  G.slingY = Math.max(10, Math.min(vp.offsetHeight - 10, e.clientY - sr.top));
+  snk.style.transition = 'none';
+  snk.style.left = G.slingX + 'px';
+  snk.style.top  = G.slingY + 'px';
+  drawSlingshot(G.slingX, G.slingY);
   vp.setPointerCapture(e.pointerId);
 }
-function onMove(e) {
-  if (!G.dragging) return;
-  G.dragX = e.clientX; G.dragY = e.clientY;
-  var sr = $('scene').getBoundingClientRect();
-  drawAim(G.dragX - sr.left, G.dragY - sr.top);
-}
-function onUp(e) {
-  if (!G.dragging) return;
-  G.dragging = false;
-  clearAim();
-  var sr = $('scene').getBoundingClientRect();
-  var tx = Math.max(64, Math.min(vp.offsetWidth - 64, e.clientX - sr.left));
-  G.sinkX = tx;
-  doCast();
-}
-function onCancel() { G.dragging = false; clearAim(); }
 
-vp.addEventListener('pointerdown', onDown);
-vp.addEventListener('pointermove', onMove);
-vp.addEventListener('pointerup',   onUp);
+function onMove(e) {
+  if (!G.slinging) return;
+  var sr = $('scene').getBoundingClientRect();
+  G.slingX = Math.max(10, Math.min(vp.offsetWidth  - 10, e.clientX - sr.left));
+  G.slingY = Math.max(10, Math.min(vp.offsetHeight - 10, e.clientY - sr.top));
+  snk.style.left = G.slingX + 'px';
+  snk.style.top  = G.slingY + 'px';
+  drawSlingshot(G.slingX, G.slingY);
+}
+
+function onUp(e) {
+  if (!G.slinging) return;
+  G.slinging = false;
+  clearAim();
+  var castX = Math.max(70, Math.min(vp.offsetWidth - 70, G.slingX));
+  launchSinker(G.slingX, G.slingY, castX);
+}
+
+function onCancel() {
+  if (!G.slinging) return;
+  G.slinging = false;
+  clearAim();
+  snk.style.left = G.sinkX + 'px';
+  snk.style.top  = (SURF_Y + 3) + 'px';
+}
+
+vp.addEventListener('pointerdown',   onDown);
+vp.addEventListener('pointermove',   onMove);
+vp.addEventListener('pointerup',     onUp);
 vp.addEventListener('pointercancel', onCancel);
 
-function doCast() {
+// ═══════════════════════════════════════════
+//  LAUNCH ARC ANIMATION
+// ═══════════════════════════════════════════
+function launchSinker(fromX, fromY, toX) {
+  G.st = 'launching';
   chud.style.display = 'none';
+  var t0   = null;
+  var dur  = 0.44;
+  var ctrlX = (fromX + toX) / 2;
+  var ctrlY = Math.min(fromY, SURF_Y + 15) - 75;
+
+  function frame(now) {
+    if (G.st !== 'launching') return;
+    if (!t0) t0 = now;
+    var t  = Math.min((now - t0) / 1000 / dur, 1);
+    var ti = 1 - t;
+    var bx = ti*ti*fromX + 2*ti*t*ctrlX + t*t*toX;
+    var by = ti*ti*fromY + 2*ti*t*ctrlY + t*t*(SURF_Y + 6);
+    snk.style.left = bx + 'px';
+    snk.style.top  = by + 'px';
+    if (t < 1) {
+      requestAnimationFrame(frame);
+    } else {
+      snk.style.transition = '';
+      G.sinkX = toX;
+      doCast();
+    }
+  }
+  requestAnimationFrame(frame);
+}
+
+function doCast() {
   dhud.style.display = 'block';
-  G.st   = 'sinking';
+  G.st    = 'sinking';
   G.sinkY = SURF_Y + 6;
   snk.style.left = G.sinkX + 'px';
   snk.style.top  = G.sinkY + 'px';
 
-  var cfg = SESS[G.mode];
+  var cfg  = SESS[G.mode];
   G.biteT = cfg.biteMin + Math.random() * (cfg.biteMax - cfg.biteMin);
 
   spawnSplash(G.sinkX, SURF_Y - G.camY);
-
   G.t0  = null;
   G.raf = requestAnimationFrame(sinkLoop);
 }
 
 function spawnSplash(sx, sy) {
   var el = document.createElement('div');
-  el.style.cssText = 'position:absolute;left:' + sx + 'px;top:' + sy + 'px;font-size:1.4rem;z-index:20;pointer-events:none;animation:splash .7s ease-out forwards;';
+  el.style.cssText = 'position:absolute;left:' + sx + 'px;top:' + sy + 'px;font-size:1.4rem;' +
+    'z-index:20;pointer-events:none;animation:splash .7s ease-out forwards;';
   el.textContent = '\u{1F4A6}';
   vp.appendChild(el);
   setTimeout(function(){ el.remove(); }, 780);
@@ -726,20 +993,25 @@ function sinkLoop(now) {
 // ═══════════════════════════════════════════
 function triggerBite() {
   cancelAnimationFrame(G.raf);
-  G.st     = 'battle';
-  G.depthM = worldYToM(G.sinkY);
-  G.fish   = pickFish();
-  G.fishY  = G.sinkY;
-  G.tension= 0;
-  G.surgeT = 1.8 + Math.random() * 2;
-  G.reelRot= 0;
+  G.st         = 'battle';
+  G.depthM     = worldYToM(G.sinkY);
+  G.fish       = pickFish();
+  G.fishY      = G.sinkY;
+  G.tension    = 0;
+  G.redT       = 0;
+  G.surgeT     = 1.8 + Math.random() * 2;
+  G.missCount  = 0;
+  G.bubbleTimer = 2.2 + Math.random() * 1.5;
 
-  bf.textContent   = G.fish.em;
+  // Mystery silhouette — not the real fish yet!
+  var zi = getZone(G.sinkY);
+  bf.innerHTML     = makeMysteryFishSVG(zi);
   bf.style.top     = (G.sinkY + 16) + 'px';
   bf.style.left    = G.sinkX + 'px';
   bf.style.display = 'block';
 
-  rhud.classList.add('on');
+  bhud.classList.add('on');
+  updateMissDots();
   flashBite();
 
   G.t0  = null;
@@ -763,7 +1035,7 @@ function pickFish() {
 
 function flashBite() {
   var fl = document.createElement('div');
-  fl.style.cssText = 'position:absolute;inset:0;background:rgba(255,200,50,.22);z-index:80;pointer-events:none;animation:cpop .5s ease-out forwards;';
+  fl.style.cssText = 'position:absolute;inset:0;background:rgba(255,200,50,.2);z-index:80;pointer-events:none;animation:cpop .5s ease-out forwards;';
   $('scene').appendChild(fl);
   snk.style.transition = 'transform .12s';
   snk.style.transform  = 'translateX(-50%) rotate(22deg) scale(1.5)';
@@ -781,47 +1053,64 @@ function battleLoop(now) {
   var cfg = SESS[G.mode];
   var f   = G.fish;
 
-  // Tension decays
-  G.tension -= 9 * dt;
+  // Natural tension decay
+  G.tension -= 11 * dt;
   G.tension  = Math.max(0, G.tension);
 
-  // Periodic surges
+  // Fish surges
   G.surgeT -= dt;
   if (G.surgeT <= 0) {
-    G.tension += (f.diff || 3) * cfg.surgeBase / 20 * cfg.tensRate;
+    G.tension += (f.diff || 3) * cfg.surgeBase / 18 * cfg.tensRate;
     G.tension  = Math.min(100, G.tension);
-    G.fishY   += (f.diff || 3) * 4;
-    G.surgeT   = 1.2 + Math.random() * 2.5;
+    G.fishY   += (f.diff || 3) * 3.5;
+    G.surgeT   = 1.2 + Math.random() * 2.8;
   }
 
+  // Reel: hold raises tension, release lets it decay + fish slowly sinks
   if (G.holding) {
-    G.fishY   -= 58 * cfg.reelRate * dt;
-    G.tension += (f.diff || 3) * 2.4 * cfg.tensRate * dt * 60;
+    G.fishY   -= 115 * cfg.reelRate * dt;
+    G.tension += (f.diff || 3) * 4.5 * cfg.tensRate * dt;
     G.tension  = Math.min(100, G.tension);
-    G.reelRot += 210 * dt;
-    spokes.style.transform = 'rotate(' + G.reelRot + 'deg)';
   } else {
-    G.fishY += 20 * dt;
+    G.fishY += 18 * dt;
+  }
+
+  // Track continuous time in red zone (tension > 70%)
+  if (G.tension > 70) {
+    G.redT += dt;
+    if (G.redT >= 3.5) {
+      showLost('Line snapped! Held too long in the danger zone. The ' + f.name + ' escaped!');
+      return;
+    }
+  } else {
+    G.redT = 0;
   }
 
   if (G.tension >= 100) {
-    showLost('Line snapped! The ' + f.name + ' escaped into the deep!');
+    showLost('Line snapped! The ' + f.name + ' broke free!');
     return;
   }
 
+  // Bubble timer
+  G.bubbleTimer -= dt;
+  if (G.bubbleTimer <= 0) {
+    spawnBubble();
+    G.bubbleTimer = 2.4 + Math.random() * 2.2;
+  }
+
+  // Age bubbles — may trigger miss & showLost
+  tickBubbles(dt);
+  if (G.st !== 'battle') return;
+
+  // Update world positions
   G.sinkY = G.fishY;
   snk.style.top = G.sinkY + 'px';
   bf.style.top  = (G.sinkY + 16) + 'px';
   updateCam();
   drawLine();
 
-  var tp = Math.min(100, G.tension);
-  tbarF.style.height = tp + '%';
-  tbarF.style.background = tp < 45
-    ? 'linear-gradient(180deg,#66bb6a,#388e3c)'
-    : tp < 75
-    ? 'linear-gradient(180deg,#ffa726,#e65100)'
-    : 'linear-gradient(180deg,#ef5350,#b71c1c)';
+  // Move tension needle
+  tenNeedle.style.left = Math.min(100, G.tension) + '%';
 
   dval.textContent = Math.max(0, worldYToM(G.sinkY));
 
@@ -831,17 +1120,121 @@ function battleLoop(now) {
 }
 
 // ═══════════════════════════════════════════
-//  REEL WHEEL
+//  REEL BUTTON
 // ═══════════════════════════════════════════
-var rw = $('rwheel');
-rw.addEventListener('pointerdown', function(e) {
+reelBtn.addEventListener('pointerdown', function(e) {
   if (G.st !== 'battle') return;
   G.holding = true;
-  rw.style.filter = 'drop-shadow(0 0 10px rgba(41,182,246,.9))';
+  reelBtn.classList.add('active');
   e.stopPropagation();
 });
-document.addEventListener('pointerup',     function(){ if (G.holding) { G.holding = false; rw.style.filter = ''; } });
-document.addEventListener('pointercancel', function(){ G.holding = false; rw.style.filter = ''; });
+document.addEventListener('pointerup',     function(){ if (G.holding){ G.holding = false; reelBtn.classList.remove('active'); }});
+document.addEventListener('pointercancel', function(){ G.holding = false; reelBtn.classList.remove('active'); });
+
+// Space bar support
+document.addEventListener('keydown', function(e){
+  if (e.code === 'Space' && G.st === 'battle'){ e.preventDefault(); G.holding = true; reelBtn.classList.add('active'); }
+});
+document.addEventListener('keyup', function(e){
+  if (e.code === 'Space'){ G.holding = false; reelBtn.classList.remove('active'); }
+});
+
+// ═══════════════════════════════════════════
+//  BUBBLE SYSTEM
+// ═══════════════════════════════════════════
+function spawnBubble() {
+  var hudH  = bhud.offsetHeight || 100;
+  var availH = vp.offsetHeight - hudH - 20;
+  var maxYPct = Math.max(20, availH / vp.offsetHeight * 100);
+
+  var x    = 20 + Math.random() * 60;           // 20–80% width (clears walls)
+  var y    = 8  + Math.random() * (maxYPct - 14); // % of viewport height
+  var size = 40 + Math.floor(Math.random() * 22);  // 40–62px
+  var dur  = 2.4 + Math.random() * 1.5;
+
+  var el = document.createElement('div');
+  el.className = 'bbl';
+  el.style.left   = x + '%';
+  el.style.top    = y + '%';
+  el.style.width  = size + 'px';
+  el.style.height = size + 'px';
+  el.style.setProperty('--bbl-dur', dur + 's');
+
+  var ring = document.createElement('div');
+  ring.className = 'bbl-ring';
+
+  var icon = document.createElement('div');
+  icon.className  = 'bbl-icon';
+  icon.textContent = '\u2193'; // ↓ reel in!
+
+  el.appendChild(ring);
+  el.appendChild(icon);
+
+  var id = Date.now() + Math.random();
+  el.dataset.bid = id;
+
+  el.addEventListener('pointerdown', function(e) {
+    e.stopPropagation();
+    onBubbleHit(id, el);
+  });
+
+  bubLayer.appendChild(el);
+  G.bubbles.push({ id:id, el:el, life:dur });
+}
+
+function onBubbleHit(id, el) {
+  if (G.st !== 'battle') { el.remove(); return; }
+  var rect = el.getBoundingClientRect(); // capture BEFORE removing
+  G.bubbles = G.bubbles.filter(function(b){ return b.id !== id; });
+  el.remove();
+  G.tension = Math.max(0, G.tension - 22);
+
+  // Show +pop
+  var sr  = $('scene').getBoundingClientRect();
+  var pop = document.createElement('div');
+  pop.style.cssText = 'position:absolute;' +
+    'left:' + (rect.left - sr.left + rect.width/2) + 'px;' +
+    'top:'  + (rect.top  - sr.top  + rect.height/2) + 'px;' +
+    'font-size:1.3rem;font-weight:700;color:#66bb6a;z-index:60;pointer-events:none;' +
+    'transform:translate(-50%,-50%);animation:cpop .45s ease-out forwards';
+  pop.textContent = '\u2193\u2713';
+  $('scene').appendChild(pop);
+  setTimeout(function(){ pop.remove(); }, 480);
+}
+
+function onBubbleMiss(b) {
+  b.el.remove();
+  if (G.st !== 'battle') return;
+  G.tension = Math.min(100, G.tension + 16);
+  G.missCount++;
+  updateMissDots();
+  if (G.missCount >= 3) {
+    showLost('Too many missed chances! The ' + (G.fish ? G.fish.name : 'fish') + ' got away!');
+  }
+}
+
+function tickBubbles(dt) {
+  for (var i = G.bubbles.length - 1; i >= 0; i--) {
+    G.bubbles[i].life -= dt;
+    if (G.bubbles[i].life <= 0) {
+      var b = G.bubbles.splice(i, 1)[0];
+      onBubbleMiss(b);
+    }
+  }
+}
+
+function clearBubbles() {
+  G.bubbles.forEach(function(b){ if (b.el && b.el.parentNode) b.el.remove(); });
+  G.bubbles = [];
+  bubLayer.innerHTML = '';
+}
+
+function updateMissDots() {
+  for (var i = 0; i < 3; i++) {
+    var d = $('md' + i);
+    if (d) d.className = 'mdot' + (i < G.missCount ? ' used' : '');
+  }
+}
 
 // ═══════════════════════════════════════════
 //  SHOW CATCH
@@ -849,8 +1242,10 @@ document.addEventListener('pointercancel', function(){ G.holding = false; rw.sty
 function showCatch() {
   cancelAnimationFrame(G.raf); G.raf = null;
   G.st = 'caught'; G.holding = false;
-  rhud.classList.remove('on');
+  bhud.classList.remove('on');
+  clearBubbles();
   bf.style.display = 'none';
+  reelBtn.classList.remove('active');
 
   var f = G.fish, m = G.depthM;
   var pbKey = 'ff3pb_' + G.mode;
@@ -881,10 +1276,9 @@ function drawCatchFish(f) {
     rare:      [['#b39ddb','#311b92'],['#ef9a9a','#b71c1c'],['#80deea','#006064']],
     legendary: [['#ffd54f','#e65100'],['#ffe082','#bf360c'],['#fff176','#f57f17']],
   };
-  var pal = pals[f.rarity || 'common'];
+  var pal  = pals[f.rarity || 'common'];
   var pair = pal[Math.floor(Math.random() * pal.length)];
   var c1 = pair[0], c2 = pair[1];
-
   var shapes = {
     legendary:
       '<ellipse cx="52" cy="32" rx="36" ry="17" fill="' + c1 + '"/>' +
@@ -921,8 +1315,10 @@ function drawCatchFish(f) {
 function showLost(msg) {
   cancelAnimationFrame(G.raf); G.raf = null;
   G.st = 'lost'; G.holding = false;
-  rhud.classList.remove('on');
+  bhud.classList.remove('on');
+  clearBubbles();
   bf.style.display = 'none';
+  reelBtn.classList.remove('active');
   $('lo-msg').textContent = msg;
   lov.classList.add('on');
 }
@@ -955,7 +1351,7 @@ function spawnConfetti() {
     el.style.setProperty('--dy',  (130 + Math.random() * 190) + 'px');
     el.style.setProperty('--rot', ((Math.random()-.5)*720) + 'deg');
     document.body.appendChild(el);
-    (function(d, elem){ setTimeout(function(){ elem.remove(); }, (d + .2) * 1000); })(dur, el);
+    (function(d, e){ setTimeout(function(){ e.remove(); }, (d + .2) * 1000); })(dur, el);
   }
 }
 
