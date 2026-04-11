@@ -9,7 +9,7 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: #020810;
+  background: linear-gradient(180deg, #041828 0%, #062040 50%, #020c18 100%);
   display: flex;
   justify-content: center;
   align-items: flex-start;
@@ -21,7 +21,7 @@ body {
 }
 #app {
   width: 100%;
-  max-width: 480px;
+  max-width: 600px;
   height: 100dvh;
   position: relative;
   overflow: hidden;
@@ -1051,11 +1051,11 @@ const WEATHER = [
 
 // Per-difficulty config
 const FIGHT_CFG = [null,
-  { passive:6,  reel:0.10, surgeSpike:28 },
-  { passive:10, reel:0.075,surgeSpike:34 },
-  { passive:16, reel:0.055,surgeSpike:40 },
-  { passive:24, reel:0.038,surgeSpike:48 },
-  { passive:34, reel:0.025,surgeSpike:58 },
+  { passive:3,  reel:0.18, surgeSpike:22 }, // easy common
+  { passive:6,  reel:0.14, surgeSpike:28 }, // uncommon
+  { passive:10, reel:0.10, surgeSpike:36 }, // rare
+  { passive:15, reel:0.07, surgeSpike:44 }, // very rare
+  { passive:22, reel:0.05, surgeSpike:54 }, // legendary
 ];
 
 // ─────────────────────────────────────────────
@@ -1221,17 +1221,20 @@ function clearLine() {
 // ─────────────────────────────────────────────
 // AMBIENT FISH
 // ─────────────────────────────────────────────
-const AMB_FISH = ['🐟','🐠','🐡','🐟','🐠','🐡'];
+const AMB_FISH = ['🐟','🐠','🐡','🐟','🐠','🐡','🦈','🐙','🦑','🐠','🐟'];
 
-function spawnAmbFish() {
+function spawnAmbFish(opts = {}) {
   const layer   = document.getElementById('ambient-layer');
+  if (!layer) return;
+  const fast    = opts.fast || Math.random() < 0.25; // 25% chance of fast dart
+  const school  = opts.school || false;
   const goRight = Math.random() > 0.5;
   const depth   = Math.random();
   const topPct  = 4 + depth * 88;
-  const sz      = 0.7 + depth * 1.3;
-  const op      = 0.12 + (1 - depth) * 0.2;
-  const dur     = 7 + Math.random() * 8;
-  const dy      = (Math.random() - 0.5) * 25;
+  const sz      = school ? 0.5 + Math.random() * 0.4 : 0.7 + depth * 1.3;
+  const op      = school ? 0.25 + Math.random() * 0.2 : 0.15 + (1 - depth) * 0.25;
+  const dur     = fast ? 1.8 + Math.random() * 1.4 : 5 + Math.random() * 6;
+  const dy      = (Math.random() - 0.5) * (fast ? 10 : 30);
   const em      = AMB_FISH[Math.floor(Math.random() * AMB_FISH.length)];
   const el      = document.createElement('div');
   el.className  = goRight ? 'amb-fish' : 'amb-fish rtl';
@@ -1241,9 +1244,25 @@ function spawnAmbFish() {
   setTimeout(() => el.remove(), dur * 1000 + 300);
 }
 
+function spawnSchool() {
+  // Spawn 3-5 small fish in tight formation at same depth
+  const count  = 3 + Math.floor(Math.random() * 3);
+  const baseY  = 10 + Math.random() * 75;
+  for (let i = 0; i < count; i++) {
+    setTimeout(() => spawnAmbFish({ school: true }), i * 180);
+  }
+}
+
 function startAmbFish() {
-  spawnAmbFish();
-  G.ambInterval = setInterval(spawnAmbFish, 2200 + Math.random() * 1600);
+  // Spawn initial burst
+  for (let i = 0; i < 3; i++) setTimeout(() => spawnAmbFish(), i * 400);
+  // Regular interval — much faster
+  G.ambInterval = setInterval(() => {
+    const r = Math.random();
+    if (r < 0.15) spawnSchool();        // 15% school event
+    else if (r < 0.40) spawnAmbFish({ fast: true }); // 25% fast dart
+    else spawnAmbFish();                // normal
+  }, 800 + Math.random() * 700);
 }
 
 function stopAmbFish() {
@@ -1432,6 +1451,7 @@ function animateCast() {
   sinkerEl.style.top  = '0px';
   sinkerEl.classList.add('active');
   spawnRipple(castX, surfH);
+  if (G.castPower >= 70) showKidMsg('NICE CAST! 🎣', '#43e97b');
   startSink(castX);
 }
 
@@ -1458,13 +1478,26 @@ function startSink(castX) {
 function animateSink() {
   const sinkerEl = document.getElementById('sinker');
   const { surfH } = getMetrics();
+  let bobStart = null;
   function step(now) {
     const t     = Math.min((now - G.sinkStart) / G.sinkDurMs, 1);
     const eased = 1 - Math.pow(1 - t, 2);
-    const y     = eased * G.sinkTargetY;
+    let y;
+    if (t < 1) {
+      y = eased * G.sinkTargetY;
+      G.sinkRaf = requestAnimationFrame(step);
+    } else {
+      // Reached target depth — gentle bobbing + horizontal sway
+      if (!bobStart) bobStart = now;
+      const elapsed = (now - bobStart) / 1000;
+      const bobY  = Math.sin(elapsed * 1.4) * 6;           // gentle up/down
+      const swayX = Math.sin(elapsed * 0.7 + 1) * 4;      // slight horizontal drift
+      y = G.sinkTargetY + bobY;
+      sinkerEl.style.left = (G.sinkCastX + swayX - sinkerEl.offsetWidth / 2) + 'px';
+      G.sinkRaf = requestAnimationFrame(step);
+    }
     sinkerEl.style.top = y + 'px';
     drawLine(G.sinkCastX, surfH + y, 20);
-    if (t < 1) G.sinkRaf = requestAnimationFrame(step);
   }
   G.sinkRaf = requestAnimationFrame(step);
 }
@@ -1516,11 +1549,12 @@ function startCountdown() {
 // BATTLE PHASE
 // ─────────────────────────────────────────────
 function startBattle() {
-  G.fishVX      = 0;
-  G.tension     = 20;
-  G.holding     = false;
-  G.surging     = false;
-  G.escapeTimer = 0;
+  G.fishVX       = 0;
+  G.tension      = 20;
+  G.holding      = false;
+  G.surging      = false;
+  G.escapeTimer  = 0;
+  G._almostShown = false;
   renderBattleFish(G.fish);
   document.getElementById('battle-fish').classList.add('active');
   document.getElementById('sinker').classList.remove('active');
@@ -1533,14 +1567,70 @@ function startBattle() {
 function renderBattleFish(fish) {
   const el   = document.getElementById('battle-fish');
   const size = 44 + fish.diff * 16;
-  const glow = { common:'rgba(100,180,255,0.35)', uncommon:'rgba(41,182,246,0.55)', rare:'rgba(171,71,188,0.65)', legendary:'rgba(255,215,0,0.75)' };
-  el.style.setProperty('--fg', glow[fish.rarity] || 'rgba(100,180,255,0.35)');
-  el.innerHTML = `<svg class="fish-body-svg" width="${size*1.7}" height="${size}" viewBox="0 0 90 54" xmlns="http://www.w3.org/2000/svg">
-    <path d="M86,27 L68,10 L64,27 L68,44 Z" fill="rgba(10,25,55,0.92)"/>
-    <ellipse cx="40" cy="27" rx="42" ry="20" fill="rgba(8,20,48,0.92)"/>
-    <ellipse cx="22" cy="22" rx="5" ry="5" fill="rgba(60,140,255,0.3)"/>
-    <circle  cx="19" cy="21" r="2.5" fill="rgba(80,170,255,0.5)"/>
-  </svg>`;
+  // Color palettes per rarity — pick one randomly each time
+  const palettes = {
+    common:    [['#3a7bd5','#1a3a6e'],['#2e8b57','#14452b'],['#8b6914','#4a380a']],
+    uncommon:  [['#1cb5e0','#0d6b87'],['#00b09b','#096b5e'],['#6a82fb','#3a4a9e']],
+    rare:      [['#b721ff','#5c0d87'],['#f953c6','#8b0057'],['#ff6b6b','#8b1a1a']],
+    legendary: [['#f7971e','#8b4c00'],['#ffd700','#8b7200'],['#ff4ecd','#7a006e']],
+  };
+  const pal = palettes[fish.rarity] || palettes.common;
+  const [c1, c2] = pal[Math.floor(Math.random() * pal.length)];
+  const eyeGlow = { common:'rgba(180,230,255,0.9)', uncommon:'rgba(100,255,220,0.9)', rare:'rgba(255,100,255,0.95)', legendary:'rgba(255,240,0,1)' };
+  el.style.setProperty('--fg', eyeGlow[fish.rarity] || eyeGlow.common);
+
+  // Shape variants by rarity
+  let svg;
+  if (fish.rarity === 'legendary') {
+    // Large dramatic fish with flowing fins and glowing eye
+    svg = `<svg class="fish-body-svg" width="${size*2}" height="${size}" viewBox="0 0 110 60" xmlns="http://www.w3.org/2000/svg">
+      <defs><radialGradient id="eg" cx="50%" cy="50%"><stop offset="0%" stop-color="${eyeGlow.legendary}"/><stop offset="100%" stop-color="transparent"/></radialGradient></defs>
+      <path d="M108,30 L88,8 L82,30 L88,52 Z" fill="${c1}" opacity="0.9"/>
+      <path d="M82,12 Q72,4 65,10 Q80,20 80,30 Q80,40 65,48 Q72,54 82,48 Z" fill="${c2}" opacity="0.8"/>
+      <ellipse cx="42" cy="30" rx="46" ry="24" fill="${c1}"/>
+      <ellipse cx="42" cy="30" rx="36" ry="18" fill="${c2}" opacity="0.6"/>
+      <path d="M42,8 Q55,2 60,10 Q50,14 42,12 Z" fill="${c1}" opacity="0.85"/>
+      <path d="M42,52 Q55,58 60,50 Q50,46 42,48 Z" fill="${c1}" opacity="0.85"/>
+      <circle cx="18" cy="25" r="7" fill="${c2}"/>
+      <circle cx="18" cy="25" r="5" fill="black"/>
+      <circle cx="16" cy="23" r="2.5" fill="url(#eg)"/>
+      <circle cx="21" cy="26" r="1" fill="rgba(255,255,255,0.7)"/>
+    </svg>`;
+  } else if (fish.rarity === 'rare') {
+    // Elongated pike-like fish
+    svg = `<svg class="fish-body-svg" width="${size*2.1}" height="${size*0.75}" viewBox="0 0 115 44" xmlns="http://www.w3.org/2000/svg">
+      <path d="M113,22 L95,10 L91,22 L95,34 Z" fill="${c1}" opacity="0.9"/>
+      <ellipse cx="48" cy="22" rx="52" ry="14" fill="${c1}"/>
+      <ellipse cx="48" cy="22" rx="42" ry="10" fill="${c2}" opacity="0.55"/>
+      <path d="M38,10 Q50,4 58,10 Q48,13 38,12 Z" fill="${c1}" opacity="0.8"/>
+      <circle cx="12" cy="19" r="5" fill="${c2}"/>
+      <circle cx="12" cy="19" r="3.5" fill="black"/>
+      <circle cx="11" cy="18" r="1.8" fill="${eyeGlow.rare}" opacity="0.9"/>
+    </svg>`;
+  } else if (fish.rarity === 'uncommon') {
+    // Streamlined bass shape
+    svg = `<svg class="fish-body-svg" width="${size*1.75}" height="${size}" viewBox="0 0 95 56" xmlns="http://www.w3.org/2000/svg">
+      <path d="M93,28 L74,12 L70,28 L74,44 Z" fill="${c1}" opacity="0.9"/>
+      <ellipse cx="41" cy="28" rx="44" ry="21" fill="${c1}"/>
+      <ellipse cx="41" cy="28" rx="34" ry="15" fill="${c2}" opacity="0.5"/>
+      <path d="M35,9 Q48,2 55,10 Q44,14 35,11 Z" fill="${c1}" opacity="0.85"/>
+      <path d="M35,47 Q48,54 55,46 Q44,42 35,45 Z" fill="${c1}" opacity="0.75"/>
+      <circle cx="16" cy="23" r="6" fill="${c2}"/>
+      <circle cx="16" cy="23" r="4" fill="black"/>
+      <circle cx="14.5" cy="21.5" r="2" fill="${eyeGlow.uncommon}" opacity="0.9"/>
+    </svg>`;
+  } else {
+    // Common round sunfish shape
+    svg = `<svg class="fish-body-svg" width="${size*1.5}" height="${size}" viewBox="0 0 82 56" xmlns="http://www.w3.org/2000/svg">
+      <path d="M80,28 L65,14 L61,28 L65,42 Z" fill="${c1}" opacity="0.9"/>
+      <ellipse cx="36" cy="28" rx="38" ry="24" fill="${c1}"/>
+      <ellipse cx="36" cy="28" rx="28" ry="17" fill="${c2}" opacity="0.5"/>
+      <circle cx="16" cy="24" r="6" fill="${c2}"/>
+      <circle cx="16" cy="24" r="4" fill="black"/>
+      <circle cx="14.5" cy="22.5" r="2" fill="${eyeGlow.common}" opacity="0.85"/>
+    </svg>`;
+  }
+  el.innerHTML = svg;
 }
 
 function battleLoop(now) {
@@ -1552,20 +1642,23 @@ function battleLoop(now) {
   const { surfH, uwW, uwH } = getMetrics();
 
   // Tension physics
-  const REEL_RATE  = 28 + fish.diff * 4;
-  const RELAX_RATE = 38;
+  const REEL_RATE  = 24 + fish.diff * 3;
+  const RELAX_RATE = 32;
   if (G.holding) G.tension += REEL_RATE * dt;
   else           G.tension -= RELAX_RATE * dt;
-  G.tension += cfg.passive * 0.25 * dt; // passive fish resistance
+  G.tension += cfg.passive * 0.18 * dt; // passive fish resistance
   G.tension  = Math.max(0, Math.min(100, G.tension));
 
-  // Fish Y (depth)
-  if (G.holding && G.tension >= 18 && G.tension < 88) {
-    G.fishY -= cfg.reel * dt;       // reeling: fish comes up
+  // Fish Y (depth) — reel speed scales with tension (sweet spot = more progress)
+  if (G.holding && G.tension >= 15 && G.tension < 88) {
+    // Scale factor: 0.5x at low tension (15), 1.0x at mid (52), 1.5x near danger (80)
+    const tFrac = Math.max(0, (G.tension - 15) / 65);
+    const reelMult = 0.5 + tFrac * 1.0;
+    G.fishY -= cfg.reel * reelMult * dt;   // more tension = faster reel
   } else if (!G.holding) {
-    G.fishY += 0.018 * dt;          // drifts deeper when not held
+    G.fishY += 0.012 * dt;          // drifts deeper when not held
   }
-  if (G.surging) G.fishY += 0.14 * dt; // surge dives fish
+  if (G.surging) G.fishY += 0.10 * dt; // surge dives fish
 
   // Fish X (lateral fight)
   G.fishVX += (Math.random() - 0.5) * fish.diff * 0.0035;
@@ -1605,8 +1698,15 @@ function battleLoop(now) {
   const ts = document.getElementById('t-status');
   if (G.surging)           { ts.textContent = 'RELEASE!';    ts.style.color = '#ff5252'; }
   else if (G.tension > 82) { ts.textContent = 'TOO TIGHT!';  ts.style.color = '#ff8c00'; }
-  else if (G.holding && G.tension >= 18) { ts.textContent = 'REELING...'; ts.style.color = '#43e97b'; }
+  else if (G.holding && G.tension >= 15) { ts.textContent = 'REELING...'; ts.style.color = '#43e97b'; }
   else                     { ts.textContent = 'HOLD TO REEL'; ts.style.color = '#29b6f6'; }
+
+  // Kid-friendly ALMOST! when fish is close to surface
+  if (G.fishY < 0.18 && !G.surging && !G._almostShown) {
+    G._almostShown = true;
+    showKidMsg('ALMOST! 🐠', '#ffd200');
+    setTimeout(() => { G._almostShown = false; }, 3500);
+  }
 
   document.getElementById('snap-danger').classList.toggle('active', G.tension > 88);
   G.battleRaf = requestAnimationFrame(battleLoop);
@@ -1669,7 +1769,8 @@ function catchFish() {
   document.getElementById('battle-fish').classList.remove('surging');
   clearLine();
   spawnSplash();
-  spawnConfetti(32);
+  spawnConfetti(G.fish.rarity === 'legendary' ? 80 : 32);
+  if (G.fish.rarity === 'legendary') showKidMsg('LEGENDARY! ⭐', '#ffd700');
   const fish = G.fish;
   const wt   = +(fish.wt[0]  + Math.random() * (fish.wt[1]  - fish.wt[0])).toFixed(1);
   const len  = Math.round(fish.len[0] + Math.random() * (fish.len[1] - fish.len[0]));
@@ -1773,6 +1874,25 @@ function replaySession() {
 // ─────────────────────────────────────────────
 // EFFECTS
 // ─────────────────────────────────────────────
+function showKidMsg(text, color) {
+  const scene = document.getElementById('scene');
+  const el = document.createElement('div');
+  el.style.cssText = `position:absolute;left:50%;top:38%;transform:translate(-50%,-50%) scale(0);
+    font-size:2.2rem;font-weight:900;color:${color};text-shadow:0 0 18px ${color},0 2px 6px rgba(0,0,0,0.7);
+    z-index:90;pointer-events:none;white-space:nowrap;
+    transition:transform 0.22s cubic-bezier(0.34,1.56,0.64,1),opacity 0.4s;`;
+  scene.appendChild(el);
+  el.textContent = text;
+  requestAnimationFrame(() => {
+    el.style.transform = 'translate(-50%,-50%) scale(1)';
+    setTimeout(() => {
+      el.style.opacity = '0';
+      el.style.transform = 'translate(-50%,-60%) scale(0.85)';
+      setTimeout(() => el.remove(), 450);
+    }, 1400);
+  });
+}
+
 function spawnConfetti(n) {
   const cols  = ['#43e97b','#38f9d7','#ffd200','#f44336','#29b6f6','#ce93d8','#fff','#ff8c00'];
   const scene = document.getElementById('scene');
