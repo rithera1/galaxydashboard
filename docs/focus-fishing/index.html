@@ -26,6 +26,39 @@ body {
   overflow: hidden;
 }
 
+/* === NAV === */
+.site-nav {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0 1.25rem;
+  background: rgba(2,12,24,0.92);
+  border-bottom: 1px solid rgba(41,182,246,0.2);
+  z-index: 300;
+  flex-shrink: 0;
+}
+.site-nav-back {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #29b6f6;
+  text-decoration: none;
+  background: rgba(41,182,246,0.1);
+  border: 1px solid rgba(41,182,246,0.3);
+  border-radius: 8px;
+  padding: 0.22rem 0.7rem;
+  transition: background 0.15s;
+}
+.site-nav-back:hover { background: rgba(41,182,246,0.22); }
+.site-nav-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: rgba(255,255,255,0.85);
+  letter-spacing: 0.5px;
+}
+
 /* === SCREEN SYSTEM === */
 .screen {
   position: absolute;
@@ -35,6 +68,7 @@ body {
   align-items: center;
   justify-content: center;
   z-index: 100;
+  padding-top: 44px; /* space below nav */
 }
 .screen.active { display: flex; }
 
@@ -114,24 +148,29 @@ body {
   text-transform: uppercase;
   margin-bottom: 1.5rem;
 }
+.picker-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 360px;
+  padding: 0 0.5rem;
+}
 .section-label {
   font-size: 0.7rem;
   font-weight: 700;
   color: rgba(255,255,255,0.4);
   letter-spacing: 2px;
   text-transform: uppercase;
-  margin-bottom: 0.6rem;
-  align-self: flex-start;
-  width: 100%;
-  max-width: 340px;
+  margin-bottom: 0.5rem;
+  margin-top: 0.8rem;
 }
 .mode-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 0.6rem;
   width: 100%;
-  max-width: 340px;
-  margin-bottom: 1.4rem;
+  margin-bottom: 0.4rem;
 }
 .mode-card {
   background: rgba(255,255,255,0.05);
@@ -152,8 +191,7 @@ body {
   grid-template-columns: repeat(3, 1fr);
   gap: 0.5rem;
   width: 100%;
-  max-width: 280px;
-  margin-bottom: 1.6rem;
+  margin-bottom: 1rem;
 }
 .depth-btn {
   background: rgba(255,255,255,0.05);
@@ -364,11 +402,53 @@ body {
   line-height: 1;
 }
 
+/* Jellyfish */
+.jelly {
+  position: absolute;
+  font-size: var(--sz);
+  opacity: 0;
+  filter: brightness(0.4) saturate(0.6);
+  pointer-events: none;
+  z-index: 3;
+  animation: jellyRise var(--dur) ease-in-out forwards;
+}
+@keyframes jellyRise {
+  0%   { transform: translateX(0) translateY(0); opacity: 0; }
+  12%  { opacity: var(--op); }
+  85%  { opacity: var(--op); }
+  100% { transform: translateX(var(--dx)) translateY(var(--dy)); opacity: 0; }
+}
+
+/* Mote layer */
+#mote-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+/* Floating water motes */
+.mote {
+  position: absolute;
+  width: var(--sz);
+  height: var(--sz);
+  background: rgba(120,200,255,0.5);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 2;
+  animation: moteDrift var(--dur) linear var(--delay) infinite;
+}
+@keyframes moteDrift {
+  0%   { transform: translateY(0) translateX(0); opacity: 0; }
+  20%  { opacity: 1; }
+  80%  { opacity: 0.6; }
+  100% { transform: translateY(-60px) translateX(var(--dx)); opacity: 0; }
+}
+
 /* Bottom decorations */
 #bottom-deco {
   position: absolute;
   bottom: 0; left: 0; right: 0;
-  height: 90px;
+  height: 120px;
   z-index: 1;
   pointer-events: none;
 }
@@ -864,6 +944,11 @@ body {
 <body>
 <div id="app">
 
+  <nav class="site-nav">
+    <a href="../" class="site-nav-back">← Back</a>
+    <span class="site-nav-title">🎣 Focus Fishing</span>
+  </nav>
+
   <!-- MENU -->
   <div id="menu" class="screen active">
     <div class="menu-icon">🎣</div>
@@ -875,40 +960,42 @@ body {
 
   <!-- SESSION PICKER -->
   <div id="session-picker" class="screen">
-    <div class="picker-title">Choose Session</div>
-    <div class="picker-sub">Set your challenge</div>
-    <div class="section-label">Mode</div>
-    <div class="mode-grid">
-      <div class="mode-card" data-mode="relaxed" onclick="selMode(this)">
-        <div class="mode-icon">🌊</div>
-        <div class="mode-name">Relaxed</div>
-        <div class="mode-desc">Fish freely</div>
+    <div class="picker-content">
+      <div class="picker-title">Choose Session</div>
+      <div class="picker-sub">Set your challenge</div>
+      <div class="section-label">Mode</div>
+      <div class="mode-grid">
+        <div class="mode-card" data-mode="relaxed" onclick="selMode(this)">
+          <div class="mode-icon">🌊</div>
+          <div class="mode-name">Relaxed</div>
+          <div class="mode-desc">Fish freely</div>
+        </div>
+        <div class="mode-card" data-mode="challenge" onclick="selMode(this)">
+          <div class="mode-icon">⏱️</div>
+          <div class="mode-name">Challenge</div>
+          <div class="mode-desc">5 fish, 5 min</div>
+        </div>
+        <div class="mode-card" data-mode="trophy" onclick="selMode(this)">
+          <div class="mode-icon">🏆</div>
+          <div class="mode-name">Trophy</div>
+          <div class="mode-desc">3 casts only</div>
+        </div>
       </div>
-      <div class="mode-card" data-mode="challenge" onclick="selMode(this)">
-        <div class="mode-icon">⏱️</div>
-        <div class="mode-name">Challenge</div>
-        <div class="mode-desc">5 fish, 5 min</div>
+      <div class="section-label">Sinker Depth</div>
+      <div class="depth-grid">
+        <div class="depth-btn" data-depth="shallow" onclick="selDepth(this)">
+          <span class="depth-icon">🪝</span>Shallow
+        </div>
+        <div class="depth-btn" data-depth="mid" onclick="selDepth(this)">
+          <span class="depth-icon">🎣</span>Mid
+        </div>
+        <div class="depth-btn" data-depth="deep" onclick="selDepth(this)">
+          <span class="depth-icon">🦑</span>Deep
+        </div>
       </div>
-      <div class="mode-card" data-mode="trophy" onclick="selMode(this)">
-        <div class="mode-icon">🏆</div>
-        <div class="mode-name">Trophy</div>
-        <div class="mode-desc">3 casts only</div>
-      </div>
+      <button class="go-btn" onclick="startSession()">CAST OFF &#8594;</button>
+      <button class="back-btn" onclick="showScreen('menu')">&#8592; Back</button>
     </div>
-    <div class="section-label">Sinker Depth</div>
-    <div class="depth-grid">
-      <div class="depth-btn" data-depth="shallow" onclick="selDepth(this)">
-        <span class="depth-icon">🪝</span>Shallow
-      </div>
-      <div class="depth-btn" data-depth="mid" onclick="selDepth(this)">
-        <span class="depth-icon">🎣</span>Mid
-      </div>
-      <div class="depth-btn" data-depth="deep" onclick="selDepth(this)">
-        <span class="depth-icon">🦑</span>Deep
-      </div>
-    </div>
-    <button class="go-btn" onclick="startSession()">CAST OFF &#8594;</button>
-    <button class="back-btn" onclick="showScreen('menu')">&#8592; Back</button>
   </div>
 
   <!-- SCENE -->
@@ -931,6 +1018,7 @@ body {
     <div id="underwater">
       <div id="caustic"></div>
       <div id="ambient-layer"></div>
+      <div id="mote-layer"></div>
       <div id="bottom-deco"></div>
       <div id="sinker">
         <div class="sinker-weight"></div>
@@ -1129,6 +1217,7 @@ function selDepth(el) {
 function buildScene() {
   buildCaustic();
   buildBottomDeco();
+  buildMotes();
 }
 
 function buildCaustic() {
@@ -1149,31 +1238,49 @@ function buildBottomDeco() {
   const c = document.getElementById('bottom-deco');
   c.innerHTML = '';
   // Rocks
-  [{l:2,w:50,h:32},{l:14,w:75,h:45},{l:32,w:60,h:38},{l:52,w:85,h:50},{l:70,w:65,h:36},{l:84,w:45,h:28}].forEach(r => {
+  [{l:2,w:55,h:36},{l:12,w:80,h:50},{l:28,w:65,h:42},{l:46,w:90,h:55},{l:64,w:70,h:40},{l:80,w:55,h:32},{l:90,w:40,h:26}].forEach(r => {
     const el = document.createElement('div');
     el.className = 'brock';
     el.style.cssText = `left:${r.l}%; width:${r.w}px; height:${r.h}px;`;
     c.appendChild(el);
   });
-  // Coral / plants
-  ['🪸','🌿','🪸','🌿','🪸','🌿','🪸','🌿'].forEach((em, i) => {
+  // Coral / plants — more variety and density
+  ['🪸','🌿','🪸','🌊','🪸','🌿','🪸','🌿','🪸','🌊','🪸','🌿'].forEach((em, i) => {
     const el = document.createElement('div');
     el.className = 'coral-item';
-    const left = 3 + i * 13 + Math.random() * 5;
-    const sz   = 1.1 + Math.random() * 0.9;
-    el.style.cssText = `left:${left}%; --sz:${sz}rem; --dur:${2.2+Math.random()*2}s;`;
+    const left = 1 + i * 8.5 + Math.random() * 4;
+    const sz   = 1.0 + Math.random() * 1.1;
+    el.style.cssText = `left:${left}%; --sz:${sz}rem; --dur:${1.8+Math.random()*2.4}s;`;
     el.textContent = em;
     c.appendChild(el);
   });
-  // Seaweed
-  for (let i = 0; i < 10; i++) {
+  // Seaweed — more strands, taller
+  for (let i = 0; i < 18; i++) {
     const el = document.createElement('div');
     el.className = 'sweed';
-    const left = Math.random() * 96;
-    const h    = 25 + Math.random() * 55;
-    const w    = 5  + Math.random() * 4;
-    el.style.cssText = `left:${left}%; width:${w}px; height:${h}px; --dur:${1.8+Math.random()*2.2}s;`;
+    const left = Math.random() * 97;
+    const h    = 30 + Math.random() * 75;
+    const w    = 4  + Math.random() * 5;
+    el.style.cssText = `left:${left}%; width:${w}px; height:${h}px; --dur:${1.5+Math.random()*2.5}s;`;
     c.appendChild(el);
+  }
+}
+
+function buildMotes() {
+  const layer = document.getElementById('mote-layer');
+  if (!layer) return;
+  layer.innerHTML = '';
+  for (let i = 0; i < 28; i++) {
+    const el = document.createElement('div');
+    el.className = 'mote';
+    const sz  = (1.5 + Math.random() * 2).toFixed(1);
+    const dur = 5 + Math.random() * 10;
+    const dx  = (Math.random() - 0.5) * 30;
+    const top = 8 + Math.random() * 85;
+    const left = Math.random() * 98;
+    const delay = -(Math.random() * dur); // stagger start
+    el.style.cssText = `left:${left}%; top:${top}%; --sz:${sz}px; --dur:${dur}s; --dx:${dx}px; --delay:${delay}s;`;
+    layer.appendChild(el);
   }
 }
 
@@ -1273,6 +1380,42 @@ function stopAmbFish() {
     el.style.opacity = '0';
     setTimeout(() => el.remove(), 500);
   });
+}
+
+// ─────────────────────────────────────────────
+// JELLYFISH
+// ─────────────────────────────────────────────
+function spawnJellyfish() {
+  const uw = document.getElementById('underwater');
+  if (!uw) return;
+  const JELLY = ['🪼','🫧','🪼'];
+  const em    = JELLY[Math.floor(Math.random() * JELLY.length)];
+  const el    = document.createElement('div');
+  el.className = 'jelly';
+  const left   = 5 + Math.random() * 88;
+  const sz     = 0.9 + Math.random() * 1.3;
+  const op     = 0.18 + Math.random() * 0.22;
+  const dur    = 9 + Math.random() * 12;
+  const dx     = (Math.random() - 0.5) * 50;
+  const uwH    = uw.offsetHeight || 500;
+  const startPct = 72 + Math.random() * 22;   // start near bottom (72–94%)
+  const startPx  = uwH * startPct / 100;
+  const travelPx = -(startPx + 40);            // travel up in pixels past the top
+  el.style.cssText = `left:${left}%; top:${startPct}%; --sz:${sz}rem; --op:${op}; --dur:${dur}s; --dx:${dx}px; --dy:${travelPx}px;`;
+  el.textContent = em;
+  uw.appendChild(el);
+  setTimeout(() => el.remove(), dur * 1000 + 300);
+}
+
+function startJellyfish() {
+  spawnJellyfish();
+  G.jellyInterval = setInterval(spawnJellyfish, 4500 + Math.random() * 4000);
+}
+
+function stopJellyfish() {
+  clearInterval(G.jellyInterval);
+  G.jellyInterval = null;
+  document.querySelectorAll('.jelly').forEach(el => el.remove());
 }
 
 // ─────────────────────────────────────────────
@@ -1383,6 +1526,7 @@ function startSession() {
 
 function clearSceneState() {
   stopAmbFish();
+  stopJellyfish();
   clearInterval(G.bubInterval);
   clearTimeout(G.biteTimeout);
   clearTimeout(G.surgeTO);
@@ -1416,7 +1560,8 @@ function startCast() {
   G.pBarDir = 1;
   document.getElementById('cast-hud').classList.add('active');
   updateStatus();
-  startAmbFish(); // Fish swim whether line is cast or not
+  startAmbFish();    // Fish swim whether line is cast or not
+  startJellyfish();  // Jellyfish drift upward continuously
   runPowerBar();
 }
 
@@ -1695,8 +1840,8 @@ function battleLoop(now) {
     // Scale factor: 0.5x at low tension (15), 1.0x at mid (52), 1.5x near danger (80)
     const tFrac = Math.max(0, (G.tension - 15) / 65);
     const reelMult = 0.5 + tFrac * 1.0;
-    G.fishY -= cfg.reel * reelMult * dt;           // reel up
-    G.fishX += (boatXNorm - G.fishX) * cfg.reel * reelMult * 0.25 * dt; // pull towards boat
+    G.fishY -= cfg.reel * reelMult * dt;                        // reel up
+    G.fishX += (boatXNorm - G.fishX) * (0.3 + tFrac * 0.5) * dt; // pull towards boat (strong, independent rate)
   } else if (!G.holding) {
     G.fishY += 0.012 * dt;          // drifts deeper when not held
   }
