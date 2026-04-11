@@ -7,22 +7,21 @@
 <style>
 /* === RESET & BASE === */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background: linear-gradient(180deg, #041828 0%, #062040 50%, #020c18 100%);
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  min-height: 100dvh;
-  overflow: hidden;
   touch-action: none;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
 }
 #app {
   width: 100%;
-  max-width: 600px;
-  height: 100dvh;
+  height: 100%;
   position: relative;
   overflow: hidden;
 }
@@ -1238,7 +1237,8 @@ function spawnAmbFish(opts = {}) {
   const em      = AMB_FISH[Math.floor(Math.random() * AMB_FISH.length)];
   const el      = document.createElement('div');
   el.className  = goRight ? 'amb-fish' : 'amb-fish rtl';
-  el.style.cssText = `top:${topPct}%; --sz:${sz}rem; --op:${op}; --dur:${dur}s; --x0:-120px; --x1:calc(100% + 120px); --dy:${dy}px;`;
+  const layerW = layer.offsetWidth || window.innerWidth;
+  el.style.cssText = `top:${topPct}%; --sz:${sz}rem; --op:${op}; --dur:${dur}s; --x0:-120px; --x1:${layerW + 120}px; --dy:${dy}px;`;
   el.textContent = em;
   layer.appendChild(el);
   setTimeout(() => el.remove(), dur * 1000 + 300);
@@ -1416,6 +1416,7 @@ function startCast() {
   G.pBarDir = 1;
   document.getElementById('cast-hud').classList.add('active');
   updateStatus();
+  startAmbFish(); // Fish swim whether line is cast or not
   runPowerBar();
 }
 
@@ -1466,8 +1467,7 @@ function startSink(castX) {
   G.sinkTargetY = uwH * depthPct;
   G.sinkDurMs   = 1800 + depthPct * 3200;
   G.sinkStart   = performance.now();
-  startAmbFish();
-  startBubbles(castX);
+  startBubbles(castX); // Ambient fish already running from startCast
   G.fish = pickFish();
   const biteWait = (2500 + Math.random() * 5500) * G.weather.bite;
   G.biteTimeout  = setTimeout(triggerBite, G.sinkDurMs + biteWait);
@@ -1485,17 +1485,13 @@ function animateSink() {
     let y;
     if (t < 1) {
       y = eased * G.sinkTargetY;
-      G.sinkRaf = requestAnimationFrame(step);
     } else {
-      // Reached target depth — gentle bobbing + horizontal sway
+      // Reached target depth — gentle vertical bobbing (no X sway to keep line aligned)
       if (!bobStart) bobStart = now;
       const elapsed = (now - bobStart) / 1000;
-      const bobY  = Math.sin(elapsed * 1.4) * 6;           // gentle up/down
-      const swayX = Math.sin(elapsed * 0.7 + 1) * 4;      // slight horizontal drift
-      y = G.sinkTargetY + bobY;
-      sinkerEl.style.left = (G.sinkCastX + swayX - sinkerEl.offsetWidth / 2) + 'px';
-      G.sinkRaf = requestAnimationFrame(step);
+      y = G.sinkTargetY + Math.sin(elapsed * 1.3) * 5;
     }
+    G.sinkRaf = requestAnimationFrame(step);
     sinkerEl.style.top = y + 'px';
     drawLine(G.sinkCastX, surfH + y, 20);
   }
@@ -1579,55 +1575,99 @@ function renderBattleFish(fish) {
   const eyeGlow = { common:'rgba(180,230,255,0.9)', uncommon:'rgba(100,255,220,0.9)', rare:'rgba(255,100,255,0.95)', legendary:'rgba(255,240,0,1)' };
   el.style.setProperty('--fg', eyeGlow[fish.rarity] || eyeGlow.common);
 
-  // Shape variants by rarity
+  // Shape variants by rarity — proper fish outlines (mouth left, tail right)
   let svg;
   if (fish.rarity === 'legendary') {
-    // Large dramatic fish with flowing fins and glowing eye
-    svg = `<svg class="fish-body-svg" width="${size*2}" height="${size}" viewBox="0 0 110 60" xmlns="http://www.w3.org/2000/svg">
-      <defs><radialGradient id="eg" cx="50%" cy="50%"><stop offset="0%" stop-color="${eyeGlow.legendary}"/><stop offset="100%" stop-color="transparent"/></radialGradient></defs>
-      <path d="M108,30 L88,8 L82,30 L88,52 Z" fill="${c1}" opacity="0.9"/>
-      <path d="M82,12 Q72,4 65,10 Q80,20 80,30 Q80,40 65,48 Q72,54 82,48 Z" fill="${c2}" opacity="0.8"/>
-      <ellipse cx="42" cy="30" rx="46" ry="24" fill="${c1}"/>
-      <ellipse cx="42" cy="30" rx="36" ry="18" fill="${c2}" opacity="0.6"/>
-      <path d="M42,8 Q55,2 60,10 Q50,14 42,12 Z" fill="${c1}" opacity="0.85"/>
-      <path d="M42,52 Q55,58 60,50 Q50,46 42,48 Z" fill="${c1}" opacity="0.85"/>
-      <circle cx="18" cy="25" r="7" fill="${c2}"/>
-      <circle cx="18" cy="25" r="5" fill="black"/>
-      <circle cx="16" cy="23" r="2.5" fill="url(#eg)"/>
-      <circle cx="21" cy="26" r="1" fill="rgba(255,255,255,0.7)"/>
+    // Large dramatic fish — big fins, glowing eye
+    svg = `<svg class="fish-body-svg" width="${size*2}" height="${size*1.15}" viewBox="0 0 110 64" xmlns="http://www.w3.org/2000/svg">
+      <!-- Forked tail -->
+      <path d="M88,32 Q106,15 100,5 Q94,18 88,32 Q94,46 100,59 Q106,49 88,32 Z" fill="${c1}"/>
+      <!-- Body -->
+      <path d="M6,32 Q4,18 16,12 Q34,4 56,4 Q80,4 88,32 Q80,60 56,60 Q34,60 16,52 Q4,46 6,32 Z" fill="${c1}"/>
+      <!-- Sheen -->
+      <path d="M18,14 Q40,7 60,8 Q74,9 80,20 Q68,11 48,9 Q30,9 18,14 Z" fill="white" opacity="0.18"/>
+      <!-- Lateral line -->
+      <path d="M18,30 Q48,26 82,30" stroke="${c2}" stroke-width="2" fill="none" opacity="0.45"/>
+      <!-- Large dorsal fin -->
+      <path d="M38,4 Q48,-9 66,-7 Q70,1 60,5 Q50,2 38,4 Z" fill="${c1}"/>
+      <!-- Large pectoral fin -->
+      <path d="M32,24 Q16,50 34,44 Q36,30 32,24 Z" fill="${c2}" opacity="0.7"/>
+      <!-- Gill -->
+      <path d="M22,14 Q25,32 22,50" stroke="${c2}" stroke-width="1.5" fill="none" opacity="0.5"/>
+      <!-- Eye socket -->
+      <circle cx="18" cy="27" r="8.5" fill="${c2}" opacity="0.9"/>
+      <circle cx="18" cy="27" r="6" fill="#000"/>
+      <circle cx="15.5" cy="24.5" r="3" fill="${eyeGlow.legendary}"/>
+      <circle cx="22" cy="29" r="1.8" fill="rgba(255,255,255,0.65)"/>
+      <!-- Eye glow ring -->
+      <circle cx="18" cy="27" r="10" fill="none" stroke="${eyeGlow.legendary}" stroke-width="2" opacity="0.35"/>
     </svg>`;
   } else if (fish.rarity === 'rare') {
-    // Elongated pike-like fish
-    svg = `<svg class="fish-body-svg" width="${size*2.1}" height="${size*0.75}" viewBox="0 0 115 44" xmlns="http://www.w3.org/2000/svg">
-      <path d="M113,22 L95,10 L91,22 L95,34 Z" fill="${c1}" opacity="0.9"/>
-      <ellipse cx="48" cy="22" rx="52" ry="14" fill="${c1}"/>
-      <ellipse cx="48" cy="22" rx="42" ry="10" fill="${c2}" opacity="0.55"/>
-      <path d="M38,10 Q50,4 58,10 Q48,13 38,12 Z" fill="${c1}" opacity="0.8"/>
+    // Pike — long, narrow, pointed snout
+    svg = `<svg class="fish-body-svg" width="${size*2.2}" height="${size*0.72}" viewBox="0 0 120 44" xmlns="http://www.w3.org/2000/svg">
+      <!-- Forked tail -->
+      <path d="M98,22 L116,11 L108,22 L116,33 Z" fill="${c1}"/>
+      <!-- Long narrow body — pointed at mouth -->
+      <path d="M4,22 Q2,16 12,12 Q28,5 58,5 Q86,5 98,22 Q86,39 58,39 Q28,39 12,32 Q2,28 4,22 Z" fill="${c1}"/>
+      <!-- Sheen -->
+      <path d="M12,13 Q36,8 60,8 Q80,8 90,17 Q76,10 55,9 Q30,9 12,13 Z" fill="white" opacity="0.15"/>
+      <!-- Pike lateral stripe -->
+      <path d="M14,21 Q40,18 88,21" stroke="${c2}" stroke-width="2" fill="none" opacity="0.45"/>
+      <!-- Back-set dorsal (pike style) -->
+      <path d="M70,5 Q78,-3 90,-1 Q88,5 80,6 Z" fill="${c1}"/>
+      <!-- Small pectoral fin -->
+      <path d="M26,18 Q17,32 27,30 Q28,21 26,18 Z" fill="${c2}" opacity="0.65"/>
+      <!-- Eye near pointed snout -->
       <circle cx="12" cy="19" r="5" fill="${c2}"/>
-      <circle cx="12" cy="19" r="3.5" fill="black"/>
-      <circle cx="11" cy="18" r="1.8" fill="${eyeGlow.rare}" opacity="0.9"/>
+      <circle cx="12" cy="19" r="3.5" fill="#000"/>
+      <circle cx="10.5" cy="17.5" r="1.5" fill="${eyeGlow.rare}" opacity="0.95"/>
     </svg>`;
   } else if (fish.rarity === 'uncommon') {
-    // Streamlined bass shape
-    svg = `<svg class="fish-body-svg" width="${size*1.75}" height="${size}" viewBox="0 0 95 56" xmlns="http://www.w3.org/2000/svg">
-      <path d="M93,28 L74,12 L70,28 L74,44 Z" fill="${c1}" opacity="0.9"/>
-      <ellipse cx="41" cy="28" rx="44" ry="21" fill="${c1}"/>
-      <ellipse cx="41" cy="28" rx="34" ry="15" fill="${c2}" opacity="0.5"/>
-      <path d="M35,9 Q48,2 55,10 Q44,14 35,11 Z" fill="${c1}" opacity="0.85"/>
-      <path d="M35,47 Q48,54 55,46 Q44,42 35,45 Z" fill="${c1}" opacity="0.75"/>
-      <circle cx="16" cy="23" r="6" fill="${c2}"/>
-      <circle cx="16" cy="23" r="4" fill="black"/>
-      <circle cx="14.5" cy="21.5" r="2" fill="${eyeGlow.uncommon}" opacity="0.9"/>
+    // Bass — medium elongated, spiny dorsal
+    svg = `<svg class="fish-body-svg" width="${size*1.75}" height="${size}" viewBox="0 0 100 55" xmlns="http://www.w3.org/2000/svg">
+      <!-- Forked tail -->
+      <path d="M80,27 L98,13 L90,27 L98,41 Z" fill="${c1}"/>
+      <!-- Body -->
+      <path d="M6,27 Q4,16 14,11 Q30,4 52,4 Q74,4 80,27 Q74,50 52,50 Q30,50 14,43 Q4,38 6,27 Z" fill="${c1}"/>
+      <!-- Sheen -->
+      <path d="M16,13 Q36,7 54,8 Q68,9 75,18 Q64,11 46,9 Q28,8 16,13 Z" fill="white" opacity="0.16"/>
+      <!-- Lateral line -->
+      <path d="M16,25 Q42,21 74,25" stroke="${c2}" stroke-width="1.5" fill="none" opacity="0.4"/>
+      <!-- Spiny dorsal fin -->
+      <path d="M38,4 Q46,-5 62,-3 Q60,4 50,6 Q44,5 38,4 Z" fill="${c1}"/>
+      <line x1="42" y1="4" x2="44" y2="-4" stroke="${c2}" stroke-width="1.2" opacity="0.5"/>
+      <line x1="50" y1="4" x2="52" y2="-4" stroke="${c2}" stroke-width="1.2" opacity="0.5"/>
+      <line x1="57" y1="3" x2="59" y2="-3" stroke="${c2}" stroke-width="1.2" opacity="0.5"/>
+      <!-- Pectoral fin -->
+      <path d="M30,22 Q20,38 32,35 Q33,26 30,22 Z" fill="${c2}" opacity="0.65"/>
+      <!-- Gill -->
+      <path d="M20,14 Q22,27 20,40" stroke="${c2}" stroke-width="1.5" fill="none" opacity="0.45"/>
+      <!-- Eye -->
+      <circle cx="15" cy="23" r="6" fill="${c2}"/>
+      <circle cx="15" cy="23" r="4" fill="#000"/>
+      <circle cx="13.5" cy="21.5" r="1.8" fill="${eyeGlow.uncommon}" opacity="0.95"/>
     </svg>`;
   } else {
-    // Common round sunfish shape
-    svg = `<svg class="fish-body-svg" width="${size*1.5}" height="${size}" viewBox="0 0 82 56" xmlns="http://www.w3.org/2000/svg">
-      <path d="M80,28 L65,14 L61,28 L65,42 Z" fill="${c1}" opacity="0.9"/>
-      <ellipse cx="36" cy="28" rx="38" ry="24" fill="${c1}"/>
-      <ellipse cx="36" cy="28" rx="28" ry="17" fill="${c2}" opacity="0.5"/>
-      <circle cx="16" cy="24" r="6" fill="${c2}"/>
-      <circle cx="16" cy="24" r="4" fill="black"/>
-      <circle cx="14.5" cy="22.5" r="2" fill="${eyeGlow.common}" opacity="0.85"/>
+    // Common — round sunfish, chubby and cheerful
+    svg = `<svg class="fish-body-svg" width="${size*1.5}" height="${size}" viewBox="0 0 90 60" xmlns="http://www.w3.org/2000/svg">
+      <!-- Forked tail -->
+      <path d="M70,30 L86,16 L80,30 L86,44 Z" fill="${c1}"/>
+      <!-- Round body -->
+      <path d="M8,30 Q5,17 16,12 Q32,5 50,5 Q66,5 70,30 Q66,55 50,55 Q32,55 16,48 Q5,43 8,30 Z" fill="${c1}"/>
+      <!-- Sheen -->
+      <path d="M18,14 Q34,8 50,9 Q62,10 66,19 Q58,12 44,10 Q28,9 18,14 Z" fill="white" opacity="0.16"/>
+      <!-- Lateral stripe -->
+      <path d="M18,28 Q38,24 64,28" stroke="${c2}" stroke-width="1.5" fill="none" opacity="0.4"/>
+      <!-- Dorsal fin -->
+      <path d="M38,5 Q44,-3 54,-1 Q52,5 44,6 Z" fill="${c1}"/>
+      <!-- Pectoral fin -->
+      <path d="M30,25 Q20,42 32,38 Q33,28 30,25 Z" fill="${c2}" opacity="0.65"/>
+      <!-- Gill line -->
+      <path d="M22,15 Q25,30 22,45" stroke="${c2}" stroke-width="1.5" fill="none" opacity="0.45"/>
+      <!-- Eye -->
+      <circle cx="17" cy="26" r="5.5" fill="${c2}"/>
+      <circle cx="17" cy="26" r="3.5" fill="#000"/>
+      <circle cx="15.5" cy="24.5" r="1.5" fill="${eyeGlow.common}" opacity="0.9"/>
     </svg>`;
   }
   el.innerHTML = svg;
@@ -1650,11 +1690,13 @@ function battleLoop(now) {
   G.tension  = Math.max(0, Math.min(100, G.tension));
 
   // Fish Y (depth) — reel speed scales with tension (sweet spot = more progress)
+  const boatXNorm = getMetrics().rodX / uwW; // boat rod tip in normalized X (left side)
   if (G.holding && G.tension >= 15 && G.tension < 88) {
     // Scale factor: 0.5x at low tension (15), 1.0x at mid (52), 1.5x near danger (80)
     const tFrac = Math.max(0, (G.tension - 15) / 65);
     const reelMult = 0.5 + tFrac * 1.0;
-    G.fishY -= cfg.reel * reelMult * dt;   // more tension = faster reel
+    G.fishY -= cfg.reel * reelMult * dt;           // reel up
+    G.fishX += (boatXNorm - G.fishX) * cfg.reel * reelMult * 0.25 * dt; // pull towards boat
   } else if (!G.holding) {
     G.fishY += 0.012 * dt;          // drifts deeper when not held
   }
@@ -1664,7 +1706,7 @@ function battleLoop(now) {
   G.fishVX += (Math.random() - 0.5) * fish.diff * 0.0035;
   G.fishVX *= 0.94;
   G.fishX  += G.fishVX * dt * 18;
-  G.fishX   = Math.max(0.08, Math.min(0.92, G.fishX));
+  G.fishX   = Math.max(0.06, Math.min(0.92, G.fishX));
   G.fishY   = Math.max(0.04, Math.min(0.97, G.fishY));
 
   // Escape if too deep too long
