@@ -220,6 +220,8 @@ body {
   letter-spacing: 1px;
   box-shadow: 0 4px 24px rgba(67,233,123,0.4);
   transition: transform 0.12s;
+  align-self: center;
+  margin-top: 0.6rem;
 }
 .go-btn:active { transform: scale(0.96); }
 .back-btn {
@@ -228,14 +230,15 @@ body {
   color: rgba(255,255,255,0.35);
   font-size: 0.85rem;
   cursor: pointer;
-  margin-top: 1rem;
+  margin-top: 0.5rem;
   padding: 0.5rem 1rem;
+  align-self: center;
 }
 
 /* === SCENE === */
 #scene {
   position: absolute;
-  inset: 0;
+  top: 44px; left: 0; right: 0; bottom: 0; /* start below nav bar */
   display: none;
   flex-direction: column;
 }
@@ -1840,8 +1843,8 @@ function battleLoop(now) {
     // Scale factor: 0.5x at low tension (15), 1.0x at mid (52), 1.5x near danger (80)
     const tFrac = Math.max(0, (G.tension - 15) / 65);
     const reelMult = 0.5 + tFrac * 1.0;
-    G.fishY -= cfg.reel * reelMult * dt;                        // reel up
-    G.fishX += (boatXNorm - G.fishX) * (0.3 + tFrac * 0.5) * dt; // pull towards boat (strong, independent rate)
+    G.fishY -= cfg.reel * reelMult * dt;                         // reel up
+    G.fishX += (boatXNorm - G.fishX) * (1.2 + tFrac * 1.0) * dt; // pull towards boat — rate dominates lateral fight
   } else if (!G.holding) {
     G.fishY += 0.012 * dt;          // drifts deeper when not held
   }
