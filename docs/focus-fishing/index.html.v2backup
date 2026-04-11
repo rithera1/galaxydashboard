@@ -1,0 +1,2158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Focus Fishing</title>
+<style>
+/* === RESET & BASE === */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: linear-gradient(180deg, #041828 0%, #062040 50%, #020c18 100%);
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+#app {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+/* === NAV === */
+.site-nav {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0 1.25rem;
+  background: rgba(2,12,24,0.92);
+  border-bottom: 1px solid rgba(41,182,246,0.2);
+  z-index: 300;
+  flex-shrink: 0;
+}
+.site-nav-back {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #29b6f6;
+  text-decoration: none;
+  background: rgba(41,182,246,0.1);
+  border: 1px solid rgba(41,182,246,0.3);
+  border-radius: 8px;
+  padding: 0.22rem 0.7rem;
+  transition: background 0.15s;
+}
+.site-nav-back:hover { background: rgba(41,182,246,0.22); }
+.site-nav-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: rgba(255,255,255,0.85);
+  letter-spacing: 0.5px;
+}
+
+/* === SCREEN SYSTEM === */
+.screen {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding-top: 44px; /* space below nav */
+}
+.screen.active { display: flex; }
+
+/* === MENU === */
+#menu {
+  background: linear-gradient(180deg, #020c18 0%, #041525 50%, #062040 100%);
+}
+.menu-title {
+  font-size: 3rem;
+  font-weight: 900;
+  color: #fff;
+  text-align: center;
+  letter-spacing: -2px;
+  line-height: 0.95;
+  text-shadow: 0 0 40px rgba(41,182,246,0.5), 0 0 80px rgba(41,182,246,0.2);
+  margin-bottom: 0.2rem;
+}
+.menu-sub {
+  font-size: 0.8rem;
+  color: rgba(41,182,246,0.6);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 2.5rem;
+}
+.menu-icon { font-size: 3.5rem; margin-bottom: 1.5rem; animation: menuFloat 3s ease-in-out infinite; }
+@keyframes menuFloat {
+  0%,100% { transform: translateY(0) rotate(-4deg); }
+  50%      { transform: translateY(-14px) rotate(4deg); }
+}
+.menu-btn {
+  background: linear-gradient(135deg, #0288d1, #01579b);
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  padding: 1rem 2.8rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 20px rgba(2,136,209,0.4);
+  transition: transform 0.12s;
+  margin: 0.35rem;
+  min-width: 200px;
+}
+.menu-btn:active { transform: scale(0.96); }
+.menu-btn.sec {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.15);
+  font-size: 0.95rem;
+  padding: 0.7rem 1.8rem;
+  box-shadow: none;
+}
+/* animated fish in menu bg */
+.menu-fish {
+  position: absolute;
+  font-size: var(--sz);
+  opacity: 0.12;
+  top: var(--top);
+  animation: menuFish var(--dur) linear var(--delay) infinite;
+  filter: blur(0.5px);
+}
+@keyframes menuFish {
+  from { transform: translateX(-150px); }
+  to   { transform: translateX(calc(100vw + 150px)); }
+}
+
+/* === SESSION PICKER === */
+#session-picker {
+  background: linear-gradient(180deg, #020c18 0%, #041525 100%);
+  padding: 1.5rem;
+}
+.picker-title { font-size: 1.5rem; font-weight: 800; color: #fff; margin-bottom: 0.2rem; }
+.picker-sub {
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.35);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 1.5rem;
+}
+.picker-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 360px;
+  padding: 0 0.5rem;
+}
+.section-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.4);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+  margin-top: 0.8rem;
+}
+.mode-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.6rem;
+  width: 100%;
+  margin-bottom: 0.4rem;
+}
+.mode-card {
+  background: rgba(255,255,255,0.05);
+  border: 2px solid rgba(255,255,255,0.1);
+  border-radius: 14px;
+  padding: 0.9rem 0.4rem;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s;
+}
+.mode-card.sel { background: rgba(2,136,209,0.22); border-color: #29b6f6; }
+.mode-card:active { transform: scale(0.96); }
+.mode-icon { font-size: 1.8rem; }
+.mode-name { font-size: 0.75rem; font-weight: 700; color: #fff; margin-top: 0.25rem; }
+.mode-desc { font-size: 0.6rem; color: rgba(255,255,255,0.4); margin-top: 0.15rem; }
+.depth-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+.depth-btn {
+  background: rgba(255,255,255,0.05);
+  border: 2px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  padding: 0.6rem 0.3rem;
+  cursor: pointer;
+  text-align: center;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: all 0.15s;
+}
+.depth-btn.sel { background: rgba(2,136,209,0.22); border-color: #29b6f6; }
+.depth-btn:active { transform: scale(0.96); }
+.depth-icon { font-size: 1.3rem; display: block; margin-bottom: 0.2rem; }
+.go-btn {
+  background: linear-gradient(135deg, #43e97b, #38f9d7);
+  color: #0a2a1a;
+  border: none;
+  border-radius: 50px;
+  padding: 1rem 3rem;
+  font-size: 1.15rem;
+  font-weight: 800;
+  cursor: pointer;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 24px rgba(67,233,123,0.4);
+  transition: transform 0.12s;
+  align-self: center;
+  margin-top: 0.6rem;
+}
+.go-btn:active { transform: scale(0.96); }
+.back-btn {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.35);
+  font-size: 0.85rem;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  padding: 0.5rem 1rem;
+  align-self: center;
+}
+
+/* === SCENE === */
+#scene {
+  position: absolute;
+  top: 44px; left: 0; right: 0; bottom: 0; /* start below nav bar */
+  display: none;
+  flex-direction: column;
+}
+#scene.active { display: flex; }
+
+/* Surface strip */
+#surface {
+  position: relative;
+  height: 95px;
+  min-height: 75px;
+  background: linear-gradient(180deg, #6ec6e8 0%, #42aad4 50%, #1e8ec0 100%);
+  flex-shrink: 0;
+  overflow: visible;
+  z-index: 5;
+}
+#surface::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, #b3e5f8 0%, transparent 60%);
+  pointer-events: none;
+}
+
+/* Boat */
+#boat {
+  position: absolute;
+  left: 8px;
+  bottom: 12px;
+  width: 76px;
+  z-index: 6;
+}
+#boat svg { width: 100%; height: auto; display: block; }
+
+/* Water surface ripple */
+#water-lip {
+  position: absolute;
+  bottom: -1px;
+  left: 0; right: 0;
+  height: 22px;
+  background: linear-gradient(180deg, rgba(0,80,150,0.85) 0%, rgba(0,60,120,0.95) 100%);
+  border-radius: 55% 55% 0 0 / 12px 12px 0 0;
+  overflow: hidden;
+}
+#water-lip::before, #water-lip::after {
+  content: '';
+  position: absolute;
+  top: -6px;
+  width: 200%;
+  height: 14px;
+  background: rgba(80,200,255,0.25);
+  border-radius: 50%;
+}
+#water-lip::before { left: -50%; animation: ripWave 3.2s ease-in-out infinite; }
+#water-lip::after  { left: -30%; animation: ripWave 4.1s ease-in-out infinite reverse; opacity: 0.6; }
+@keyframes ripWave {
+  0%,100% { transform: translateX(0) scaleY(1); }
+  50%      { transform: translateX(-4%) scaleY(1.4); }
+}
+
+/* === UNDERWATER SCENE === */
+#underwater {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+  background: linear-gradient(180deg,
+    #0277bd 0%,
+    #01579b 18%,
+    #0d47a1 38%,
+    #0a2050 58%,
+    #060e28 76%,
+    #030816 90%,
+    #010408 100%
+  );
+}
+
+/* Caustic light pattern near surface */
+#caustic {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 35%;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: 0.5;
+}
+.cray {
+  position: absolute;
+  top: 0;
+  width: var(--w);
+  height: 120%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.09) 0%, transparent 100%);
+  transform-origin: top center;
+  border-radius: 50%;
+  animation: crayAnim var(--dur) ease-in-out infinite alternate;
+}
+@keyframes crayAnim {
+  from { transform: skewX(var(--sk1)) scaleX(0.7); opacity: 0.4; }
+  to   { transform: skewX(var(--sk2)) scaleX(1.3); opacity: 1; }
+}
+
+/* Ambient fish layer */
+#ambient-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 2;
+}
+.amb-fish {
+  position: absolute;
+  font-size: var(--sz);
+  opacity: var(--op);
+  filter: brightness(0.25) saturate(0.4);
+  animation: ambSwim var(--dur) linear forwards;
+  will-change: transform;
+  top: var(--top);
+}
+@keyframes ambSwim {
+  from { transform: translateX(var(--x0)) translateY(0); }
+  to   { transform: translateX(var(--x1)) translateY(var(--dy)); }
+}
+.amb-fish.rtl {
+  animation: ambSwimRTL var(--dur) linear forwards;
+}
+@keyframes ambSwimRTL {
+  from { transform: scaleX(-1) translateX(var(--x0)) translateY(0); }
+  to   { transform: scaleX(-1) translateX(var(--x1)) translateY(var(--dy)); }
+}
+
+/* Bubbles */
+.bubble {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.25);
+  border: 1px solid rgba(255,255,255,0.4);
+  pointer-events: none;
+  animation: bubUp var(--dur) ease-out forwards;
+  z-index: 3;
+}
+@keyframes bubUp {
+  0%   { opacity: 0.7; transform: translateX(0) translateY(0) scale(1); }
+  100% { opacity: 0;   transform: translateX(var(--dx)) translateY(-70px) scale(1.8); }
+}
+
+/* Sinker */
+#sinker {
+  position: absolute;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  z-index: 6;
+  pointer-events: none;
+  transform: translateX(-50%);
+}
+#sinker.active { display: flex; }
+.sinker-weight {
+  width: 9px; height: 13px;
+  background: linear-gradient(180deg, #b0bec5, #78909c);
+  border-radius: 50% 50% 40% 40%;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+.sinker-hook {
+  font-size: 0.9rem;
+  margin-top: 1px;
+  line-height: 1;
+}
+
+/* Jellyfish */
+.jelly {
+  position: absolute;
+  font-size: var(--sz);
+  opacity: 0;
+  filter: brightness(0.4) saturate(0.6);
+  pointer-events: none;
+  z-index: 3;
+  animation: jellyRise var(--dur) ease-in-out forwards;
+}
+@keyframes jellyRise {
+  0%   { transform: translateX(0) translateY(0); opacity: 0; }
+  12%  { opacity: var(--op); }
+  85%  { opacity: var(--op); }
+  100% { transform: translateX(var(--dx)) translateY(var(--dy)); opacity: 0; }
+}
+
+/* Mote layer */
+#mote-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+/* Floating water motes */
+.mote {
+  position: absolute;
+  width: var(--sz);
+  height: var(--sz);
+  background: rgba(120,200,255,0.5);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 2;
+  animation: moteDrift var(--dur) linear var(--delay) infinite;
+}
+@keyframes moteDrift {
+  0%   { transform: translateY(0) translateX(0); opacity: 0; }
+  20%  { opacity: 1; }
+  80%  { opacity: 0.6; }
+  100% { transform: translateY(-60px) translateX(var(--dx)); opacity: 0; }
+}
+
+/* Bottom decorations */
+#bottom-deco {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 120px;
+  z-index: 1;
+  pointer-events: none;
+}
+.brock {
+  position: absolute;
+  bottom: 0;
+  background: #141f30;
+  border-radius: 40% 55% 0 0;
+}
+.coral-item {
+  position: absolute;
+  bottom: 0;
+  font-size: var(--sz);
+  opacity: 0.55;
+  filter: brightness(0.35) saturate(0.5);
+  animation: coralSway var(--dur) ease-in-out infinite alternate;
+  transform-origin: bottom center;
+}
+@keyframes coralSway {
+  from { transform: rotate(-4deg); }
+  to   { transform: rotate(4deg); }
+}
+.sweed {
+  position: absolute;
+  bottom: 0;
+  background: #1b4020;
+  border-radius: 4px 4px 0 0;
+  opacity: 0.45;
+  transform-origin: bottom center;
+  animation: sweedSway var(--dur) ease-in-out infinite alternate;
+}
+@keyframes sweedSway {
+  from { transform: rotate(-9deg) scaleX(1.1); }
+  to   { transform: rotate(9deg) scaleX(0.9); }
+}
+
+/* Battle fish */
+#battle-fish {
+  position: absolute;
+  display: none;
+  z-index: 7;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+#battle-fish.active { display: block; }
+#battle-fish svg {
+  filter: drop-shadow(0 0 10px var(--fg, rgba(80,160,255,0.4)));
+}
+.fish-body-svg {
+  animation: fishWobble 0.5s ease-in-out infinite alternate;
+}
+@keyframes fishWobble {
+  from { transform: rotate(-6deg) scaleY(0.96); }
+  to   { transform: rotate(6deg) scaleY(1.04); }
+}
+#battle-fish.surging .fish-body-svg {
+  animation: fishSurge 0.2s ease-in-out infinite alternate;
+}
+@keyframes fishSurge {
+  from { transform: rotate(-22deg) scale(1.08); }
+  to   { transform: rotate(22deg) scale(0.92); }
+}
+
+/* Line SVG spans full scene */
+#line-svg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 8;
+  overflow: visible;
+  width: 100%;
+  height: 100%;
+}
+
+/* === HUD: STATUS BAR === */
+#status-bar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  padding: 0.35rem 0.8rem;
+  background: rgba(2,8,16,0.65);
+  display: none;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 20;
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.75);
+  backdrop-filter: blur(2px);
+}
+#status-bar.active { display: flex; }
+#status-bar.urgent #s-timer { color: #ff5252; animation: urgPulse 0.5s ease-in-out infinite alternate; }
+@keyframes urgPulse { from { opacity: 1; } to { opacity: 0.4; } }
+
+/* === HUD: CAST === */
+#cast-hud {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 1rem 1.2rem 1.2rem;
+  background: linear-gradient(0deg, rgba(2,8,16,0.97) 0%, rgba(2,8,16,0.6) 70%, transparent 100%);
+  display: none;
+  z-index: 20;
+}
+#cast-hud.active { display: block; }
+.cast-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+.cast-lbl { font-size: 0.7rem; color: rgba(255,255,255,0.45); text-transform: uppercase; letter-spacing: 2px; }
+#cast-dist-lbl { font-size: 0.85rem; font-weight: 700; color: #fff; }
+.cast-track {
+  position: relative;
+  height: 26px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 13px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.12);
+  margin-bottom: 0.45rem;
+}
+#cast-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #43e97b 0%, #ffd200 60%, #f44336 100%);
+  border-radius: 13px;
+}
+.cast-hint { text-align: center; font-size: 0.7rem; color: rgba(255,255,255,0.35); }
+
+/* === HUD: TENSION (battle) === */
+#tension-hud {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 0.8rem 1.2rem 1.1rem;
+  background: linear-gradient(0deg, rgba(2,8,16,0.98) 0%, rgba(2,8,16,0.65) 70%, transparent 100%);
+  display: none;
+  z-index: 20;
+}
+#tension-hud.active { display: block; }
+.depth-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.55rem;
+}
+.depth-lbl { font-size: 0.6rem; color: rgba(255,255,255,0.35); min-width: 38px; }
+.depth-lbl.right { text-align: right; }
+.depth-track {
+  flex: 1;
+  height: 5px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+#depth-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #29b6f6, #43e97b);
+  border-radius: 3px;
+  width: 0%;
+  transition: width 0.12s;
+}
+.tension-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.4rem;
+}
+.t-lbl { font-size: 0.6rem; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 1px; }
+#t-status {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #29b6f6;
+  letter-spacing: 1px;
+  text-align: center;
+  flex: 1;
+}
+.tension-track {
+  position: relative;
+  height: 30px;
+  background: rgba(255,255,255,0.07);
+  border-radius: 15px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1);
+  margin-bottom: 0.5rem;
+}
+#tension-fill {
+  height: 100%;
+  border-radius: 15px;
+  width: 20%;
+  background: linear-gradient(90deg, #29b6f6, #43e97b);
+  transition: width 0.04s linear, background 0.1s;
+}
+#tension-fill.warn   { background: linear-gradient(90deg, #43e97b, #ffd200, #ff8c00); }
+#tension-fill.danger { background: linear-gradient(90deg, #43e97b, #ffd200, #f44336); }
+.snap-zone {
+  position: absolute;
+  right: 0; top: 0; bottom: 0;
+  width: 14%;
+  background: rgba(244,67,54,0.22);
+  border-left: 2px dashed rgba(244,67,54,0.55);
+  border-radius: 0 15px 15px 0;
+}
+.snap-lbl {
+  position: absolute;
+  right: 4px; top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.5rem;
+  color: rgba(244,67,54,0.75);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.tension-hint { text-align: center; font-size: 0.7rem; color: rgba(255,255,255,0.3); }
+
+/* === OVERLAYS === */
+#bite-overlay {
+  position: absolute;
+  inset: 0;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 30;
+  pointer-events: none;
+}
+#bite-overlay.active { display: flex; }
+.bite-text {
+  font-size: 4.5rem;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: -2px;
+  text-shadow: 0 0 30px #f44336, 0 0 70px #f44336;
+  animation: biteIn 0.45s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+@keyframes biteIn {
+  from { transform: scale(0.2) rotate(-20deg); opacity: 0; }
+  to   { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+#surge-warn {
+  position: absolute;
+  top: 38%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: #ff6b35;
+  text-shadow: 0 0 20px rgba(255,107,53,0.7);
+  display: none;
+  z-index: 25;
+  pointer-events: none;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+#surge-warn.active { display: block; animation: surgeIn 0.2s ease-out; }
+@keyframes surgeIn {
+  from { transform: translate(-50%,-50%) scale(0.4); opacity: 0; }
+  to   { transform: translate(-50%,-50%) scale(1); opacity: 1; }
+}
+
+#snap-danger {
+  position: absolute;
+  inset: 0;
+  display: none;
+  border: 3px solid rgba(244,67,54,0.7);
+  z-index: 24;
+  pointer-events: none;
+  animation: snapPulse 0.18s ease-in-out infinite alternate;
+}
+#snap-danger.active { display: block; }
+@keyframes snapPulse {
+  from { box-shadow: inset 0 0 25px rgba(244,67,54,0.3); opacity: 0.7; }
+  to   { box-shadow: inset 0 0 55px rgba(244,67,54,0.5); opacity: 1; }
+}
+
+#lost-overlay {
+  position: absolute;
+  inset: 0;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 32;
+  background: rgba(2,8,16,0.55);
+  pointer-events: none;
+}
+#lost-overlay.active { display: flex; }
+.lost-box { text-align: center; animation: lostIn 0.3s ease-out; }
+@keyframes lostIn {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+.lost-title { font-size: 2.8rem; font-weight: 900; color: #ff5252; text-shadow: 0 0 25px rgba(255,82,82,0.5); }
+.lost-sub   { color: rgba(255,255,255,0.55); font-size: 1rem; margin-top: 0.3rem; }
+
+#countdown {
+  position: absolute;
+  inset: 0;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 35;
+  pointer-events: none;
+  background: rgba(2,8,16,0.45);
+}
+#countdown.active { display: flex; }
+#cd-num {
+  font-size: 7rem;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 0 40px rgba(255,255,255,0.7);
+  line-height: 1;
+}
+@keyframes cdPop {
+  from { transform: scale(2.2); opacity: 0; }
+  60%  { transform: scale(1.05); opacity: 1; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+#water-break {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 110px;
+  display: none;
+  z-index: 38;
+  pointer-events: none;
+}
+#water-break.active { display: block; animation: wBreak 0.7s ease-out forwards; }
+@keyframes wBreak {
+  0%   { background: rgba(255,255,255,0.75); }
+  40%  { background: rgba(41,182,246,0.5); }
+  100% { background: transparent; }
+}
+
+.sdrop {
+  position: absolute;
+  width: 5px; height: 5px;
+  background: rgba(100,210,255,0.85);
+  border-radius: 50%;
+  animation: sdropAnim var(--dur) ease-out forwards;
+  pointer-events: none;
+  z-index: 37;
+}
+@keyframes sdropAnim {
+  from { transform: translate(0,0) scale(1); opacity: 1; }
+  to   { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; }
+}
+
+.ripple-ring {
+  position: absolute;
+  border: 2px solid rgba(255,255,255,0.55);
+  border-radius: 50%;
+  transform: translate(-50%, -30%);
+  animation: ripExp 1.5s ease-out forwards;
+  pointer-events: none;
+  z-index: 5;
+}
+@keyframes ripExp {
+  0%   { width: 6px; height: 3px; opacity: 0.8; }
+  100% { width: 90px; height: 35px; opacity: 0; }
+}
+
+.cpce {
+  position: absolute;
+  width: 8px; height: 8px;
+  top: 0;
+  left: var(--x);
+  background: var(--c);
+  border-radius: var(--br);
+  animation: cfall var(--dur) ease-in forwards;
+  pointer-events: none;
+  z-index: 40;
+}
+@keyframes cfall {
+  from { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+  to   { transform: translateY(120vh) rotate(720deg); opacity: 0; }
+}
+
+/* === CATCH POPUP === */
+#catch-popup {
+  position: absolute;
+  inset: 0;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 50;
+  background: rgba(2,8,16,0.72);
+  backdrop-filter: blur(5px);
+}
+#catch-popup.active { display: flex; }
+.catch-card {
+  background: #0a1628;
+  border-radius: 22px;
+  padding: 1.5rem;
+  width: 88%;
+  max-width: 320px;
+  text-align: center;
+  border: 1px solid rgba(255,255,255,0.09);
+  box-shadow: 0 24px 70px rgba(0,0,0,0.7);
+  animation: cardUp 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes cardUp {
+  from { transform: translateY(70px) scale(0.88); opacity: 0; }
+  to   { transform: translateY(0) scale(1); opacity: 1; }
+}
+.card-topbar {
+  height: 5px;
+  margin: -1.5rem -1.5rem 1.1rem;
+  border-radius: 22px 22px 0 0;
+}
+.card-topbar.common    { background: #78909c; }
+.card-topbar.uncommon  { background: linear-gradient(90deg, #1565c0, #42a5f5); }
+.card-topbar.rare      { background: linear-gradient(90deg, #6a1b9a, #ce93d8, #e91e63); }
+.card-topbar.legendary { background: linear-gradient(90deg, #e65100, #ffd700, #ff8c00); }
+.card-emoji { font-size: 3.8rem; display: block; margin-bottom: 0.2rem; animation: emojiPop 0.4s cubic-bezier(0.34,1.56,0.64,1); }
+@keyframes emojiPop { from { transform: scale(0) rotate(-25deg); } to { transform: scale(1) rotate(0); } }
+.card-name   { font-size: 1.35rem; font-weight: 800; color: #fff; }
+.card-rarity { font-size: 0.65rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin: 0.15rem 0 0.8rem; }
+.card-rarity.common    { color: #90a4ae; }
+.card-rarity.uncommon  { color: #42a5f5; }
+.card-rarity.rare      { color: #ce93d8; }
+.card-rarity.legendary { color: #ffd700; }
+.card-stats { display: flex; gap: 1.5rem; justify-content: center; margin-bottom: 0.8rem; }
+.cstat-val { font-size: 1.2rem; font-weight: 700; color: #fff; }
+.cstat-lbl { font-size: 0.58rem; color: rgba(255,255,255,0.38); text-transform: uppercase; margin-top: 0.1rem; }
+.card-pb { display: none; background: linear-gradient(135deg, #ffd700, #ff8c00); color: #1a0800; font-size: 0.65rem; font-weight: 800; padding: 0.2rem 0.8rem; border-radius: 20px; letter-spacing: 1px; margin-bottom: 0.6rem; }
+.card-pb.show { display: inline-block; }
+.card-fact { font-size: 0.72rem; color: rgba(255,255,255,0.4); font-style: italic; line-height: 1.45; margin-bottom: 1rem; }
+.card-btn {
+  background: linear-gradient(135deg, #43e97b, #38f9d7);
+  color: #0a2a1a;
+  border: none;
+  border-radius: 50px;
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  width: 100%;
+  transition: transform 0.12s;
+}
+.card-btn:active { transform: scale(0.97); }
+
+/* === RESULT SCREEN === */
+#result-screen {
+  background: linear-gradient(180deg, #020c18 0%, #041525 100%);
+}
+.res-title { font-size: 2.1rem; font-weight: 900; color: #fff; margin-bottom: 0.2rem; text-align: center; }
+.res-sub   { font-size: 0.8rem; color: rgba(255,255,255,0.38); margin-bottom: 1.5rem; letter-spacing: 1px; }
+.res-box {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 1rem 1.4rem;
+  width: 88%;
+  max-width: 320px;
+  margin-bottom: 1.5rem;
+}
+.res-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.3rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  font-size: 0.8rem;
+}
+.res-row:last-child { border-bottom: none; }
+.res-row-lbl { color: rgba(255,255,255,0.4); }
+.res-row-val { color: #fff; font-weight: 700; }
+.res-btn {
+  background: linear-gradient(135deg, #0288d1, #01579b);
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  padding: 0.9rem 2.5rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  margin: 0.3rem;
+  min-width: 200px;
+  transition: transform 0.12s;
+}
+.res-btn:active { transform: scale(0.96); }
+.res-btn.sec {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.13);
+}
+
+/* === SCENE SHAKE === */
+@keyframes sceneShake {
+  0%,100% { transform: translate(0,0); }
+  20%     { transform: translate(-5px,-3px); }
+  40%     { transform: translate(5px,3px); }
+  60%     { transform: translate(-3px,2px); }
+  80%     { transform: translate(3px,-2px); }
+}
+.shake { animation: sceneShake 0.32s ease both; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <nav class="site-nav">
+    <a href="../" class="site-nav-back">← Back</a>
+    <span class="site-nav-title">🎣 Focus Fishing</span>
+  </nav>
+
+  <!-- MENU -->
+  <div id="menu" class="screen active">
+    <div class="menu-icon">🎣</div>
+    <div class="menu-title">Focus<br>Fishing</div>
+    <div class="menu-sub">Cast Deep. Reel Hard.</div>
+    <button class="menu-btn" onclick="openPicker()">NEW SESSION</button>
+    <button class="menu-btn sec" onclick="showBests()">BEST CATCHES</button>
+  </div>
+
+  <!-- SESSION PICKER -->
+  <div id="session-picker" class="screen">
+    <div class="picker-content">
+      <div class="picker-title">Choose Session</div>
+      <div class="picker-sub">Set your challenge</div>
+      <div class="section-label">Mode</div>
+      <div class="mode-grid">
+        <div class="mode-card" data-mode="relaxed" onclick="selMode(this)">
+          <div class="mode-icon">🌊</div>
+          <div class="mode-name">Relaxed</div>
+          <div class="mode-desc">Fish freely</div>
+        </div>
+        <div class="mode-card" data-mode="challenge" onclick="selMode(this)">
+          <div class="mode-icon">⏱️</div>
+          <div class="mode-name">Challenge</div>
+          <div class="mode-desc">5 fish, 5 min</div>
+        </div>
+        <div class="mode-card" data-mode="trophy" onclick="selMode(this)">
+          <div class="mode-icon">🏆</div>
+          <div class="mode-name">Trophy</div>
+          <div class="mode-desc">3 casts only</div>
+        </div>
+      </div>
+      <div class="section-label">Sinker Depth</div>
+      <div class="depth-grid">
+        <div class="depth-btn" data-depth="shallow" onclick="selDepth(this)">
+          <span class="depth-icon">🪝</span>Shallow
+        </div>
+        <div class="depth-btn" data-depth="mid" onclick="selDepth(this)">
+          <span class="depth-icon">🎣</span>Mid
+        </div>
+        <div class="depth-btn" data-depth="deep" onclick="selDepth(this)">
+          <span class="depth-icon">🦑</span>Deep
+        </div>
+      </div>
+      <button class="go-btn" onclick="startSession()">CAST OFF &#8594;</button>
+      <button class="back-btn" onclick="showScreen('menu')">&#8592; Back</button>
+    </div>
+  </div>
+
+  <!-- SCENE -->
+  <div id="scene">
+    <div id="surface">
+      <div id="boat">
+        <svg viewBox="0 0 80 58" xmlns="http://www.w3.org/2000/svg">
+          <path d="M6,40 Q40,52 74,40 L70,48 Q40,58 10,48 Z" fill="#5d4037"/>
+          <path d="M6,40 Q40,46 74,40" stroke="#8d6e63" stroke-width="1.5" fill="none"/>
+          <rect x="20" y="26" width="30" height="16" rx="3" fill="#6d4c41"/>
+          <rect x="22" y="28" width="9" height="6" rx="1" fill="rgba(140,210,255,0.65)"/>
+          <rect x="33" y="28" width="9" height="6" rx="1" fill="rgba(140,210,255,0.65)"/>
+          <line x1="43" y1="34" x2="77" y2="9" stroke="#5d4037" stroke-width="2.5" stroke-linecap="round"/>
+          <circle id="rod-tip-dot" cx="77" cy="9" r="2.5" fill="#90a4ae"/>
+        </svg>
+      </div>
+      <div id="water-lip"></div>
+    </div>
+
+    <div id="underwater">
+      <div id="caustic"></div>
+      <div id="ambient-layer"></div>
+      <div id="mote-layer"></div>
+      <div id="bottom-deco"></div>
+      <div id="sinker">
+        <div class="sinker-weight"></div>
+        <div class="sinker-hook" id="sinker-bait">&#x1FAB1;</div>
+      </div>
+      <div id="battle-fish"></div>
+    </div>
+
+    <!-- Line SVG spans entire scene -->
+    <svg id="line-svg" overflow="visible">
+      <path id="fishing-line" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+
+    <div id="status-bar">
+      <span id="s-catches"></span>
+      <span id="s-timer"></span>
+      <span id="s-casts"></span>
+    </div>
+
+    <div id="cast-hud">
+      <div class="cast-top-row">
+        <div class="cast-lbl">Power</div>
+        <div id="cast-dist-lbl">Short</div>
+      </div>
+      <div class="cast-track">
+        <div id="cast-fill"></div>
+      </div>
+      <div class="cast-hint">TAP to cast</div>
+    </div>
+
+    <div id="tension-hud">
+      <div class="depth-row">
+        <div class="depth-lbl">Surface</div>
+        <div class="depth-track"><div id="depth-fill"></div></div>
+        <div class="depth-lbl right">Deep</div>
+      </div>
+      <div class="tension-row">
+        <div class="t-lbl">Slack</div>
+        <div id="t-status">HOLD TO REEL</div>
+        <div class="t-lbl">Snap</div>
+      </div>
+      <div class="tension-track">
+        <div id="tension-fill"></div>
+        <div class="snap-zone"><div class="snap-lbl">SNAP</div></div>
+      </div>
+      <div class="tension-hint">HOLD &#8594; Reel &nbsp;|&nbsp; RELEASE on surges</div>
+    </div>
+
+    <div id="bite-overlay"><div class="bite-text">!! BITE !!</div></div>
+    <div id="surge-warn"></div>
+    <div id="snap-danger"></div>
+    <div id="lost-overlay">
+      <div class="lost-box">
+        <div class="lost-title">&#x1F4A8; GOT AWAY</div>
+        <div class="lost-sub" id="lost-reason">Line snapped!</div>
+      </div>
+    </div>
+    <div id="countdown"><div id="cd-num">3</div></div>
+    <div id="water-break"></div>
+
+    <div id="catch-popup">
+      <div class="catch-card">
+        <div class="card-topbar" id="card-topbar"></div>
+        <div class="card-emoji"  id="card-emoji"></div>
+        <div class="card-name"   id="card-name"></div>
+        <div class="card-rarity" id="card-rarity"></div>
+        <div class="card-stats">
+          <div><div class="cstat-val" id="card-wt"></div><div class="cstat-lbl">Weight</div></div>
+          <div><div class="cstat-val" id="card-len"></div><div class="cstat-lbl">Length</div></div>
+        </div>
+        <div class="card-pb" id="card-pb">&#x2B50; NEW PERSONAL BEST</div>
+        <div class="card-fact" id="card-fact"></div>
+        <button class="card-btn" id="card-btn">Keep Fishing &#8594;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="result-screen" class="screen">
+    <div class="res-title" id="res-title">Session Over</div>
+    <div class="res-sub"   id="res-sub"></div>
+    <div class="res-box"   id="res-box"></div>
+    <button class="res-btn" onclick="goMenu()">New Session</button>
+    <button class="res-btn sec" onclick="replaySession()">Fish Again</button>
+  </div>
+
+</div>
+<script>
+'use strict';
+
+// ─────────────────────────────────────────────
+// FISH DATA
+// ─────────────────────────────────────────────
+const FISH = {
+  bluegill:    { name:'Bluegill',        emoji:'🐟', zone:'shallow', rarity:'common',    diff:1, wt:[0.2,0.8],   len:[6,10],  facts:['Builds nests in sandy shallows','Highly territorial during spawning','Favorite prey of larger predators','Can live over 10 years'] },
+  sunfish:     { name:'Sunfish',         emoji:'🐠', zone:'shallow', rarity:'common',    diff:1, wt:[0.3,1.2],   len:[7,12],  facts:['Brilliant colors during spawning','Fans depressions with fins for nests','Swims in large schools','Found across North America'] },
+  perch:       { name:'Yellow Perch',    emoji:'🐡', zone:'shallow', rarity:'uncommon',  diff:2, wt:[0.3,1.5],   len:[8,14],  facts:['Stripe pattern aids camouflage','Prize catch for ice fishermen','Feeds near the bottom at night','Travels in tight schools'] },
+  crappie:     { name:'Black Crappie',   emoji:'🐟', zone:'shallow', rarity:'uncommon',  diff:2, wt:[0.4,2.5],   len:[9,16],  facts:['One of the tastiest freshwater fish','Filters water through gill rakers','Often found near submerged structures','Spawns in late spring'] },
+  bass:        { name:'Largemouth Bass', emoji:'🎣', zone:'mid',     rarity:'uncommon',  diff:3, wt:[1.0,6.0],   len:[12,24], facts:['Can leap clear out of the water','Lateral line detects tiny vibrations','Classic ambush predator in weeds','State fish of Mississippi'] },
+  trout:       { name:'Rainbow Trout',   emoji:'🐟', zone:'mid',     rarity:'uncommon',  diff:3, wt:[0.5,4.0],   len:[10,22], facts:['Needs cold oxygen-rich water','Pink flesh from dietary carotenoids','Can leap waterfalls during spawning','Introduced to six continents'] },
+  walleye:     { name:'Walleye',         emoji:'🐠', zone:'mid',     rarity:'rare',      diff:3, wt:[1.0,8.0],   len:[14,28], facts:['Eyes reflect light like cats','Most active at dawn and dusk','Prized as a table fish in Canada','Migrates far upriver to spawn'] },
+  carp:        { name:'Common Carp',     emoji:'🐡', zone:'mid',     rarity:'common',    diff:2, wt:[2.0,15.0],  len:[16,36], facts:['Can live over 40 years','Introduced to North America in 1800s','Adapts to almost any water quality','Roils the mud when bottom feeding'] },
+  catfish:     { name:'Channel Catfish', emoji:'🐟', zone:'deep',    rarity:'uncommon',  diff:3, wt:[1.5,20.0],  len:[14,36], facts:['Taste buds cover the entire body','Hunts by smell and taste alone','Can growl when pulled from water','Whiskers sense food in darkness'] },
+  pike:        { name:'Northern Pike',   emoji:'🐠', zone:'deep',    rarity:'rare',      diff:4, wt:[2.0,20.0],  len:[18,45], facts:['Strikes prey at lightning speed','Can live 25 years or more','Teeth angle inward to trap fish','Known to cannibalize smaller pike'] },
+  sturgeon:    { name:'Lake Sturgeon',   emoji:'🦈', zone:'deep',    rarity:'rare',      diff:4, wt:[5.0,80.0],  len:[36,84], facts:['Among the oldest living vertebrates','Can live over 150 years','Spawns only once per decade','Armor plates are called scutes'] },
+  muskie:      { name:'Muskellunge',     emoji:'🐟', zone:'deep',    rarity:'legendary', diff:5, wt:[5.0,50.0],  len:[30,60], facts:['"The fish of ten thousand casts"','Can strike prey a third its size','Grows over 6 feet in some lakes','The apex freshwater predator'] },
+  goldentrout: { name:'Golden Trout',    emoji:'🌟', zone:'deep',    rarity:'legendary', diff:5, wt:[0.5,5.0],   len:[8,20],  facts:['Found only in high alpine lakes','The most beautiful freshwater fish','Critically sensitive to pollution','State fish of California'] },
+};
+
+const WEATHER = [
+  { name:'Sunny',  bite:1.0 },
+  { name:'Cloudy', bite:1.3 },
+  { name:'Rainy',  bite:1.6 },
+  { name:'Dawn',   bite:1.4 },
+  { name:'Dusk',   bite:1.2 },
+];
+
+// Per-difficulty config
+const FIGHT_CFG = [null,
+  { passive:3,  reel:0.18, surgeSpike:22 }, // easy common
+  { passive:6,  reel:0.14, surgeSpike:28 }, // uncommon
+  { passive:10, reel:0.10, surgeSpike:36 }, // rare
+  { passive:15, reel:0.07, surgeSpike:44 }, // very rare
+  { passive:22, reel:0.05, surgeSpike:54 }, // legendary
+];
+
+// ─────────────────────────────────────────────
+// GAME STATE
+// ─────────────────────────────────────────────
+let G = {};
+function resetG(full) {
+  if (full) {
+    G.session       = null;
+    G.sinker        = 'mid';
+    G.weather       = null;
+    G.pb            = JSON.parse(localStorage.getItem('ff2_pb') || '{}');
+  }
+  G.catchLog        = [];
+  G.chalCaught      = 0;
+  G.chalTarget      = 5;
+  G.trophyCastsLeft = 3;
+  G.chalSeconds     = 300;
+  G.fish            = null;
+  G.pBarVal         = 0;
+  G.pBarDir         = 1;
+  G.pBarRaf         = null;
+  G.sinkRaf         = null;
+  G.sinkStart       = null;
+  G.sinkDurMs       = 0;
+  G.sinkTargetY     = 0;
+  G.sinkCastX       = 0;
+  G.biteTimeout     = null;
+  G.ambInterval     = null;
+  G.bubInterval     = null;
+  G.fishX           = 0.5;
+  G.fishY           = 0.8;
+  G.fishVX          = 0;
+  G.tension         = 20;
+  G.holding         = false;
+  G.surging         = false;
+  G.escapeTimer     = 0;
+  G.battleRaf       = null;
+  G.battleLastT     = null;
+  G.surgeTO         = null;
+  G.surgeWarnTO     = null;
+  G.chalInterval    = null;
+}
+
+// ─────────────────────────────────────────────
+// SCREEN MANAGEMENT
+// ─────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen, #scene').forEach(el => el.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function openPicker() {
+  document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('sel'));
+  document.querySelectorAll('.depth-btn').forEach(b => b.classList.remove('sel'));
+  document.querySelector('.mode-card[data-mode="relaxed"]').classList.add('sel');
+  document.querySelector('.depth-btn[data-depth="mid"]').classList.add('sel');
+  showScreen('session-picker');
+}
+function selMode(el) {
+  document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('sel'));
+  el.classList.add('sel');
+}
+function selDepth(el) {
+  document.querySelectorAll('.depth-btn').forEach(b => b.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+// ─────────────────────────────────────────────
+// SCENE BUILDING
+// ─────────────────────────────────────────────
+function buildScene() {
+  buildCaustic();
+  buildBottomDeco();
+  buildMotes();
+}
+
+function buildCaustic() {
+  const c = document.getElementById('caustic');
+  c.innerHTML = '';
+  [8,18,30,45,58,72,84].forEach(left => {
+    const div = document.createElement('div');
+    div.className = 'cray';
+    const w   = 20 + Math.random() * 30;
+    const sk1 = (-6 + Math.random() * 4).toFixed(1);
+    const sk2 = (2  + Math.random() * 8).toFixed(1);
+    div.style.cssText = `left:${left}%; --w:${w}px; --sk1:${sk1}deg; --sk2:${sk2}deg; --dur:${2.2+Math.random()*2}s;`;
+    c.appendChild(div);
+  });
+}
+
+function buildBottomDeco() {
+  const c = document.getElementById('bottom-deco');
+  c.innerHTML = '';
+  // Rocks
+  [{l:2,w:55,h:36},{l:12,w:80,h:50},{l:28,w:65,h:42},{l:46,w:90,h:55},{l:64,w:70,h:40},{l:80,w:55,h:32},{l:90,w:40,h:26}].forEach(r => {
+    const el = document.createElement('div');
+    el.className = 'brock';
+    el.style.cssText = `left:${r.l}%; width:${r.w}px; height:${r.h}px;`;
+    c.appendChild(el);
+  });
+  // Coral / plants — more variety and density
+  ['🪸','🌿','🪸','🌊','🪸','🌿','🪸','🌿','🪸','🌊','🪸','🌿'].forEach((em, i) => {
+    const el = document.createElement('div');
+    el.className = 'coral-item';
+    const left = 1 + i * 8.5 + Math.random() * 4;
+    const sz   = 1.0 + Math.random() * 1.1;
+    el.style.cssText = `left:${left}%; --sz:${sz}rem; --dur:${1.8+Math.random()*2.4}s;`;
+    el.textContent = em;
+    c.appendChild(el);
+  });
+  // Seaweed — more strands, taller
+  for (let i = 0; i < 18; i++) {
+    const el = document.createElement('div');
+    el.className = 'sweed';
+    const left = Math.random() * 97;
+    const h    = 30 + Math.random() * 75;
+    const w    = 4  + Math.random() * 5;
+    el.style.cssText = `left:${left}%; width:${w}px; height:${h}px; --dur:${1.5+Math.random()*2.5}s;`;
+    c.appendChild(el);
+  }
+}
+
+function buildMotes() {
+  const layer = document.getElementById('mote-layer');
+  if (!layer) return;
+  layer.innerHTML = '';
+  for (let i = 0; i < 28; i++) {
+    const el = document.createElement('div');
+    el.className = 'mote';
+    const sz  = (1.5 + Math.random() * 2).toFixed(1);
+    const dur = 5 + Math.random() * 10;
+    const dx  = (Math.random() - 0.5) * 30;
+    const top = 8 + Math.random() * 85;
+    const left = Math.random() * 98;
+    const delay = -(Math.random() * dur); // stagger start
+    el.style.cssText = `left:${left}%; top:${top}%; --sz:${sz}px; --dur:${dur}s; --dx:${dx}px; --delay:${delay}s;`;
+    layer.appendChild(el);
+  }
+}
+
+// ─────────────────────────────────────────────
+// SCENE METRICS
+// ─────────────────────────────────────────────
+function getMetrics() {
+  const surface    = document.getElementById('surface');
+  const boat       = document.getElementById('boat');
+  const underwater = document.getElementById('underwater');
+  const surfH = surface.offsetHeight;
+  const boatW = boat.offsetWidth;
+  const boatH = boat.offsetHeight;
+  // Boat: left:8px bottom:12px within surface
+  const boatTop = surfH - 12 - boatH;
+  // Rod tip at SVG coords (77/80, 9/58) of boat bounding box
+  const rodX = 8 + boatW * (77 / 80);
+  const rodY = boatTop + boatH * (9 / 58);
+  return { rodX, rodY, surfH, uwW: underwater.offsetWidth, uwH: underwater.offsetHeight };
+}
+
+// ─────────────────────────────────────────────
+// LINE DRAWING  (coordinates in scene space)
+// ─────────────────────────────────────────────
+function drawLine(toSceneX, toSceneY, tension) {
+  const line = document.getElementById('fishing-line');
+  const { rodX, rodY } = getMetrics();
+  const mx  = (rodX + toSceneX) / 2;
+  const sag = tension > 70 ? 8 : tension > 40 ? 18 : 28;
+  const my  = (rodY + toSceneY) / 2 + sag;
+  line.setAttribute('d', `M${rodX},${rodY} Q${mx},${my} ${toSceneX},${toSceneY}`);
+  const stroke = tension < 55 ? 'rgba(255,255,255,0.8)' :
+                 tension < 78 ? 'rgba(255,220,0,0.95)'  :
+                 tension < 90 ? 'rgba(255,110,0,1)'     : 'rgba(255,30,30,1)';
+  const sw = tension < 55 ? '1.5' : tension < 78 ? '2' : tension < 90 ? '2.5' : '3';
+  line.setAttribute('stroke', stroke);
+  line.setAttribute('stroke-width', sw);
+}
+
+function clearLine() {
+  document.getElementById('fishing-line').setAttribute('d', '');
+}
+
+// ─────────────────────────────────────────────
+// AMBIENT FISH
+// ─────────────────────────────────────────────
+const AMB_FISH = ['🐟','🐠','🐡','🐟','🐠','🐡','🦈','🐙','🦑','🐠','🐟'];
+
+function spawnAmbFish(opts = {}) {
+  const layer   = document.getElementById('ambient-layer');
+  if (!layer) return;
+  const fast    = opts.fast || Math.random() < 0.25; // 25% chance of fast dart
+  const school  = opts.school || false;
+  const goRight = Math.random() > 0.5;
+  const depth   = Math.random();
+  const topPct  = 4 + depth * 88;
+  const sz      = school ? 0.5 + Math.random() * 0.4 : 0.7 + depth * 1.3;
+  const op      = school ? 0.25 + Math.random() * 0.2 : 0.15 + (1 - depth) * 0.25;
+  const dur     = fast ? 1.8 + Math.random() * 1.4 : 5 + Math.random() * 6;
+  const dy      = (Math.random() - 0.5) * (fast ? 10 : 30);
+  const em      = AMB_FISH[Math.floor(Math.random() * AMB_FISH.length)];
+  const el      = document.createElement('div');
+  el.className  = goRight ? 'amb-fish' : 'amb-fish rtl';
+  const layerW = layer.offsetWidth || window.innerWidth;
+  el.style.cssText = `top:${topPct}%; --sz:${sz}rem; --op:${op}; --dur:${dur}s; --x0:-120px; --x1:${layerW + 120}px; --dy:${dy}px;`;
+  el.textContent = em;
+  layer.appendChild(el);
+  setTimeout(() => el.remove(), dur * 1000 + 300);
+}
+
+function spawnSchool() {
+  // Spawn 3-5 small fish in tight formation at same depth
+  const count  = 3 + Math.floor(Math.random() * 3);
+  const baseY  = 10 + Math.random() * 75;
+  for (let i = 0; i < count; i++) {
+    setTimeout(() => spawnAmbFish({ school: true }), i * 180);
+  }
+}
+
+function startAmbFish() {
+  // Spawn initial burst
+  for (let i = 0; i < 3; i++) setTimeout(() => spawnAmbFish(), i * 400);
+  // Regular interval — much faster
+  G.ambInterval = setInterval(() => {
+    const r = Math.random();
+    if (r < 0.15) spawnSchool();        // 15% school event
+    else if (r < 0.40) spawnAmbFish({ fast: true }); // 25% fast dart
+    else spawnAmbFish();                // normal
+  }, 800 + Math.random() * 700);
+}
+
+function stopAmbFish() {
+  clearInterval(G.ambInterval);
+  G.ambInterval = null;
+  document.querySelectorAll('.amb-fish').forEach(el => {
+    el.style.transition = 'opacity 0.4s';
+    el.style.opacity = '0';
+    setTimeout(() => el.remove(), 500);
+  });
+}
+
+// ─────────────────────────────────────────────
+// JELLYFISH
+// ─────────────────────────────────────────────
+function spawnJellyfish() {
+  const uw = document.getElementById('underwater');
+  if (!uw) return;
+  const JELLY = ['🪼','🫧','🪼'];
+  const em    = JELLY[Math.floor(Math.random() * JELLY.length)];
+  const el    = document.createElement('div');
+  el.className = 'jelly';
+  const left   = 5 + Math.random() * 88;
+  const sz     = 0.9 + Math.random() * 1.3;
+  const op     = 0.18 + Math.random() * 0.22;
+  const dur    = 9 + Math.random() * 12;
+  const dx     = (Math.random() - 0.5) * 50;
+  const uwH    = uw.offsetHeight || 500;
+  const startPct = 72 + Math.random() * 22;   // start near bottom (72–94%)
+  const startPx  = uwH * startPct / 100;
+  const travelPx = -(startPx + 40);            // travel up in pixels past the top
+  el.style.cssText = `left:${left}%; top:${startPct}%; --sz:${sz}rem; --op:${op}; --dur:${dur}s; --dx:${dx}px; --dy:${travelPx}px;`;
+  el.textContent = em;
+  uw.appendChild(el);
+  setTimeout(() => el.remove(), dur * 1000 + 300);
+}
+
+function startJellyfish() {
+  spawnJellyfish();
+  G.jellyInterval = setInterval(spawnJellyfish, 4500 + Math.random() * 4000);
+}
+
+function stopJellyfish() {
+  clearInterval(G.jellyInterval);
+  G.jellyInterval = null;
+  document.querySelectorAll('.jelly').forEach(el => el.remove());
+}
+
+// ─────────────────────────────────────────────
+// BUBBLES
+// ─────────────────────────────────────────────
+function startBubbles(castX) {
+  const { surfH } = getMetrics();
+  function spawnBub() {
+    const sinkerEl = document.getElementById('sinker');
+    const sinkerY  = parseFloat(sinkerEl.style.top) || 0;
+    const sz  = 3 + Math.random() * 5;
+    const dx  = (Math.random() - 0.5) * 18;
+    const dur = 1 + Math.random() * 1;
+    const bub = document.createElement('div');
+    bub.className = 'bubble';
+    bub.style.cssText = `width:${sz}px; height:${sz}px; left:${castX - sz/2 + (Math.random()-0.5)*8}px; top:${surfH + sinkerY}px; --dx:${dx}px; --dur:${dur}s;`;
+    document.getElementById('scene').appendChild(bub);
+    setTimeout(() => bub.remove(), dur * 1000 + 100);
+  }
+  G.bubInterval = setInterval(spawnBub, 650);
+  setTimeout(() => { clearInterval(G.bubInterval); G.bubInterval = null; }, G.sinkDurMs + 200);
+}
+
+// ─────────────────────────────────────────────
+// RIPPLE
+// ─────────────────────────────────────────────
+function spawnRipple(sceneX, sceneY) {
+  const scene = document.getElementById('scene');
+  for (let i = 0; i < 3; i++) {
+    setTimeout(() => {
+      const r = document.createElement('div');
+      r.className = 'ripple-ring';
+      r.style.cssText = `left:${sceneX}px; top:${sceneY}px;`;
+      scene.appendChild(r);
+      setTimeout(() => r.remove(), 1600);
+    }, i * 180);
+  }
+}
+
+// ─────────────────────────────────────────────
+// STATUS BAR
+// ─────────────────────────────────────────────
+function updateStatus() {
+  const bar = document.getElementById('status-bar');
+  if (G.session === 'relaxed') { bar.classList.remove('active'); return; }
+  bar.classList.add('active');
+  if (G.session === 'challenge') {
+    document.getElementById('s-catches').textContent = `🐟 ${G.chalCaught}/${G.chalTarget}`;
+    const m = Math.floor(G.chalSeconds / 60);
+    const s = G.chalSeconds % 60;
+    document.getElementById('s-timer').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+    document.getElementById('s-casts').textContent = '';
+    if (G.chalSeconds <= 60) bar.classList.add('urgent'); else bar.classList.remove('urgent');
+  } else {
+    document.getElementById('s-catches').textContent = '';
+    document.getElementById('s-timer').textContent   = '';
+    document.getElementById('s-casts').textContent   = `🏆 ${G.trophyCastsLeft} cast${G.trophyCastsLeft !== 1 ? 's' : ''} left`;
+  }
+}
+
+function startChalTimer() {
+  if (G.session !== 'challenge') return;
+  G.chalInterval = setInterval(() => {
+    G.chalSeconds--;
+    updateStatus();
+    if (G.chalSeconds <= 0) { clearInterval(G.chalInterval); endSession('time'); }
+  }, 1000);
+}
+
+// ─────────────────────────────────────────────
+// FISH PICKING
+// ─────────────────────────────────────────────
+function pickFish() {
+  const zones = G.sinker === 'shallow' ? ['shallow']
+              : G.sinker === 'mid'     ? ['shallow','mid']
+              :                          ['mid','deep'];
+  const rw = { common:50, uncommon:28, rare:13, legendary:4 };
+  if (G.sinker === 'deep')    { rw.rare += 8; rw.legendary += 4; rw.common -= 10; }
+  if (G.sinker === 'shallow') { rw.common += 14; rw.uncommon -= 5; }
+  const pool  = Object.entries(FISH)
+    .filter(([,f]) => zones.includes(f.zone))
+    .map(([id,f]) => ({ id, ...f, _w: rw[f.rarity] || 8 }));
+  const total = pool.reduce((s,e) => s + e._w, 0);
+  let r = Math.random() * total;
+  for (const e of pool) { r -= e._w; if (r <= 0) return e; }
+  return pool[pool.length - 1];
+}
+
+// ─────────────────────────────────────────────
+// SESSION
+// ─────────────────────────────────────────────
+function startSession() {
+  const modeEl  = document.querySelector('.mode-card.sel');
+  const depthEl = document.querySelector('.depth-btn.sel');
+  if (!modeEl || !depthEl) return;
+  resetG(true);
+  G.session = modeEl.dataset.mode;
+  G.sinker  = depthEl.dataset.depth;
+  G.weather = WEATHER[Math.floor(Math.random() * WEATHER.length)];
+  const bait = G.sinker === 'shallow' ? '🪱' : G.sinker === 'mid' ? '🐛' : '🦐';
+  document.getElementById('sinker-bait').textContent = bait;
+  buildScene();
+  showScreen('scene');
+  hideOverlays();
+  updateStatus();
+  setTimeout(startCast, 350);
+}
+
+function clearSceneState() {
+  stopAmbFish();
+  stopJellyfish();
+  clearInterval(G.bubInterval);
+  clearTimeout(G.biteTimeout);
+  clearTimeout(G.surgeTO);
+  clearTimeout(G.surgeWarnTO);
+  clearInterval(G.chalInterval);
+  cancelAnimationFrame(G.pBarRaf);
+  cancelAnimationFrame(G.sinkRaf);
+  cancelAnimationFrame(G.battleRaf);
+  document.getElementById('sinker').classList.remove('active');
+  document.getElementById('battle-fish').classList.remove('active');
+  document.getElementById('battle-fish').innerHTML = '';
+  document.querySelectorAll('.cpce,.sdrop,.bubble,.ripple-ring,.amb-fish').forEach(e => e.remove());
+  clearLine();
+}
+
+function hideOverlays() {
+  ['cast-hud','tension-hud','bite-overlay','surge-warn','snap-danger',
+   'lost-overlay','countdown','catch-popup','water-break'].forEach(id =>
+    document.getElementById(id).classList.remove('active'));
+  G.holding = false;
+  G.surging = false;
+}
+
+// ─────────────────────────────────────────────
+// CAST PHASE
+// ─────────────────────────────────────────────
+function startCast() {
+  clearSceneState();
+  hideOverlays();
+  G.pBarVal = 0;
+  G.pBarDir = 1;
+  document.getElementById('cast-hud').classList.add('active');
+  updateStatus();
+  startAmbFish();    // Fish swim whether line is cast or not
+  startJellyfish();  // Jellyfish drift upward continuously
+  runPowerBar();
+}
+
+function runPowerBar() {
+  const fill    = document.getElementById('cast-fill');
+  const distLbl = document.getElementById('cast-dist-lbl');
+  function step() {
+    G.pBarVal += G.pBarDir * 1.7;
+    if (G.pBarVal >= 100) { G.pBarVal = 100; G.pBarDir = -1; }
+    if (G.pBarVal <= 0)   { G.pBarVal = 0;   G.pBarDir =  1; }
+    fill.style.width = G.pBarVal + '%';
+    distLbl.textContent = G.pBarVal < 30 ? 'Short' : G.pBarVal < 70 ? 'Medium' : 'Long 🎯';
+    G.pBarRaf = requestAnimationFrame(step);
+  }
+  G.pBarRaf = requestAnimationFrame(step);
+}
+
+function doCast() {
+  if (!document.getElementById('cast-hud').classList.contains('active')) return;
+  cancelAnimationFrame(G.pBarRaf);
+  G.castPower = G.pBarVal;
+  document.getElementById('cast-hud').classList.remove('active');
+  animateCast();
+}
+
+function animateCast() {
+  const { surfH, uwW } = getMetrics();
+  const xPct  = G.castPower < 30 ? 0.35 : G.castPower < 70 ? 0.55 : 0.72;
+  const castX = uwW * xPct;
+  G.sinkCastX = castX;
+  const sinkerEl = document.getElementById('sinker');
+  sinkerEl.style.left = castX + 'px';
+  sinkerEl.style.top  = '0px';
+  sinkerEl.classList.add('active');
+  spawnRipple(castX, surfH);
+  if (G.castPower >= 70) showKidMsg('NICE CAST! 🎣', '#43e97b');
+  startSink(castX);
+}
+
+// ─────────────────────────────────────────────
+// SINK PHASE
+// ─────────────────────────────────────────────
+function startSink(castX) {
+  const { uwH } = getMetrics();
+  const depthPct  = G.sinker === 'shallow' ? 0.22 + Math.random() * 0.18
+                  : G.sinker === 'mid'     ? 0.42 + Math.random() * 0.20
+                  :                          0.62 + Math.random() * 0.22;
+  G.sinkTargetY = uwH * depthPct;
+  G.sinkDurMs   = 1800 + depthPct * 3200;
+  G.sinkStart   = performance.now();
+  startBubbles(castX); // Ambient fish already running from startCast
+  G.fish = pickFish();
+  const biteWait = (2500 + Math.random() * 5500) * G.weather.bite;
+  G.biteTimeout  = setTimeout(triggerBite, G.sinkDurMs + biteWait);
+  if (G.catchLog.length === 0 && G.session === 'challenge') startChalTimer();
+  animateSink();
+}
+
+function animateSink() {
+  const sinkerEl = document.getElementById('sinker');
+  const { surfH } = getMetrics();
+  let bobStart = null;
+  function step(now) {
+    const t     = Math.min((now - G.sinkStart) / G.sinkDurMs, 1);
+    const eased = 1 - Math.pow(1 - t, 2);
+    let y;
+    if (t < 1) {
+      y = eased * G.sinkTargetY;
+    } else {
+      // Reached target depth — gentle vertical bobbing (no X sway to keep line aligned)
+      if (!bobStart) bobStart = now;
+      const elapsed = (now - bobStart) / 1000;
+      y = G.sinkTargetY + Math.sin(elapsed * 1.3) * 5;
+    }
+    G.sinkRaf = requestAnimationFrame(step);
+    sinkerEl.style.top = y + 'px';
+    drawLine(G.sinkCastX, surfH + y, 20);
+  }
+  G.sinkRaf = requestAnimationFrame(step);
+}
+
+// ─────────────────────────────────────────────
+// BITE
+// ─────────────────────────────────────────────
+function triggerBite() {
+  cancelAnimationFrame(G.sinkRaf);
+  stopAmbFish();
+  const sinkerEl   = document.getElementById('sinker');
+  const { surfH, uwW, uwH } = getMetrics();
+  const sinkerY = parseFloat(sinkerEl.style.top) || G.sinkTargetY;
+  G.fishX = G.sinkCastX / uwW;
+  G.fishY = sinkerY / uwH;
+  const scene = document.getElementById('scene');
+  scene.classList.add('shake');
+  setTimeout(() => scene.classList.remove('shake'), 350);
+  document.getElementById('bite-overlay').classList.add('active');
+  setTimeout(() => {
+    document.getElementById('bite-overlay').classList.remove('active');
+    startCountdown();
+  }, 900);
+}
+
+// ─────────────────────────────────────────────
+// COUNTDOWN
+// ─────────────────────────────────────────────
+function startCountdown() {
+  const overlay = document.getElementById('countdown');
+  const num     = document.getElementById('cd-num');
+  overlay.classList.add('active');
+  let count = 3;
+  function show(n) {
+    num.textContent = n;
+    num.style.animation = 'none';
+    num.offsetHeight;
+    num.style.animation = 'cdPop 0.36s cubic-bezier(0.34,1.56,0.64,1)';
+  }
+  show(count);
+  const tick = setInterval(() => {
+    count--;
+    if (count <= 0) { clearInterval(tick); overlay.classList.remove('active'); startBattle(); }
+    else show(count);
+  }, 600);
+}
+
+// ─────────────────────────────────────────────
+// BATTLE PHASE
+// ─────────────────────────────────────────────
+function startBattle() {
+  G.fishVX       = 0;
+  G.tension      = 20;
+  G.holding      = false;
+  G.surging      = false;
+  G.escapeTimer  = 0;
+  G._almostShown = false;
+  renderBattleFish(G.fish);
+  document.getElementById('battle-fish').classList.add('active');
+  document.getElementById('sinker').classList.remove('active');
+  document.getElementById('tension-hud').classList.add('active');
+  G.battleLastT = null;
+  G.battleRaf   = requestAnimationFrame(battleLoop);
+  scheduleSurge();
+}
+
+function renderBattleFish(fish) {
+  const el   = document.getElementById('battle-fish');
+  const size = 44 + fish.diff * 16;
+  // Color palettes per rarity — pick one randomly each time
+  const palettes = {
+    common:    [['#3a7bd5','#1a3a6e'],['#2e8b57','#14452b'],['#8b6914','#4a380a']],
+    uncommon:  [['#1cb5e0','#0d6b87'],['#00b09b','#096b5e'],['#6a82fb','#3a4a9e']],
+    rare:      [['#b721ff','#5c0d87'],['#f953c6','#8b0057'],['#ff6b6b','#8b1a1a']],
+    legendary: [['#f7971e','#8b4c00'],['#ffd700','#8b7200'],['#ff4ecd','#7a006e']],
+  };
+  const pal = palettes[fish.rarity] || palettes.common;
+  const [c1, c2] = pal[Math.floor(Math.random() * pal.length)];
+  const eyeGlow = { common:'rgba(180,230,255,0.9)', uncommon:'rgba(100,255,220,0.9)', rare:'rgba(255,100,255,0.95)', legendary:'rgba(255,240,0,1)' };
+  el.style.setProperty('--fg', eyeGlow[fish.rarity] || eyeGlow.common);
+
+  // Shape variants by rarity — proper fish outlines (mouth left, tail right)
+  let svg;
+  if (fish.rarity === 'legendary') {
+    // Large dramatic fish — big fins, glowing eye
+    svg = `<svg class="fish-body-svg" width="${size*2}" height="${size*1.15}" viewBox="0 0 110 64" xmlns="http://www.w3.org/2000/svg">
+      <!-- Forked tail -->
+      <path d="M88,32 Q106,15 100,5 Q94,18 88,32 Q94,46 100,59 Q106,49 88,32 Z" fill="${c1}"/>
+      <!-- Body -->
+      <path d="M6,32 Q4,18 16,12 Q34,4 56,4 Q80,4 88,32 Q80,60 56,60 Q34,60 16,52 Q4,46 6,32 Z" fill="${c1}"/>
+      <!-- Sheen -->
+      <path d="M18,14 Q40,7 60,8 Q74,9 80,20 Q68,11 48,9 Q30,9 18,14 Z" fill="white" opacity="0.18"/>
+      <!-- Lateral line -->
+      <path d="M18,30 Q48,26 82,30" stroke="${c2}" stroke-width="2" fill="none" opacity="0.45"/>
+      <!-- Large dorsal fin -->
+      <path d="M38,4 Q48,-9 66,-7 Q70,1 60,5 Q50,2 38,4 Z" fill="${c1}"/>
+      <!-- Large pectoral fin -->
+      <path d="M32,24 Q16,50 34,44 Q36,30 32,24 Z" fill="${c2}" opacity="0.7"/>
+      <!-- Gill -->
+      <path d="M22,14 Q25,32 22,50" stroke="${c2}" stroke-width="1.5" fill="none" opacity="0.5"/>
+      <!-- Eye socket -->
+      <circle cx="18" cy="27" r="8.5" fill="${c2}" opacity="0.9"/>
+      <circle cx="18" cy="27" r="6" fill="#000"/>
+      <circle cx="15.5" cy="24.5" r="3" fill="${eyeGlow.legendary}"/>
+      <circle cx="22" cy="29" r="1.8" fill="rgba(255,255,255,0.65)"/>
+      <!-- Eye glow ring -->
+      <circle cx="18" cy="27" r="10" fill="none" stroke="${eyeGlow.legendary}" stroke-width="2" opacity="0.35"/>
+    </svg>`;
+  } else if (fish.rarity === 'rare') {
+    // Pike — long, narrow, pointed snout
+    svg = `<svg class="fish-body-svg" width="${size*2.2}" height="${size*0.72}" viewBox="0 0 120 44" xmlns="http://www.w3.org/2000/svg">
+      <!-- Forked tail -->
+      <path d="M98,22 L116,11 L108,22 L116,33 Z" fill="${c1}"/>
+      <!-- Long narrow body — pointed at mouth -->
+      <path d="M4,22 Q2,16 12,12 Q28,5 58,5 Q86,5 98,22 Q86,39 58,39 Q28,39 12,32 Q2,28 4,22 Z" fill="${c1}"/>
+      <!-- Sheen -->
+      <path d="M12,13 Q36,8 60,8 Q80,8 90,17 Q76,10 55,9 Q30,9 12,13 Z" fill="white" opacity="0.15"/>
+      <!-- Pike lateral stripe -->
+      <path d="M14,21 Q40,18 88,21" stroke="${c2}" stroke-width="2" fill="none" opacity="0.45"/>
+      <!-- Back-set dorsal (pike style) -->
+      <path d="M70,5 Q78,-3 90,-1 Q88,5 80,6 Z" fill="${c1}"/>
+      <!-- Small pectoral fin -->
+      <path d="M26,18 Q17,32 27,30 Q28,21 26,18 Z" fill="${c2}" opacity="0.65"/>
+      <!-- Eye near pointed snout -->
+      <circle cx="12" cy="19" r="5" fill="${c2}"/>
+      <circle cx="12" cy="19" r="3.5" fill="#000"/>
+      <circle cx="10.5" cy="17.5" r="1.5" fill="${eyeGlow.rare}" opacity="0.95"/>
+    </svg>`;
+  } else if (fish.rarity === 'uncommon') {
+    // Bass — medium elongated, spiny dorsal
+    svg = `<svg class="fish-body-svg" width="${size*1.75}" height="${size}" viewBox="0 0 100 55" xmlns="http://www.w3.org/2000/svg">
+      <!-- Forked tail -->
+      <path d="M80,27 L98,13 L90,27 L98,41 Z" fill="${c1}"/>
+      <!-- Body -->
+      <path d="M6,27 Q4,16 14,11 Q30,4 52,4 Q74,4 80,27 Q74,50 52,50 Q30,50 14,43 Q4,38 6,27 Z" fill="${c1}"/>
+      <!-- Sheen -->
+      <path d="M16,13 Q36,7 54,8 Q68,9 75,18 Q64,11 46,9 Q28,8 16,13 Z" fill="white" opacity="0.16"/>
+      <!-- Lateral line -->
+      <path d="M16,25 Q42,21 74,25" stroke="${c2}" stroke-width="1.5" fill="none" opacity="0.4"/>
+      <!-- Spiny dorsal fin -->
+      <path d="M38,4 Q46,-5 62,-3 Q60,4 50,6 Q44,5 38,4 Z" fill="${c1}"/>
+      <line x1="42" y1="4" x2="44" y2="-4" stroke="${c2}" stroke-width="1.2" opacity="0.5"/>
+      <line x1="50" y1="4" x2="52" y2="-4" stroke="${c2}" stroke-width="1.2" opacity="0.5"/>
+      <line x1="57" y1="3" x2="59" y2="-3" stroke="${c2}" stroke-width="1.2" opacity="0.5"/>
+      <!-- Pectoral fin -->
+      <path d="M30,22 Q20,38 32,35 Q33,26 30,22 Z" fill="${c2}" opacity="0.65"/>
+      <!-- Gill -->
+      <path d="M20,14 Q22,27 20,40" stroke="${c2}" stroke-width="1.5" fill="none" opacity="0.45"/>
+      <!-- Eye -->
+      <circle cx="15" cy="23" r="6" fill="${c2}"/>
+      <circle cx="15" cy="23" r="4" fill="#000"/>
+      <circle cx="13.5" cy="21.5" r="1.8" fill="${eyeGlow.uncommon}" opacity="0.95"/>
+    </svg>`;
+  } else {
+    // Common — round sunfish, chubby and cheerful
+    svg = `<svg class="fish-body-svg" width="${size*1.5}" height="${size}" viewBox="0 0 90 60" xmlns="http://www.w3.org/2000/svg">
+      <!-- Forked tail -->
+      <path d="M70,30 L86,16 L80,30 L86,44 Z" fill="${c1}"/>
+      <!-- Round body -->
+      <path d="M8,30 Q5,17 16,12 Q32,5 50,5 Q66,5 70,30 Q66,55 50,55 Q32,55 16,48 Q5,43 8,30 Z" fill="${c1}"/>
+      <!-- Sheen -->
+      <path d="M18,14 Q34,8 50,9 Q62,10 66,19 Q58,12 44,10 Q28,9 18,14 Z" fill="white" opacity="0.16"/>
+      <!-- Lateral stripe -->
+      <path d="M18,28 Q38,24 64,28" stroke="${c2}" stroke-width="1.5" fill="none" opacity="0.4"/>
+      <!-- Dorsal fin -->
+      <path d="M38,5 Q44,-3 54,-1 Q52,5 44,6 Z" fill="${c1}"/>
+      <!-- Pectoral fin -->
+      <path d="M30,25 Q20,42 32,38 Q33,28 30,25 Z" fill="${c2}" opacity="0.65"/>
+      <!-- Gill line -->
+      <path d="M22,15 Q25,30 22,45" stroke="${c2}" stroke-width="1.5" fill="none" opacity="0.45"/>
+      <!-- Eye -->
+      <circle cx="17" cy="26" r="5.5" fill="${c2}"/>
+      <circle cx="17" cy="26" r="3.5" fill="#000"/>
+      <circle cx="15.5" cy="24.5" r="1.5" fill="${eyeGlow.common}" opacity="0.9"/>
+    </svg>`;
+  }
+  el.innerHTML = svg;
+}
+
+function battleLoop(now) {
+  if (!G.battleLastT) G.battleLastT = now;
+  const dt   = Math.min((now - G.battleLastT) / 1000, 0.1);
+  G.battleLastT = now;
+  const fish = G.fish;
+  const cfg  = FIGHT_CFG[fish.diff] || FIGHT_CFG[3];
+  const { surfH, uwW, uwH } = getMetrics();
+
+  // Tension physics
+  const REEL_RATE  = 24 + fish.diff * 3;
+  const RELAX_RATE = 32;
+  if (G.holding) G.tension += REEL_RATE * dt;
+  else           G.tension -= RELAX_RATE * dt;
+  G.tension += cfg.passive * 0.18 * dt; // passive fish resistance
+  G.tension  = Math.max(0, Math.min(100, G.tension));
+
+  // Fish Y (depth) — reel speed scales with tension (sweet spot = more progress)
+  const boatXNorm = getMetrics().rodX / uwW; // boat rod tip in normalized X (left side)
+  if (G.holding && G.tension >= 15 && G.tension < 88) {
+    // Scale factor: 0.5x at low tension (15), 1.0x at mid (52), 1.5x near danger (80)
+    const tFrac = Math.max(0, (G.tension - 15) / 65);
+    const reelMult = 0.5 + tFrac * 1.0;
+    G.fishY -= cfg.reel * reelMult * dt;                         // reel up
+    G.fishX += (boatXNorm - G.fishX) * (1.2 + tFrac * 1.0) * dt; // pull towards boat — rate dominates lateral fight
+  } else if (!G.holding) {
+    G.fishY += 0.012 * dt;          // drifts deeper when not held
+  }
+  if (G.surging) G.fishY += 0.10 * dt; // surge dives fish
+
+  // Fish X (lateral fight)
+  G.fishVX += (Math.random() - 0.5) * fish.diff * 0.0035;
+  G.fishVX *= 0.94;
+  G.fishX  += G.fishVX * dt * 18;
+  G.fishX   = Math.max(0.06, Math.min(0.92, G.fishX));
+  G.fishY   = Math.max(0.04, Math.min(0.97, G.fishY));
+
+  // Escape if too deep too long
+  if (G.fishY > 0.94 && !G.holding) {
+    G.escapeTimer += dt;
+    if (G.escapeTimer > 5) { snapLine('Fish dove too deep!'); return; }
+  } else G.escapeTimer = 0;
+
+  if (G.tension >= 100) { snapLine('Line snapped!'); return; }
+  if (G.fishY <= 0.04)  { catchFish(); return; }
+
+  // Position fish element (within underwater div)
+  const fishEl = document.getElementById('battle-fish');
+  fishEl.style.left = (G.fishX * uwW) + 'px';
+  fishEl.style.top  = (G.fishY * uwH) + 'px';
+  const flipScale   = G.fishVX < -0.01 ? 'scaleX(-1)' : 'scaleX(1)';
+  fishEl.style.transform = `translate(-50%,-50%) ${flipScale}`;
+
+  // Draw line in scene space
+  drawLine(G.fishX * uwW, surfH + G.fishY * uwH, G.tension);
+
+  // Tension bar
+  const tf = document.getElementById('tension-fill');
+  tf.style.width = G.tension + '%';
+  tf.className   = G.tension < 60 ? '' : G.tension < 82 ? 'warn' : 'danger';
+
+  // Depth progress (surface = 100%)
+  document.getElementById('depth-fill').style.width = Math.min(100, (1 - G.fishY) * 105) + '%';
+
+  // Status text
+  const ts = document.getElementById('t-status');
+  if (G.surging)           { ts.textContent = 'RELEASE!';    ts.style.color = '#ff5252'; }
+  else if (G.tension > 82) { ts.textContent = 'TOO TIGHT!';  ts.style.color = '#ff8c00'; }
+  else if (G.holding && G.tension >= 15) { ts.textContent = 'REELING...'; ts.style.color = '#43e97b'; }
+  else                     { ts.textContent = 'HOLD TO REEL'; ts.style.color = '#29b6f6'; }
+
+  // Kid-friendly ALMOST! when fish is close to surface
+  if (G.fishY < 0.18 && !G.surging && !G._almostShown) {
+    G._almostShown = true;
+    showKidMsg('ALMOST! 🐠', '#ffd200');
+    setTimeout(() => { G._almostShown = false; }, 3500);
+  }
+
+  document.getElementById('snap-danger').classList.toggle('active', G.tension > 88);
+  G.battleRaf = requestAnimationFrame(battleLoop);
+}
+
+// ─────────────────────────────────────────────
+// SURGES
+// ─────────────────────────────────────────────
+function scheduleSurge() {
+  const diff  = G.fish ? G.fish.diff : 2;
+  const delay = (2200 + Math.random() * 4500) / (diff * 0.45 + 0.55);
+  G.surgeTO = setTimeout(doSurge, delay);
+}
+
+function doSurge() {
+  if (!G.battleRaf) return;
+  G.surging = true;
+  const cfg   = FIGHT_CFG[G.fish.diff] || FIGHT_CFG[3];
+  const spike = cfg.surgeSpike + (Math.random() - 0.5) * 10;
+  G.tension   = Math.min(98, G.tension + spike);
+  G.fishVX   += (Math.random() - 0.5) * 0.35;
+  const warn  = document.getElementById('surge-warn');
+  warn.textContent = Math.random() < 0.5 ? '💦 SURGE!' : '⚡ THRASH!';
+  warn.classList.remove('active');
+  warn.offsetHeight;
+  warn.classList.add('active');
+  document.getElementById('battle-fish').classList.add('surging');
+  document.getElementById('scene').classList.add('shake');
+  setTimeout(() => document.getElementById('scene').classList.remove('shake'), 350);
+  G.surgeWarnTO = setTimeout(() => {
+    G.surging = false;
+    warn.classList.remove('active');
+    document.getElementById('battle-fish').classList.remove('surging');
+  }, 900);
+  scheduleSurge();
+}
+
+// ─────────────────────────────────────────────
+// LOSE FISH
+// ─────────────────────────────────────────────
+function snapLine(reason) {
+  cancelAnimationFrame(G.battleRaf); G.battleRaf = null;
+  clearTimeout(G.surgeTO); clearTimeout(G.surgeWarnTO);
+  ['tension-hud','snap-danger','surge-warn'].forEach(id => document.getElementById(id).classList.remove('active'));
+  document.getElementById('battle-fish').classList.remove('active');
+  document.getElementById('battle-fish').classList.remove('surging');
+  clearLine();
+  document.getElementById('lost-reason').textContent = reason || 'Fish escaped!';
+  document.getElementById('lost-overlay').classList.add('active');
+  setTimeout(() => { document.getElementById('lost-overlay').classList.remove('active'); afterCatch(false); }, 1800);
+}
+
+// ─────────────────────────────────────────────
+// CATCH FISH
+// ─────────────────────────────────────────────
+function catchFish() {
+  cancelAnimationFrame(G.battleRaf); G.battleRaf = null;
+  clearTimeout(G.surgeTO); clearTimeout(G.surgeWarnTO);
+  ['tension-hud','snap-danger','surge-warn'].forEach(id => document.getElementById(id).classList.remove('active'));
+  document.getElementById('battle-fish').classList.remove('surging');
+  clearLine();
+  spawnSplash();
+  spawnConfetti(G.fish.rarity === 'legendary' ? 80 : 32);
+  if (G.fish.rarity === 'legendary') showKidMsg('LEGENDARY! ⭐', '#ffd700');
+  const fish = G.fish;
+  const wt   = +(fish.wt[0]  + Math.random() * (fish.wt[1]  - fish.wt[0])).toFixed(1);
+  const len  = Math.round(fish.len[0] + Math.random() * (fish.len[1] - fish.len[0]));
+  let isPB   = false;
+  if (!G.pb[fish.id] || wt > G.pb[fish.id]) { G.pb[fish.id] = wt; isPB = true; localStorage.setItem('ff2_pb', JSON.stringify(G.pb)); }
+  G.catchLog.push({ fish, wt, len });
+  G.chalCaught++;
+  updateStatus();
+  setTimeout(() => showCatchCard(fish, wt, len, isPB), 650);
+}
+
+function spawnSplash() {
+  const wb = document.getElementById('water-break');
+  wb.classList.remove('active'); wb.offsetHeight; wb.classList.add('active');
+  setTimeout(() => wb.classList.remove('active'), 750);
+  const { surfH, uwW } = getMetrics();
+  const scene = document.getElementById('scene');
+  const splX  = G.fishX * uwW;
+  for (let i = 0; i < 14; i++) {
+    const drop = document.createElement('div');
+    drop.className = 'sdrop';
+    const angle = Math.random() * Math.PI;
+    const spd   = 35 + Math.random() * 55;
+    const dur   = 0.35 + Math.random() * 0.3;
+    drop.style.cssText = `left:${splX}px; top:${surfH + 6}px; --dx:${Math.cos(angle)*spd}px; --dy:${-Math.sin(angle)*spd-25}px; --dur:${dur}s;`;
+    scene.appendChild(drop);
+    setTimeout(() => drop.remove(), dur * 1000 + 100);
+  }
+}
+
+function showCatchCard(fish, wt, len, isPB) {
+  document.getElementById('card-emoji').textContent   = fish.emoji;
+  document.getElementById('card-name').textContent    = fish.name;
+  const rarEl = document.getElementById('card-rarity');
+  rarEl.textContent = fish.rarity.toUpperCase();
+  rarEl.className   = 'card-rarity ' + fish.rarity;
+  document.getElementById('card-topbar').className = 'card-topbar ' + fish.rarity;
+  document.getElementById('card-wt').textContent   = wt + ' lb';
+  document.getElementById('card-len').textContent  = len + '"';
+  document.getElementById('card-pb').className     = 'card-pb' + (isPB ? ' show' : '');
+  document.getElementById('card-fact').textContent = '"' + fish.facts[Math.floor(Math.random() * fish.facts.length)] + '"';
+  const btn = document.getElementById('card-btn');
+  btn.textContent = (G.session === 'trophy' && G.trophyCastsLeft - 1 <= 0) ? 'See Results →' :
+                    (G.session === 'challenge' && G.chalCaught >= G.chalTarget) ? 'Challenge Done! 🎉' :
+                    'Keep Fishing →';
+  document.getElementById('catch-popup').classList.add('active');
+  document.getElementById('battle-fish').classList.remove('active');
+}
+
+document.getElementById('card-btn').addEventListener('click', () => {
+  document.getElementById('catch-popup').classList.remove('active');
+  afterCatch(true);
+});
+
+function afterCatch(caught) {
+  if (G.session === 'challenge' && G.chalCaught >= G.chalTarget) {
+    clearInterval(G.chalInterval); endSession('won'); return;
+  }
+  if (G.session === 'trophy') {
+    G.trophyCastsLeft--;
+    updateStatus();
+    if (G.trophyCastsLeft <= 0) { endSession('done'); return; }
+  }
+  startCast();
+}
+
+// ─────────────────────────────────────────────
+// END SESSION
+// ─────────────────────────────────────────────
+function endSession(reason) {
+  clearInterval(G.chalInterval);
+  const title = document.getElementById('res-title');
+  const sub   = document.getElementById('res-sub');
+  const box   = document.getElementById('res-box');
+  if      (reason === 'won')  { title.textContent = '🎉 Challenge Won!';    sub.textContent = `All ${G.chalTarget} fish caught!`; }
+  else if (reason === 'time') { title.textContent = '⏱️ Time\'s Up!';       sub.textContent = `${G.chalCaught} of ${G.chalTarget} fish caught`; }
+  else                        { title.textContent = '🏆 Trophy Session';    sub.textContent = 'All casts used'; }
+  if (!G.catchLog.length) {
+    box.innerHTML = '<div class="res-row"><div class="res-row-lbl" style="width:100%;text-align:center">No fish caught</div></div>';
+  } else {
+    const best = G.catchLog.reduce((a,b) => b.wt > a.wt ? b : a);
+    box.innerHTML = `
+      <div class="res-row"><div class="res-row-lbl">Fish Caught</div><div class="res-row-val">${G.catchLog.length}</div></div>
+      <div class="res-row"><div class="res-row-lbl">Biggest</div><div class="res-row-val">${best.fish.emoji} ${best.fish.name} ${best.wt}lb</div></div>
+      <div class="res-row"><div class="res-row-lbl">Haul</div><div class="res-row-val">${G.catchLog.map(c=>c.fish.emoji).join(' ')}</div></div>`;
+  }
+  setTimeout(() => { document.getElementById('catch-popup').classList.remove('active'); showScreen('result-screen'); }, 300);
+}
+
+function goMenu()       { clearSceneState(); showScreen('menu'); }
+function replaySession() {
+  clearSceneState();
+  resetG(false);
+  buildScene();
+  showScreen('scene');
+  hideOverlays();
+  updateStatus();
+  setTimeout(startCast, 350);
+}
+
+// ─────────────────────────────────────────────
+// EFFECTS
+// ─────────────────────────────────────────────
+function showKidMsg(text, color) {
+  const scene = document.getElementById('scene');
+  const el = document.createElement('div');
+  el.style.cssText = `position:absolute;left:50%;top:38%;transform:translate(-50%,-50%) scale(0);
+    font-size:2.2rem;font-weight:900;color:${color};text-shadow:0 0 18px ${color},0 2px 6px rgba(0,0,0,0.7);
+    z-index:90;pointer-events:none;white-space:nowrap;
+    transition:transform 0.22s cubic-bezier(0.34,1.56,0.64,1),opacity 0.4s;`;
+  scene.appendChild(el);
+  el.textContent = text;
+  requestAnimationFrame(() => {
+    el.style.transform = 'translate(-50%,-50%) scale(1)';
+    setTimeout(() => {
+      el.style.opacity = '0';
+      el.style.transform = 'translate(-50%,-60%) scale(0.85)';
+      setTimeout(() => el.remove(), 450);
+    }, 1400);
+  });
+}
+
+function spawnConfetti(n) {
+  const cols  = ['#43e97b','#38f9d7','#ffd200','#f44336','#29b6f6','#ce93d8','#fff','#ff8c00'];
+  const scene = document.getElementById('scene');
+  for (let i = 0; i < n; i++) {
+    setTimeout(() => {
+      const p = document.createElement('div');
+      p.className = 'cpce';
+      const col = cols[Math.floor(Math.random() * cols.length)];
+      const dur = 2 + Math.random() * 1.5;
+      const br  = Math.random() > 0.5 ? '50%' : '2px';
+      p.style.cssText = `--x:${Math.random()*100}%; --c:${col}; --dur:${dur}s; --br:${br}; animation-delay:${Math.random()*0.25}s;`;
+      scene.appendChild(p);
+      setTimeout(() => p.remove(), (dur + 0.4) * 1000);
+    }, Math.random() * 200);
+  }
+}
+
+function showBests() {
+  const pb      = JSON.parse(localStorage.getItem('ff2_pb') || '{}');
+  const entries = Object.entries(pb);
+  if (!entries.length) { alert('No catches yet! Go fishing!'); return; }
+  const lines = entries.sort((a,b) => b[1]-a[1]).map(([id,wt]) => {
+    const f = FISH[id]; return f ? `${f.emoji} ${f.name}: ${wt} lb` : `${id}: ${wt} lb`;
+  });
+  alert('🏆 Personal Bests:\n\n' + lines.join('\n'));
+}
+
+// ─────────────────────────────────────────────
+// INPUT
+// ─────────────────────────────────────────────
+document.getElementById('scene').addEventListener('pointerdown', e => {
+  if (e.cancelable) e.preventDefault();
+  if (document.getElementById('cast-hud').classList.contains('active')) { doCast(); return; }
+  if (document.getElementById('tension-hud').classList.contains('active')) G.holding = true;
+}, { passive: false });
+
+document.getElementById('scene').addEventListener('pointerup',     () => { G.holding = false; }, { passive: false });
+document.getElementById('scene').addEventListener('pointercancel', () => { G.holding = false; });
+
+document.addEventListener('keydown', e => {
+  if (e.code === 'Space' || e.code === 'Enter') {
+    e.preventDefault();
+    if (document.getElementById('cast-hud').classList.contains('active'))    { doCast(); return; }
+    if (document.getElementById('tension-hud').classList.contains('active')) G.holding = true;
+  }
+});
+document.addEventListener('keyup', e => {
+  if (e.code === 'Space' || e.code === 'Enter') G.holding = false;
+});
+
+// ─────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────
+resetG(true);
+buildScene();
+
+// Menu atmosphere fish
+(function() {
+  const menu = document.getElementById('menu');
+  ['🐟','🐠','🐡','🐠'].forEach((em, i) => {
+    const el = document.createElement('div');
+    el.className = 'menu-fish';
+    el.textContent = em;
+    const sz  = 1.5 + Math.random() * 1.5;
+    const top = 55 + i * 10 + Math.random() * 8;
+    const dur = 12 + Math.random() * 10;
+    el.style.cssText = `--sz:${sz}rem; --top:${top}%; --dur:${dur}s; --delay:${-(Math.random()*15)}s;`;
+    menu.appendChild(el);
+  });
+})();
+</script>
+</body>
+</html>
