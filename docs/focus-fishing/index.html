@@ -121,17 +121,15 @@ body{font-family:'Segoe UI',system-ui,sans-serif;color:#e0f0ff;touch-action:none
   flex-direction:column;gap:7px;padding:8px 12px 10px;
   background:rgba(1,6,18,.93);border-top:1px solid rgba(41,182,246,.28);z-index:55}
 #bhud.on{display:flex}
-#miss-row{display:flex;align-items:center;gap:8px}
-.miss-lbl{font-size:.52rem;font-weight:700;color:rgba(180,220,255,.38);letter-spacing:.09em}
-#miss-dots{display:flex;gap:5px}
-.mdot{width:12px;height:12px;border-radius:50%;
-  background:rgba(60,120,180,.18);border:1.5px solid rgba(41,182,246,.4);transition:all .2s}
-.mdot.used{background:#c62828;border-color:#ef5350;box-shadow:0 0 7px rgba(239,83,80,.55)}
-#ten-wrap{position:relative;height:32px;border-radius:5px;border:1px solid rgba(255,255,255,.12);overflow:hidden;
-  background:linear-gradient(90deg,#1b5e20 0%,#388e3c 38%,#f57c00 43%,#e65100 65%,#c62828 70%,#7f0000 100%)}
+#erratic-warn{display:none;color:#ef5350;font-size:.68rem;font-weight:700;text-align:center;
+  letter-spacing:.1em;animation:errblink .35s ease-in-out infinite alternate}
+#erratic-warn.on{display:block}
+@keyframes errblink{from{opacity:.35}to{opacity:1}}
+#ten-wrap{position:relative;height:34px;border-radius:5px;border:1px solid rgba(255,255,255,.12);overflow:hidden;
+  background:linear-gradient(90deg,#7f0000 0%,#c62828 12%,#e65100 24%,#388e3c 36%,#388e3c 64%,#e65100 76%,#c62828 88%,#7f0000 100%)}
 #ten-zones{position:absolute;inset:0;display:flex;align-items:center;
   justify-content:space-between;padding:0 7px;pointer-events:none}
-.tz-lbl{font-size:.44rem;font-weight:700;letter-spacing:.06em;opacity:.7}
+.tz-lbl{font-size:.46rem;font-weight:700;letter-spacing:.06em;opacity:.8}
 #ten-needle{position:absolute;top:-3px;bottom:-3px;width:4px;left:0%;
   background:white;border-radius:3px;box-shadow:0 0 9px rgba(255,255,255,.95),0 0 3px #fff;
   transition:left .08s linear;transform:translateX(-50%);z-index:2}
@@ -144,13 +142,19 @@ body{font-family:'Segoe UI',system-ui,sans-serif;color:#e0f0ff;touch-action:none
 
 /* BUBBLE TARGETS */
 #bubble-layer{position:absolute;inset:0;pointer-events:none;z-index:57}
-.bbl{position:absolute;border-radius:50%;pointer-events:auto;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;transform:translate(-50%,-50%)}
-.bbl-ring{position:absolute;inset:0;border-radius:50%;
-  border:3px solid rgba(80,210,255,.9);
-  animation:bbshrink var(--bbl-dur,3s) linear forwards}
-@keyframes bbshrink{from{transform:scale(1);opacity:.95}to{transform:scale(.1);opacity:0}}
-.bbl-icon{font-size:.9rem;z-index:1;pointer-events:none;color:rgba(120,220,255,.9);font-weight:700}
+.bbl{position:absolute;width:88px;height:88px;border-radius:50%;pointer-events:auto;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(circle,rgba(41,182,246,.16),rgba(0,70,150,.06));
+  border:3px solid rgba(80,210,255,.88);
+  animation:bblshrink var(--bbl-dur,3s) linear forwards}
+@keyframes bblshrink{
+  0%  {transform:translate(-50%,-50%) scale(1);    border-color:rgba(80,210,255,.88); opacity:1}
+  48% {transform:translate(-50%,-50%) scale(.54);  border-color:rgba(255,165,30,.88); opacity:.97}
+  100%{transform:translate(-50%,-50%) scale(.16);  border-color:rgba(255,55,55,.8);   opacity:.5}}
+.bbl-txt{font-size:.8rem;font-weight:900;color:#fff;letter-spacing:.1em;
+  pointer-events:none;white-space:nowrap;
+  animation:bbltxt var(--bbl-dur,3s) linear forwards}
+@keyframes bbltxt{0%{opacity:1}38%{opacity:.7}60%{opacity:0}100%{opacity:0}}
 
 /* TAP HINT */
 #thint{position:absolute;bottom:84px;left:50%;transform:translateX(-50%);
@@ -190,7 +194,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;color:#e0f0ff;touch-action:none
 .co-name{font-size:1.25rem;font-weight:700;color:#fff;margin-bottom:.15rem}
 .co-rare{font-size:.68rem;letter-spacing:.1em;font-weight:700;margin-bottom:.4rem}
 .rc{color:#90caf9}.ru{color:#a5d6a7}.rr{color:#ce93d8}.rl{color:#ffd54f}
-.co-dep{font-size:.72rem;color:rgba(150,200,255,.55);margin-bottom:.5rem}
+.co-dep{font-size:.72rem;color:rgba(150,200,255,.55);margin-bottom:.15rem}
+.co-sz{font-size:.7rem;color:rgba(150,210,160,.6);margin-bottom:.45rem;letter-spacing:.03em}
 .co-svg{width:110px;height:64px;margin:0 auto .5rem;display:block}
 .co-fact{font-size:.78rem;color:rgba(200,230,255,.82);line-height:1.5;margin-bottom:.7rem}
 .co-pb{font-size:.68rem;color:#ffd54f;font-weight:700;margin-bottom:.45rem;display:none}
@@ -286,19 +291,12 @@ body{font-family:'Segoe UI',system-ui,sans-serif;color:#e0f0ff;touch-action:none
 
   <!-- BATTLE HUD -->
   <div id="bhud">
-    <div id="miss-row">
-      <span class="miss-lbl">CHANCES</span>
-      <div id="miss-dots">
-        <div class="mdot" id="md0"></div>
-        <div class="mdot" id="md1"></div>
-        <div class="mdot" id="md2"></div>
-      </div>
-    </div>
+    <div id="erratic-warn">&#9888; FISH FIGHTING HARD! &#9888;</div>
     <div id="ten-wrap">
       <div id="ten-zones">
-        <span class="tz-lbl" style="color:#a5d6a7">SAFE</span>
-        <span class="tz-lbl" style="color:#ffcc80">CAUTION</span>
-        <span class="tz-lbl" style="color:#ef9a9a">DANGER</span>
+        <span class="tz-lbl" style="color:#ef9a9a">&#9664; SLACK</span>
+        <span class="tz-lbl" style="color:#a5d6a7">KEEP HERE</span>
+        <span class="tz-lbl" style="color:#ef9a9a">TIGHT &#9654;</span>
       </div>
       <div id="ten-needle"></div>
     </div>
@@ -326,6 +324,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;color:#e0f0ff;touch-action:none
       <div class="co-name" id="co-name">&ndash;</div>
       <div class="co-rare rc" id="co-rare">COMMON</div>
       <div class="co-dep" id="co-dep">&ndash;</div>
+      <div class="co-sz" id="co-sz"></div>
       <svg class="co-svg" id="co-svg" viewBox="0 0 110 64"></svg>
       <div class="co-fact" id="co-fact">&ndash;</div>
       <div class="co-pb" id="co-pb">&#127942; NEW PERSONAL BEST DEPTH!</div>
@@ -378,9 +377,9 @@ const ZONES = [
 ];
 
 const SESS = {
-  relaxed:   { biteMin:5,  biteMax:14, tensRate:.55, reelRate:1.45, surgeBase:9,  surgeMin:3.5, surgeMax:5.5, maxBubbles:1, bubMin:3.5, bubMax:5.5 },
-  challenge: { biteMin:10, biteMax:26, tensRate:1.0,  reelRate:1.0,  surgeBase:17, surgeMin:1.5, surgeMax:3.0, maxBubbles:2, bubMin:1.8, bubMax:2.8 },
-  trophy:    { biteMin:18, biteMax:48, tensRate:1.35, reelRate:.78,  surgeBase:24, surgeMin:0.7, surgeMax:1.6, maxBubbles:3, bubMin:1.0, bubMax:1.8 },
+  relaxed:   { biteMin:5,  biteMax:14, tensRate:.55, reelRate:1.45, surgeBase:9,  surgeMin:3.2, surgeMax:5.2, maxBubbles:1, bubMin:3.8, bubMax:5.8, erraticBoost:3,  erraticDur:4000 },
+  challenge: { biteMin:10, biteMax:26, tensRate:1.0,  reelRate:1.0,  surgeBase:16, surgeMin:1.4, surgeMax:2.8, maxBubbles:2, bubMin:2.0, bubMax:3.0, erraticBoost:6,  erraticDur:5500 },
+  trophy:    { biteMin:18, biteMax:48, tensRate:1.3,  reelRate:.8,   surgeBase:22, surgeMin:0.7, surgeMax:1.5, maxBubbles:3, bubMin:1.1, bubMax:1.9, erraticBoost:10, erraticDur:7000 },
 };
 
 // ═══════════════════════════════════════════
@@ -388,87 +387,99 @@ const SESS = {
 // ═══════════════════════════════════════════
 const CREATURES = [
   // Sunlight Zone (100–600)
-  { id:'tuna',    em:'\u{1F41F}', name:'Bluefin Tuna',        zone:0, yRange:[120,540], depth:'0\u2013200m',
+  { id:'tuna',     em:'\u{1F41F}', name:'Bluefin Tuna',         zone:0, yRange:[120,540],  depth:'0\u2013200m',
     fact:'Bluefin tuna can swim at 70 km/h and keep their body warmer than the surrounding water \u2014 nearly warm-blooded! They can weigh as much as a small car.',
-    catchable:true,  diff:3, rarity:'rare',     swim:true, dx:55 },
-  { id:'manta',   em:'\u{1F988}', name:'Manta Ray',            zone:0, yRange:[140,480], depth:'0\u2013200m',
+    catchable:true,  diff:3, rarity:'rare',      shape:'sleek',     weight:'80\u2013680 kg',  len:'1.5\u20133 m',   swim:true, dx:55 },
+  { id:'manta',    em:'\u{1F988}', name:'Manta Ray',             zone:0, yRange:[140,480],  depth:'0\u2013200m',
     fact:'Manta rays have the largest brains of any fish and can recognise themselves in a mirror! Their wingspan can reach 7 metres \u2014 wider than a minivan.',
-    catchable:false, swim:true, dx:45 },
-  { id:'turtle',  em:'\u{1F422}', name:'Green Sea Turtle',     zone:0, yRange:[115,420], depth:'0\u2013180m',
+    catchable:false, shape:'ray',     weight:'350\u20131350 kg', len:'3\u20137 m wingspan',  swim:true, dx:45 },
+  { id:'turtle',   em:'\u{1F422}', name:'Green Sea Turtle',      zone:0, yRange:[115,420],  depth:'0\u2013180m',
     fact:'Sea turtles have navigated Earth\'s oceans for over 100 million years! They find their way home using Earth\'s magnetic field like a built-in GPS.',
-    catchable:false, swim:true, dx:38 },
-  { id:'clown',   em:'\u{1F420}', name:'Clownfish',             zone:0, yRange:[180,575], depth:'0\u201330m',
+    catchable:false, shape:'uncommon', weight:'68\u2013230 kg',  len:'0.7\u20131.5 m',      swim:true, dx:38 },
+  { id:'clown',    em:'\u{1F420}', name:'Clownfish',              zone:0, yRange:[180,575],  depth:'0\u201330m',
     fact:'All clownfish are born male. The largest in any group can change to female! They are immune to anemone stings and shelter inside the stinging tentacles.',
-    catchable:true,  diff:1, rarity:'common',   swim:true, dx:20 },
-  { id:'dolphin', em:'\u{1F42C}', name:'Bottlenose Dolphin',   zone:0, yRange:[105,190], depth:'0\u2013150m',
+    catchable:true,  diff:1, rarity:'common',    shape:'common',    weight:'10\u201330 g',    len:'8\u201311 cm',   swim:true, dx:20 },
+  { id:'hammerhead',em:'\u{1F988}',name:'Hammerhead Shark',      zone:0, yRange:[110,500],  depth:'0\u2013300m',
+    fact:'The hammerhead\'s T-shaped head gives it 360\u00b0 vertical vision! Its wide-set eyes and nostrils let it scan huge areas of water and detect the faintest electrical signals from buried prey.',
+    catchable:true,  diff:4, rarity:'rare',      shape:'sleek',     weight:'150\u2013600 kg', len:'3\u20136 m',     swim:true, dx:72 },
+  { id:'dolphin',  em:'\u{1F42C}', name:'Bottlenose Dolphin',    zone:0, yRange:[105,190],  depth:'0\u2013150m',
     fact:'Dolphins sleep with one eye open and half their brain still awake! They also have unique whistle "names" and call each other by name to get attention.',
-    catchable:false, swim:true, dx:85 },
-  { id:'flyfish', em:'\u{1F41F}', name:'Flying Fish',           zone:0, yRange:[100,230], depth:'0\u201360m',
+    catchable:false, shape:'sleek',   weight:'150\u2013650 kg', len:'2\u20134 m',            swim:true, dx:85 },
+  { id:'flyfish',  em:'\u{1F41F}', name:'Flying Fish',            zone:0, yRange:[100,230],  depth:'0\u201360m',
     fact:'Flying fish can glide over 200 metres through the air! They leap at 60 km/h and spread wing-like fins to soar above the waves and escape predators.',
-    catchable:true,  diff:2, rarity:'uncommon', swim:true, dx:80 },
-  { id:'sardine', em:'\u{1F41F}', name:'Pacific Sardine',       zone:0, yRange:[145,530], depth:'0\u2013200m',
+    catchable:true,  diff:2, rarity:'uncommon',  shape:'sleek',     weight:'0.5\u20131 kg',   len:'25\u201345 cm',  swim:true, dx:80 },
+  { id:'sardine',  em:'\u{1F41F}', name:'Pacific Sardine',        zone:0, yRange:[145,530],  depth:'0\u2013200m',
     fact:'Sardines school in groups of millions! Their perfectly timed flocking movement makes them look like one giant creature, confusing predators trying to target a single fish.',
-    catchable:true,  diff:1, rarity:'common',   swim:true, dx:65 },
-  { id:'puffer',  em:'\u{1F421}', name:'Pufferfish',             zone:0, yRange:[160,520], depth:'0\u2013200m',
+    catchable:true,  diff:1, rarity:'common',    shape:'common',    weight:'50\u2013100 g',   len:'15\u201325 cm',  swim:true, dx:65 },
+  { id:'puffer',   em:'\u{1F421}', name:'Pufferfish',              zone:0, yRange:[160,520],  depth:'0\u2013200m',
     fact:'Pufferfish can inflate to three times their normal size by gulping huge amounts of water! They are also among the most toxic animals on Earth, yet are a prized delicacy in Japan.',
-    catchable:true,  diff:2, rarity:'uncommon', swim:true, dx:22 },
-  { id:'seahorse', em:'\u{1F420}', name:'Seahorse',              zone:0, yRange:[170,460], depth:'0\u2013100m',
+    catchable:true,  diff:2, rarity:'uncommon',  shape:'puffer',    weight:'0.4\u20132 kg',   len:'20\u201350 cm',  swim:true, dx:22 },
+  { id:'seahorse', em:'\u{1F420}', name:'Seahorse',               zone:0, yRange:[170,460],  depth:'0\u2013100m',
     fact:'Seahorses are the only animals where the MALE gets pregnant and gives birth! Females deposit eggs into the male\'s pouch, where he fertilises and carries them for 2\u20134 weeks before releasing hundreds of live young.',
-    catchable:true,  diff:1, rarity:'common',   swim:true, dx:10 },
+    catchable:true,  diff:1, rarity:'common',    shape:'common',    weight:'5\u201320 g',     len:'5\u201335 cm',   swim:true, dx:10 },
 
   // Twilight Zone (600–1400)
-  { id:'viper',   em:'\u{1F421}', name:'Viperfish',             zone:1, yRange:[625,1370], depth:'200\u20131000m',
+  { id:'viper',    em:'\u{1F421}', name:'Viperfish',              zone:1, yRange:[625,1370], depth:'200\u20131000m',
     fact:'The viperfish has the longest teeth relative to body size of any known fish \u2014 so large they curve outside its mouth like daggers! It lures prey with a bioluminescent tip on its dorsal spine.',
-    catchable:true,  diff:3, rarity:'rare',     swim:true, dx:28, biolum:true },
-  { id:'hatchet', em:'\u{1F41F}', name:'Hatchetfish',           zone:1, yRange:[680,1360], depth:'200\u20131000m',
+    catchable:true,  diff:3, rarity:'rare',      shape:'eel',       weight:'100\u2013300 g',  len:'30\u201360 cm',  swim:true, dx:28, biolum:true },
+  { id:'hatchet',  em:'\u{1F41F}', name:'Hatchetfish',            zone:1, yRange:[680,1360], depth:'200\u20131000m',
     fact:'Hatchetfish glow from rows of tiny organs on their belly called photophores. This "counter-illumination" matches dim sunlight from above, making them nearly invisible from below!',
-    catchable:true,  diff:2, rarity:'uncommon', swim:true, dx:22, biolum:true },
-  { id:'lantern', em:'\u{1F41F}', name:'Lanternfish',            zone:1, yRange:[720,1380], depth:'200\u20131000m',
+    catchable:true,  diff:2, rarity:'uncommon',  shape:'common',    weight:'2\u201310 g',     len:'5\u201312 cm',   swim:true, dx:22, biolum:true },
+  { id:'lantern',  em:'\u{1F41F}', name:'Lanternfish',             zone:1, yRange:[720,1380], depth:'200\u20131000m',
     fact:'Lanternfish may be the most numerous fish on Earth \u2014 billions exist! Every night they migrate hundreds of metres upward to feed on plankton, then return to the deep by dawn.',
-    catchable:true,  diff:1, rarity:'common',   swim:true, dx:30, biolum:true },
-  { id:'sword',   em:'\u{1F41F}', name:'Swordfish',              zone:1, yRange:[650,1240], depth:'200\u2013600m',
+    catchable:true,  diff:1, rarity:'common',    shape:'common',    weight:'5\u201340 g',     len:'5\u201315 cm',   swim:true, dx:30, biolum:true },
+  { id:'sword',    em:'\u{1F41F}', name:'Swordfish',               zone:1, yRange:[650,1240], depth:'200\u2013600m',
     fact:'Swordfish can heat their eyes and brain to see clearly in cold dark water! They slash through schools of fish at high speed using their sword-shaped bill.',
-    catchable:true,  diff:4, rarity:'rare',     swim:true, dx:50 },
-  { id:'oarfish', em:'\u{1F41F}', name:'Oarfish',                zone:1, yRange:[700,1350], depth:'200\u20131000m',
+    catchable:true,  diff:4, rarity:'rare',      shape:'sleek',     weight:'100\u2013650 kg', len:'1.4\u20133 m',   swim:true, dx:50 },
+  { id:'oarfish',  em:'\u{1F41F}', name:'Oarfish',                 zone:1, yRange:[700,1350], depth:'200\u20131000m',
     fact:'Oarfish are the world\'s longest bony fish \u2014 reaching over 8 metres! These rare silvery giants inspired ancient sea-serpent legends. They swim vertically in the water column like living silver ribbons.',
-    catchable:true,  diff:4, rarity:'rare',     swim:true, dx:18 },
-  { id:'squid',   em:'\u{1F991}', name:'Giant Squid',            zone:1, yRange:[820,1400], depth:'300\u20131000m',
+    catchable:true,  diff:4, rarity:'rare',      shape:'eel',       weight:'100\u2013270 kg', len:'3\u20138+ m',    swim:true, dx:18 },
+  { id:'cuttle',   em:'\u{1F991}', name:'Cuttlefish',              zone:1, yRange:[680,1280], depth:'0\u2013600m',
+    fact:'Cuttlefish have three hearts and blue-green blood! They are colour-blind yet can change both colour AND texture of their skin in milliseconds to create stunning camouflage displays.',
+    catchable:true,  diff:2, rarity:'uncommon',  shape:'puffer',    weight:'2\u201310 kg',    len:'15\u201350 cm',  swim:true, dx:26 },
+  { id:'octopus',  em:'\u{1F419}', name:'Giant Pacific Octopus',  zone:1, yRange:[780,1360], depth:'0\u2013750m',
+    fact:'The giant Pacific octopus is the world\'s largest octopus, with arms spanning up to 6 metres! They can open child-proof pill bottles, solve puzzles, and even recognise individual human faces.',
+    catchable:true,  diff:3, rarity:'rare',      shape:'blob',      weight:'15\u201371 kg',   len:'arm span up to 6 m', swim:true, dx:20 },
+  { id:'squid',    em:'\u{1F991}', name:'Giant Squid',             zone:1, yRange:[820,1400], depth:'300\u20131000m',
     fact:'Giant squid have eyes 30 cm across \u2014 the size of a dinner plate! They can grow up to 13 metres long and are the favourite meal of sperm whales.',
-    catchable:false, swim:true, dx:18 },
+    catchable:false, shape:'blob',    weight:'150\u2013275 kg', len:'up to 13 m',             swim:true, dx:18 },
 
   // Midnight Zone (1400–2600)
-  { id:'angler',  em:'\u{1F421}', name:'Anglerfish',             zone:2, yRange:[1460,2540], depth:'1000\u20134000m',
+  { id:'angler',   em:'\u{1F421}', name:'Anglerfish',              zone:2, yRange:[1460,2540], depth:'1000\u20134000m',
     fact:'The female anglerfish dangles a glowing lure to attract prey in total darkness. The tiny male bites into her side and fuses permanently \u2014 sharing her bloodstream for life!',
-    catchable:true,  diff:5, rarity:'legendary', swim:true, dx:12, biolum:true },
-  { id:'fang',    em:'\u{1F421}', name:'Fangtooth Fish',          zone:2, yRange:[1500,2560], depth:'200\u20135000m',
+    catchable:true,  diff:5, rarity:'legendary', shape:'legendary', weight:'up to 40 kg',    len:'10\u2013100 cm', swim:true, dx:12, biolum:true },
+  { id:'goblinsq', em:'\u{1F988}', name:'Goblin Shark',            zone:2, yRange:[1450,2400], depth:'270\u20131300m',
+    fact:'The goblin shark has a long flat snout packed with sensors that detect electrical fields. When prey is close, its jaw literally shoots forward on extended ligaments to snatch victims!',
+    catchable:true,  diff:5, rarity:'legendary', shape:'sleek',     weight:'150\u2013210 kg', len:'3\u20134 m',     swim:true, dx:16 },
+  { id:'fang',     em:'\u{1F421}', name:'Fangtooth Fish',           zone:2, yRange:[1500,2560], depth:'200\u20135000m',
     fact:'The fangtooth has the largest teeth of any fish proportional to body size \u2014 so enormous they can never fully close their mouth! Despite their terrifying look, they\'re only about 16 cm long.',
-    catchable:true,  diff:4, rarity:'rare',      swim:true, dx:14 },
-  { id:'gulper',  em:'\u{1F991}', name:'Gulper Eel',             zone:2, yRange:[1510,2460], depth:'1000\u20134000m',
+    catchable:true,  diff:4, rarity:'rare',      shape:'common',    weight:'50\u2013200 g',   len:'10\u201318 cm',  swim:true, dx:14 },
+  { id:'gulper',   em:'\u{1F991}', name:'Gulper Eel',              zone:2, yRange:[1510,2460], depth:'1000\u20134000m',
     fact:'The gulper eel can open its enormous jaw wide enough to swallow prey much bigger than itself! Its expandable pelican-like pouch makes it one of the deep\'s most bizarre hunters.',
-    catchable:true,  diff:4, rarity:'rare',      swim:true, dx:18 },
-  { id:'barrel',  em:'\u{1F420}', name:'Barreleye Fish',         zone:2, yRange:[1610,2510], depth:'600\u20132500m',
+    catchable:true,  diff:4, rarity:'rare',      shape:'eel',       weight:'up to 1.5 kg',   len:'60\u2013120 cm', swim:true, dx:18 },
+  { id:'barrel',   em:'\u{1F420}', name:'Barreleye Fish',          zone:2, yRange:[1610,2510], depth:'600\u20132500m',
     fact:'The barreleye has a completely transparent head filled with clear fluid! Those bright green dome-shapes visible through its forehead ARE its eyes \u2014 they rotate upward to spot prey silhouettes above.',
-    catchable:true,  diff:3, rarity:'rare',      swim:true, dx:16, biolum:true },
-  { id:'vampsq',  em:'\u{1F991}', name:'Vampire Squid',          zone:2, yRange:[1800,2560], depth:'600\u20133000m',
+    catchable:true,  diff:3, rarity:'rare',      shape:'uncommon',  weight:'30\u2013200 g',   len:'15\u201340 cm',  swim:true, dx:16, biolum:true },
+  { id:'vampsq',   em:'\u{1F991}', name:'Vampire Squid',           zone:2, yRange:[1800,2560], depth:'600\u20133000m',
     fact:'Despite its name, the vampire squid is neither squid nor octopus \u2014 it\'s in its own ancient order! When threatened it flips its webbed arms over its body, revealing spiky fleshy spines.',
-    catchable:false, swim:true, dx:14, biolum:true },
-  { id:'isopod',  em:'\u{1F99E}', name:'Giant Isopod',           zone:2, yRange:[2010,2600], depth:'170\u20132500m',
+    catchable:false, shape:'blob',    weight:'0.5\u20132 kg',   len:'15\u201330 cm',          swim:true, dx:14, biolum:true },
+  { id:'isopod',   em:'\u{1F99E}', name:'Giant Isopod',            zone:2, yRange:[2010,2600], depth:'170\u20132500m',
     fact:'Giant isopods are deep-sea relatives of the common pill bug! One held in captivity went without food for 5 years and 43 days. They can survive almost anything.',
-    catchable:false, swim:false },
+    catchable:false, shape:'common',  weight:'0.1\u20131.7 kg', len:'15\u201345 cm',          swim:false },
 
   // Abyssal Zone (2600–3700)
-  { id:'snail',   em:'\u{1F41F}', name:'Hadal Snailfish',        zone:3, yRange:[2720,3640], depth:'6000\u20138336m',
+  { id:'snail',    em:'\u{1F41F}', name:'Hadal Snailfish',         zone:3, yRange:[2720,3640], depth:'6000\u20138336m',
     fact:'The deepest fish ever found \u2014 8,336 metres below the surface! To survive the crushing pressure, its body is packed with special fluid instead of a gas-filled swim bladder.',
-    catchable:true,  diff:5, rarity:'legendary', swim:true, dx:9 },
-  { id:'cucum',   em:'\u{1F952}', name:'Sea Cucumber',            zone:3, yRange:[2720,3700], depth:'4000m+',
+    catchable:true,  diff:5, rarity:'legendary', shape:'common',    weight:'<1 g',            len:'17\u201328 cm',  swim:true, dx:9 },
+  { id:'cucum',    em:'\u{1F952}', name:'Sea Cucumber',             zone:3, yRange:[2720,3700], depth:'4000m+',
     fact:'Sea cucumbers make up 90% of all animal weight on the deep ocean floor! When attacked, they expel their own organs as a distraction \u2014 then slowly grow them back.',
-    catchable:false, swim:false },
-  { id:'dumbo',   em:'\u{1F419}', name:'Dumbo Octopus',           zone:3, yRange:[2820,3650], depth:'3000\u20137000m',
+    catchable:false, shape:'common',  weight:'50\u2013300 g',   len:'10\u201350 cm',          swim:false },
+  { id:'dumbo',    em:'\u{1F419}', name:'Dumbo Octopus',            zone:3, yRange:[2820,3650], depth:'3000\u20137000m',
     fact:'Named after the Disney elephant, dumbo octopuses flap ear-like fins to glide elegantly through the deep. They\'re the deepest-living known octopus and swallow prey whole.',
-    catchable:true,  diff:4, rarity:'rare',      swim:true, dx:11 },
-  { id:'zombie',  em:'\u{1FAB1}', name:'Bone-Eating Worm',        zone:3, yRange:[3020,3700], depth:'4000m+',
+    catchable:true,  diff:4, rarity:'rare',      shape:'blob',      weight:'5.9 kg',          len:'20\u2013180 cm', swim:true, dx:11 },
+  { id:'zombie',   em:'\u{1FAB1}', name:'Bone-Eating Worm',         zone:3, yRange:[3020,3700], depth:'4000m+',
     fact:'Osedax worms (nicknamed "zombie worms") drill into whale bones using acid-secreting roots! The microscopic males live permanently inside tubes within the female\'s body.',
-    catchable:false, swim:false },
+    catchable:false, shape:'common',  weight:'<1 g',            len:'1\u20137 cm',            swim:false },
 ];
 
 // ═══════════════════════════════════════════
@@ -482,7 +493,7 @@ let G = {
   fishY:0, tension:0, holding:false,
   surgeT:0, curZone:-1,
   slinging:false, slingX:0, slingY:0, castTarget:0,
-  missCount:0, redT:0,
+  missCount:0, redTLeft:0, redTRight:0, erraticUntil:0,
   bubbles:[], bubbleTimer:0,
 };
 
@@ -575,36 +586,95 @@ function showBanner(z) {
 }
 
 // ═══════════════════════════════════════════
+//  SHARED FISH SHAPE ELEMENTS (110×64 space)
+//  Used by both world icons and catch card
+// ═══════════════════════════════════════════
+function fishShapeElements(shape, c1, c2) {
+  switch(shape) {
+    case 'legendary':
+      return '<ellipse cx="54" cy="32" rx="36" ry="18" fill="'+c1+'"/>'+
+        '<polygon points="90,32 108,16 112,32 108,48" fill="'+c2+'"/>'+
+        '<path d="M30,14 Q52,4 76,15" stroke="'+c2+'" stroke-width="3.5" fill="none" stroke-linecap="round"/>'+
+        '<path d="M34,50 Q54,60 72,51" stroke="'+c2+'" stroke-width="2" fill="none" stroke-linecap="round"/>'+
+        '<ellipse cx="46" cy="27" rx="15" ry="7" fill="'+c2+'" opacity=".22"/>'+
+        '<line x1="22" y1="20" x2="18" y2="44" stroke="'+c2+'" stroke-width="2.2" stroke-linecap="round"/>'+
+        '<circle cx="14" cy="29" r="5" fill="white"/><circle cx="13" cy="28" r="2.5" fill="#111"/>';
+    case 'rare': case 'sleek':
+      return '<ellipse cx="58" cy="32" rx="38" ry="11" fill="'+c1+'"/>'+
+        '<polygon points="96,32 112,22 114,32 112,42" fill="'+c2+'"/>'+
+        '<path d="M36,21 Q64,12 88,22" stroke="'+c2+'" stroke-width="2.5" fill="none"/>'+
+        '<line x1="20" y1="32" x2="3" y2="30" stroke="'+c2+'" stroke-width="3.5" stroke-linecap="round"/>'+
+        '<circle cx="22" cy="30" r="4" fill="white"/><circle cx="21" cy="29" r="2.2" fill="#111"/>';
+    case 'uncommon':
+      return '<ellipse cx="52" cy="33" rx="30" ry="17" fill="'+c1+'"/>'+
+        '<polygon points="82,33 98,22 100,33 98,44" fill="'+c2+'"/>'+
+        '<path d="M36,17 Q52,10 72,19" stroke="'+c2+'" stroke-width="3" fill="none" stroke-linecap="round"/>'+
+        '<path d="M38,48 Q52,56 68,49" stroke="'+c2+'" stroke-width="2" fill="none" stroke-linecap="round"/>'+
+        '<line x1="34" y1="24" x2="30" y2="40" stroke="'+c2+'" stroke-width="1.8" stroke-linecap="round"/>'+
+        '<circle cx="28" cy="31" r="5" fill="white"/><circle cx="27" cy="30" r="2.5" fill="#111"/>';
+    case 'eel':
+      return '<ellipse cx="56" cy="32" rx="50" ry="6" fill="'+c1+'"/>'+
+        '<polygon points="106,32 112,26 114,32 112,38" fill="'+c2+'"/>'+
+        '<path d="M14,26 Q40,18 80,23" stroke="'+c2+'" stroke-width="1.8" fill="none"/>'+
+        '<ellipse cx="24" cy="29" rx="7" ry="4" fill="'+c2+'" opacity=".35"/>'+
+        '<circle cx="11" cy="30" r="3.5" fill="white"/><circle cx="10" cy="29" r="1.8" fill="#111"/>';
+    case 'puffer':
+      return '<circle cx="46" cy="32" r="22" fill="'+c1+'"/>'+
+        '<polygon points="68,32 83,24 85,32 83,40" fill="'+c2+'"/>'+
+        '<circle cx="24" cy="32" r="3.5" fill="'+c2+'" opacity=".65"/>'+
+        '<circle cx="30" cy="13" r="3" fill="'+c2+'" opacity=".6"/>'+
+        '<circle cx="46" cy="9" r="3" fill="'+c2+'" opacity=".6"/>'+
+        '<circle cx="62" cy="13" r="3" fill="'+c2+'" opacity=".6"/>'+
+        '<circle cx="30" cy="51" r="3" fill="'+c2+'" opacity=".6"/>'+
+        '<circle cx="46" cy="55" r="3" fill="'+c2+'" opacity=".6"/>'+
+        '<circle cx="62" cy="51" r="3" fill="'+c2+'" opacity=".6"/>'+
+        '<ellipse cx="42" cy="27" rx="10" ry="7" fill="'+c2+'" opacity=".18"/>'+
+        '<circle cx="30" cy="27" r="5" fill="white"/><circle cx="29" cy="26" r="2.5" fill="#111"/>';
+    case 'ray':
+      return '<ellipse cx="50" cy="32" rx="28" ry="9" fill="'+c1+'"/>'+
+        '<polygon points="50,32 26,1 64,18" fill="'+c1+'" opacity=".88"/>'+
+        '<polygon points="50,32 26,63 64,46" fill="'+c1+'" opacity=".88"/>'+
+        '<polygon points="50,32 78,3 72,26" fill="'+c1+'" opacity=".72"/>'+
+        '<polygon points="50,32 78,61 72,38" fill="'+c1+'" opacity=".72"/>'+
+        '<path d="M78,32 Q96,30 110,24" stroke="'+c2+'" stroke-width="2.5" fill="none" stroke-linecap="round"/>'+
+        '<circle cx="26" cy="28" r="4" fill="white"/><circle cx="25" cy="27" r="2" fill="#111"/>';
+    case 'blob':
+      return '<ellipse cx="45" cy="26" rx="20" ry="18" fill="'+c1+'"/>'+
+        '<ellipse cx="45" cy="40" rx="15" ry="10" fill="'+c1+'"/>'+
+        '<line x1="30" y1="48" x2="22" y2="63" stroke="'+c2+'" stroke-width="2.5" stroke-linecap="round"/>'+
+        '<line x1="37" y1="51" x2="33" y2="64" stroke="'+c2+'" stroke-width="2.5" stroke-linecap="round"/>'+
+        '<line x1="45" y1="51" x2="45" y2="64" stroke="'+c2+'" stroke-width="2.5" stroke-linecap="round"/>'+
+        '<line x1="53" y1="51" x2="57" y2="64" stroke="'+c2+'" stroke-width="2.5" stroke-linecap="round"/>'+
+        '<line x1="60" y1="48" x2="68" y2="63" stroke="'+c2+'" stroke-width="2.5" stroke-linecap="round"/>'+
+        '<ellipse cx="42" cy="21" rx="9" ry="6" fill="'+c2+'" opacity=".25"/>'+
+        '<circle cx="30" cy="22" r="5.5" fill="white"/><circle cx="29" cy="21" r="2.8" fill="#111"/>';
+    default: // 'common'
+      return '<ellipse cx="50" cy="33" rx="26" ry="18" fill="'+c1+'"/>'+
+        '<polygon points="76,33 93,22 95,33 93,44" fill="'+c2+'"/>'+
+        '<path d="M36,17 Q50,10 66,19" stroke="'+c2+'" stroke-width="2.5" fill="none"/>'+
+        '<line x1="38" y1="27" x2="34" y2="39" stroke="'+c2+'" stroke-width="1.5" stroke-linecap="round"/>'+
+        '<circle cx="28" cy="31" r="5" fill="white"/><circle cx="27" cy="30" r="2.5" fill="#111"/>';
+  }
+}
+
+// ═══════════════════════════════════════════
 //  SVG FISH ICONS (world creatures)
 // ═══════════════════════════════════════════
 function makeFishSVG(c) {
   var pals = {
-    common:    ['#5b9bd5','#1a4a8c','#aad0f0'],
-    uncommon:  ['#4db6ac','#006064','#a7e8e4'],
-    rare:      ['#ab47bc','#6a1b9a','#e1a8eb'],
-    legendary: ['#ffca28','#e65100','#fff0a0'],
+    common:    ['#5b9bd5','#1a4a8c'],
+    uncommon:  ['#4db6ac','#006064'],
+    rare:      ['#ab47bc','#6a1b9a'],
+    legendary: ['#ffca28','#e65100'],
   };
-  var p = pals[c.rarity] || pals.common;
-  var z = c.zone || 0;
-  var rx = 13 + z * 1.4;          // body half-width: deeper = more elongated
-  var ry = Math.max(4, 9 - z);    // body half-height: deeper = flatter
-  var cx = rx + 6;
-  var vw = cx + rx + 5;
-  var vh = 28;
-  var eyeX = Math.round(cx + rx * 0.5);
-  var eyeY = Math.round(vh * 0.4);
+  var p  = pals[c.rarity] || pals.common;
+  var sh = c.shape || c.rarity || 'common';
   var biolumDot = c.biolum
-    ? '<circle cx="' + (cx - rx + 5) + '" cy="' + (vh/2 - 3) + '" r="2.5" fill="rgba(80,255,180,.9)">' +
-      '<animate attributeName="opacity" values="0.2;1;0.2" dur="1.8s" repeatCount="indefinite"/></circle>'
+    ? '<circle cx="18" cy="26" r="2.5" fill="rgba(80,255,180,.9)"><animate attributeName="opacity" values="0.2;1;0.2" dur="1.8s" repeatCount="indefinite"/></circle>'
     : '';
-  return '<svg viewBox="0 0 ' + vw + ' ' + vh + '" width="' + Math.round(vw * 1.15) + '" height="' + Math.round(vh * 1.15) + '" xmlns="http://www.w3.org/2000/svg">' +
-    '<polygon points="' + (cx-rx) + ',' + (vh/2) + ' ' + (cx-rx-8) + ',' + (vh/2-6) + ' ' + (cx-rx-8) + ',' + (vh/2+6) + '" fill="' + p[1] + '" opacity="0.9"/>' +
-    '<ellipse cx="' + cx + '" cy="' + (vh/2) + '" rx="' + rx + '" ry="' + ry + '" fill="' + p[0] + '"/>' +
-    '<ellipse cx="' + (cx+1) + '" cy="' + (vh/2-1) + '" rx="' + Math.round(rx*.42) + '" ry="' + Math.round(ry*.42) + '" fill="' + p[2] + '" opacity="0.45"/>' +
-    biolumDot +
-    '<circle cx="' + eyeX + '" cy="' + eyeY + '" r="3" fill="white"/>' +
-    '<circle cx="' + (eyeX+0.5) + '" cy="' + eyeY + '" r="1.6" fill="#111"/>' +
-    '</svg>';
+  // viewBox matches shape coordinate space (110×64); width/height scales it small
+  return '<svg viewBox="0 0 115 64" width="54" height="30" xmlns="http://www.w3.org/2000/svg">' +
+    fishShapeElements(sh, p[0], p[1]) + biolumDot + '</svg>';
 }
 
 // ═══════════════════════════════════════════
@@ -630,32 +700,146 @@ function makeMysteryFishSVG(zone) {
 }
 
 // ═══════════════════════════════════════════
-//  JAGGED ROCK WALLS
+//  ROCKY WALLS (smooth noise profile + ledges)
 // ═══════════════════════════════════════════
-function buildJaggedWalls() {
-  function genPath(side) {
-    var pts = [], steps = 38;
-    if (side === 'left') {
-      pts.push('0% 0%');
-      for (var i = 0; i <= steps; i++) {
-        var y = (i / steps * 100).toFixed(1) + '%';
-        var x = (46 + Math.random() * 44).toFixed(1) + '%';
-        pts.push(x + ' ' + y);
-      }
-      pts.push('0% 100%');
-    } else {
-      pts.push('100% 0%');
-      pts.push('100% 100%');
-      for (var i = steps; i >= 0; i--) {
-        var y = (i / steps * 100).toFixed(1) + '%';
-        var x = (10 + Math.random() * 44).toFixed(1) + '%';
-        pts.push(x + ' ' + y);
-      }
-    }
-    return 'polygon(' + pts.join(',') + ')';
+function buildRockyWalls() {
+  // 1D smooth value noise
+  function makeNoise(n) { var a=[]; for(var i=0;i<n;i++) a.push(Math.random()); return a; }
+  function sampleNoise(a, t) {
+    var s=t*(a.length-1), i=Math.floor(s), f=s-i;
+    f=f*f*(3-2*f); // smoothstep
+    return a[i]*(1-f)+(a[Math.min(i+1,a.length-1)])*f;
   }
-  $('wl').style.clipPath = genPath('left');
-  $('wr').style.clipPath = genPath('right');
+  var STEPS = 280;
+  var nL1=makeNoise(32), nL2=makeNoise(22), nR1=makeNoise(32), nR2=makeNoise(22);
+
+  ['wl','wr'].forEach(function(id) {
+    var isLeft = id==='wl';
+    var ns1=isLeft?nL1:nR1, ns2=isLeft?nL2:nR2;
+    var pts = isLeft ? ['0% 0%'] : ['100% 0%','100% 100%'];
+
+    for(var i=(isLeft?0:STEPS); isLeft?i<=STEPS:i>=0; isLeft?i++:i--) {
+      var t    = i/STEPS;
+      var base = 28 + t*55;                              // wall gets wider with depth
+      var amp  = 10 + t*46;
+      var n1   = sampleNoise(ns1, t);
+      var n2   = sampleNoise(ns2, (t*2.7)%1);
+      var edge = base + (n1-0.5)*amp + (n2-0.5)*amp*0.4;
+      edge = Math.max(6, Math.min(94, edge));
+      var pct  = (t*100).toFixed(1);
+      pts.push((isLeft ? edge : (100-edge)).toFixed(1)+'% '+pct+'%');
+    }
+    if(isLeft) pts.push('0% 100%');
+    $(id).style.clipPath = 'polygon('+pts.join(',')+')';
+  });
+
+  buildWallLedges();
+  buildWallDecor();
+}
+
+function buildWallLedges() {
+  var dl = $('dlayer');
+  // Rock shelf configs: gets heavier/wider at depth
+  var ledgeCfgs = [
+    { yMin:800,  yMax:1400, count:8,  wMin:45,  wMax:95,  hMin:14, hMax:32, col:'#0e1f35', op:0.7 },
+    { yMin:1400, yMax:2600, count:14, wMin:60,  wMax:130, hMin:18, hMax:48, col:'#090f1e', op:0.82 },
+    { yMin:2600, yMax:3700, count:10, wMin:80,  wMax:160, hMin:22, hMax:60, col:'#04060e', op:0.9  },
+  ];
+  ledgeCfgs.forEach(function(cfg) {
+    for(var i=0; i<cfg.count; i++) {
+      var wy  = cfg.yMin + Math.random()*(cfg.yMax-cfg.yMin);
+      var lft = Math.random()<.5;
+      var w   = cfg.wMin + Math.random()*(cfg.wMax-cfg.wMin);
+      var h   = cfg.hMin + Math.random()*(cfg.hMax-cfg.hMin);
+      var el  = document.createElement('div');
+      var op  = (cfg.op-0.1+Math.random()*0.2).toFixed(2);
+      // Varied ledge shapes: flat shelf, angled slab, or pointed
+      var shapeType = Math.floor(Math.random()*3);
+      var cp;
+      if(shapeType===0) cp = lft ? 'polygon(0% 0%,88% 0%,100% 50%,88% 100%,0% 100%)' : 'polygon(100% 0%,12% 0%,0% 50%,12% 100%,100% 100%)';
+      else if(shapeType===1) cp = lft ? 'polygon(0% 0%,100% 0%,80% 100%,0% 100%)' : 'polygon(0% 0%,100% 0%,100% 100%,20% 100%)';
+      else cp = lft ? 'polygon(0% 0%,0% 100%,100% 50%)' : 'polygon(100% 0%,100% 100%,0% 50%)';
+      el.style.cssText = 'position:absolute;top:'+wy+'px;'+(lft?'left:38px':'right:38px')+
+        ';width:'+w+'px;height:'+h+'px;background:'+cfg.col+
+        ';clip-path:'+cp+';pointer-events:none;z-index:5;opacity:'+op;
+      dl.appendChild(el);
+    }
+  });
+  // Stalactites at deep zones
+  var stalCols = ['#080f1c','#040810'];
+  [{ yMin:1400,yMax:2600,count:10,col:stalCols[0] },
+   { yMin:2600,yMax:3700,count:8, col:stalCols[1] }].forEach(function(cfg) {
+    for(var i=0; i<cfg.count; i++) {
+      var wy  = cfg.yMin + Math.random()*(cfg.yMax-cfg.yMin);
+      var lft = Math.random()<.5;
+      var w   = 6+Math.random()*22, h=32+Math.random()*90;
+      var xp  = (55+Math.random()*18)+'px';
+      var el  = document.createElement('div');
+      el.style.cssText = 'position:absolute;top:'+wy+'px;'+(lft?'left:'+xp:'right:'+xp)+
+        ';width:'+w+'px;height:'+h+'px;background:'+cfg.col+
+        ';clip-path:polygon(50% 100%,0% 0%,100% 0%);pointer-events:none;z-index:5;opacity:0.75';
+      dl.appendChild(el);
+    }
+  });
+}
+
+function buildWallDecor() {
+  var dl = $('dlayer');
+  // Coral clusters near walls — shallow zones
+  var coralSet = ['\u{1FAB8}','\u{1FAB8}','\u{1FAB8}','\u{1F33F}','\u{1F41A}','\u{1F99F}','\u{1FAB8}','\u{1F33F}'];
+  for(var i=0; i<28; i++) {
+    var wy  = 110+Math.random()*780;
+    var lft = Math.random()<.5;
+    var xp  = lft ? (1+Math.random()*13)+'%' : (85+Math.random()*13)+'%';
+    var sz  = (1.0+Math.random()*1.1).toFixed(2);
+    var op  = (0.45+Math.random()*0.5).toFixed(2);
+    var el  = document.createElement('div');
+    el.style.cssText = 'position:absolute;top:'+wy+'px;left:'+xp+
+      ';font-size:'+sz+'rem;opacity:'+op+';pointer-events:none;z-index:6;'+
+      (!lft?'transform:scaleX(-1)':'');
+    el.textContent = coralSet[Math.floor(Math.random()*coralSet.length)];
+    dl.appendChild(el);
+  }
+  // Mid-depth: anemones, small marine growth (twilight zone 600-1400)
+  var midSet = ['\u{1F99F}','\u2728','\u{1F41A}','\u{1F33F}'];
+  for(var j=0; j<18; j++) {
+    var wy2 = 600+Math.random()*800;
+    var lft2= Math.random()<.5;
+    var xp2 = lft2 ? (1+Math.random()*11)+'%' : (87+Math.random()*11)+'%';
+    var el2 = document.createElement('div');
+    el2.style.cssText = 'position:absolute;top:'+wy2+'px;left:'+xp2+
+      ';font-size:'+(0.6+Math.random()*0.6).toFixed(2)+'rem;opacity:'+(0.3+Math.random()*0.38).toFixed(2)+
+      ';pointer-events:none;z-index:6';
+    el2.textContent = midSet[Math.floor(Math.random()*midSet.length)];
+    dl.appendChild(el2);
+  }
+  // Deep: bioluminescent wall patches (midnight zone 1400-2600)
+  for(var k=0; k<22; k++) {
+    var wy3 = 1400+Math.random()*1200;
+    var lft3= Math.random()<.5;
+    var xp3 = lft3 ? (Math.random()*14)+'%' : (86+Math.random()*12)+'%';
+    var el3 = document.createElement('div');
+    var glc = ['rgba(80,255,180,.55)','rgba(41,182,246,.4)','rgba(180,80,255,.4)'][Math.floor(Math.random()*3)];
+    var bs  = 2+Math.random()*4;
+    el3.style.cssText = 'position:absolute;top:'+wy3+'px;left:'+xp3+
+      ';width:'+bs+'px;height:'+bs+'px;border-radius:50%;background:'+glc+
+      ';box-shadow:0 0 '+(bs*3)+'px '+glc+';pointer-events:none;z-index:6;'+
+      'animation:biolum 2s ease-in-out infinite alternate;animation-delay:-'+(Math.random()*2).toFixed(1)+'s';
+    dl.appendChild(el3);
+  }
+  // Abyss: crystal/mineral deposits (2600-3700)
+  var crystalSet = ['\u2728','\u26AA','\u{1F4AB}'];
+  for(var m=0; m<20; m++) {
+    var wy4 = 2600+Math.random()*1100;
+    var lft4= Math.random()<.5;
+    var xp4 = lft4 ? (Math.random()*16)+'%' : (83+Math.random()*15)+'%';
+    var el4 = document.createElement('div');
+    el4.style.cssText = 'position:absolute;top:'+wy4+'px;left:'+xp4+
+      ';font-size:'+(0.4+Math.random()*0.55).toFixed(2)+'rem;opacity:'+(0.18+Math.random()*0.4).toFixed(2)+
+      ';pointer-events:none;z-index:6;filter:blur(.3px)';
+    el4.textContent = crystalSet[Math.floor(Math.random()*crystalSet.length)];
+    dl.appendChild(el4);
+  }
 }
 
 // ═══════════════════════════════════════════
@@ -733,9 +917,6 @@ function buildWorld() {
     }
   });
 
-  // Rock outcroppings (midnight + abyss zones)
-  buildRockOutcroppings();
-
   // Bioluminescent particles
   for (var i = 0; i < 55; i++) {
     var wy  = 600  + Math.random() * 2600;
@@ -752,64 +933,7 @@ function buildWorld() {
     $('dlayer').appendChild(el);
   }
 
-  buildJaggedWalls();
-}
-
-function buildRockOutcroppings() {
-  var dl = $('dlayer');
-
-  // Triangular rock ledges jutting from walls
-  var configs = [
-    { yMin:1400, yMax:2600, count:12, col:'#0d2035' },
-    { yMin:2600, yMax:3700, count:9,  col:'#060c18' },
-  ];
-  configs.forEach(function(cfg) {
-    for (var i = 0; i < cfg.count; i++) {
-      var wy  = cfg.yMin + Math.random() * (cfg.yMax - cfg.yMin);
-      var lft = Math.random() < .5;
-      var w   = 24 + Math.random() * 52;
-      var h   = 18 + Math.random() * 58;
-      var el  = document.createElement('div');
-      el.style.position = 'absolute';
-      el.style.top      = wy + 'px';
-      el.style.width    = w + 'px';
-      el.style.height   = h + 'px';
-      el.style.background = cfg.col;
-      el.style.pointerEvents = 'none';
-      el.style.zIndex   = '5';
-      el.style.opacity  = (.55 + Math.random() * .35).toFixed(2);
-      if (lft) {
-        el.style.left     = (40 + Math.random() * 14) + 'px';
-        el.style.clipPath = 'polygon(0% 0%,0% 100%,100% 50%)';
-      } else {
-        el.style.right    = (40 + Math.random() * 14) + 'px';
-        el.style.clipPath = 'polygon(100% 0%,100% 100%,0% 50%)';
-      }
-      dl.appendChild(el);
-    }
-  });
-
-  // Stalactite/stalagmite columns
-  var stalCfgs = [
-    { yMin:1400, yMax:2600, count:9,  col:'#0a1a2e' },
-    { yMin:2600, yMax:3700, count:7,  col:'#04080f' },
-  ];
-  stalCfgs.forEach(function(cfg) {
-    for (var i = 0; i < cfg.count; i++) {
-      var wy   = cfg.yMin + Math.random() * (cfg.yMax - cfg.yMin);
-      var lft  = Math.random() < .5;
-      var w    = 8 + Math.random() * 26;
-      var h    = 28 + Math.random() * 85;
-      var el   = document.createElement('div');
-      var xpos = (60 + Math.random() * 14) + 'px';
-      el.style.cssText = 'position:absolute;top:' + wy + 'px;' +
-        (lft ? 'left:' + xpos : 'right:' + xpos) + ';' +
-        'width:' + w + 'px;height:' + h + 'px;' +
-        'background:' + cfg.col + ';pointer-events:none;z-index:5;opacity:0.72;' +
-        'clip-path:polygon(50% 100%,0% 0%,100% 0%)';
-      dl.appendChild(el);
-    }
-  });
+  buildRockyWalls();
 }
 
 // ═══════════════════════════════════════════
@@ -854,8 +978,10 @@ function beginCast() {
   G.holding   = false;
   G.fish      = null;
   G.slinging  = false;
-  G.missCount = 0;
-  G.redT      = 0;
+  G.missCount    = 0;
+  G.redTLeft     = 0;
+  G.redTRight    = 0;
+  G.erraticUntil = 0;
   clearBubbles();
 
   wld.style.transform  = 'translateY(0px)';
@@ -874,7 +1000,7 @@ function beginCast() {
   cov.classList.remove('on');
   lov.classList.remove('on');
   reelBtn.classList.remove('active');
-  updateMissDots();
+  $('erratic-warn').classList.remove('on');
 
   setTimeout(function(){
     thint.style.display = 'block';
@@ -1023,9 +1149,11 @@ function triggerBite() {
   G.depthM     = worldYToM(G.sinkY);
   G.fish       = pickFish();
   G.fishY      = G.sinkY;
-  G.tension    = 0;
-  G.redT       = 0;
-  G.missCount  = 0;
+  G.tension      = 50;
+  G.redTLeft     = 0;
+  G.redTRight    = 0;
+  G.erraticUntil = 0;
+  G.missCount    = 0;
   var battleCfg = SESS[G.mode];
   G.surgeT     = battleCfg.surgeMin + Math.random() * (battleCfg.surgeMax - battleCfg.surgeMin);
   G.bubbleTimer = battleCfg.bubMin + Math.random() * (battleCfg.bubMax - battleCfg.bubMin);
@@ -1038,7 +1166,6 @@ function triggerBite() {
   bf.style.display = 'block';
 
   bhud.classList.add('on');
-  updateMissDots();
   flashBite();
 
   G.t0  = null;
@@ -1079,53 +1206,62 @@ function battleLoop(now) {
 
   var cfg = SESS[G.mode];
   var f   = G.fish;
+  var erratic = performance.now() < G.erraticUntil;
+  var erraticBonus = erratic ? cfg.erraticBoost : 0;
 
-  // Natural tension decay
-  G.tension -= 11 * dt;
-  G.tension  = Math.max(0, G.tension);
+  // Fish always drifts tension RIGHT (pulling away)
+  G.tension += ((f.diff || 3) * 1.5 + erraticBonus) * cfg.tensRate * dt;
 
-  // Fish surges
+  // Fish surges — spike tension right, fish sinks
   G.surgeT -= dt;
   if (G.surgeT <= 0) {
-    G.tension += (f.diff || 3) * cfg.surgeBase / 18 * cfg.tensRate;
-    G.tension  = Math.min(100, G.tension);
+    var spike = 14 + Math.random() * 16;
+    G.tension += spike;
     G.fishY   += (f.diff || 3) * 3.5;
-    G.surgeT   = cfg.surgeMin + Math.random() * (cfg.surgeMax - cfg.surgeMin);
+    var base = cfg.surgeMin + Math.random() * (cfg.surgeMax - cfg.surgeMin);
+    G.surgeT = erratic ? base * 0.5 : base;
   }
 
-  // Reel: hold raises tension, release lets it decay + fish slowly sinks
+  // Reel: hold pulls tension LEFT and reels fish up
   if (G.holding) {
-    G.fishY   -= 115 * cfg.reelRate * dt;
-    G.tension += (f.diff || 3) * 4.5 * cfg.tensRate * dt;
-    G.tension  = Math.min(100, G.tension);
+    G.tension -= 18 * dt;
+    G.fishY   -= 95 * cfg.reelRate * dt;
   } else {
     G.fishY += 18 * dt;
   }
 
-  // Track continuous time in red zone (tension > 70%)
-  if (G.tension > 70) {
-    G.redT += dt;
-    if (G.redT >= 3.5) {
-      showLost('Line snapped! Held too long in the danger zone. The ' + f.name + ' escaped!');
+  G.tension = Math.max(0, Math.min(100, G.tension));
+
+  // Left danger: slack (tension < 20)
+  if (G.tension < 20) {
+    G.redTLeft += dt;
+    if (G.redTLeft >= 2.8) {
+      showLost('Line went slack! The ' + f.name + ' shook free!');
       return;
     }
   } else {
-    G.redT = 0;
+    G.redTLeft = 0;
   }
 
-  if (G.tension >= 100) {
-    showLost('Line snapped! The ' + f.name + ' broke free!');
-    return;
+  // Right danger: too tight (tension > 80)
+  if (G.tension > 80) {
+    G.redTRight += dt;
+    if (G.redTRight >= 2.8) {
+      showLost('Line snapped! Too much tension — the ' + f.name + ' broke free!');
+      return;
+    }
+  } else {
+    G.redTRight = 0;
   }
 
-  // Bubble timer — more bubbles at higher difficulty
+  // Bubble timer
   G.bubbleTimer -= dt;
   if (G.bubbleTimer <= 0) {
     if (G.bubbles.length < cfg.maxBubbles) spawnBubble();
     G.bubbleTimer = cfg.bubMin + Math.random() * (cfg.bubMax - cfg.bubMin);
   }
 
-  // Age bubbles — may trigger miss & showLost
+  // Age bubbles — may trigger miss
   tickBubbles(dt);
   if (G.st !== 'battle') return;
 
@@ -1136,8 +1272,8 @@ function battleLoop(now) {
   updateCam();
   drawLine();
 
-  // Move tension needle
-  tenNeedle.style.left = Math.min(100, G.tension) + '%';
+  // Needle: 50% = center = green zone
+  tenNeedle.style.left = G.tension + '%';
 
   dval.textContent = Math.max(0, worldYToM(G.sinkY));
 
@@ -1170,32 +1306,25 @@ document.addEventListener('keyup', function(e){
 //  BUBBLE SYSTEM
 // ═══════════════════════════════════════════
 function spawnBubble() {
+  var cfg   = SESS[G.mode];
   var hudH  = bhud.offsetHeight || 100;
   var availH = vp.offsetHeight - hudH - 20;
   var maxYPct = Math.max(20, availH / vp.offsetHeight * 100);
 
-  var x    = 20 + Math.random() * 60;           // 20–80% width (clears walls)
-  var y    = 8  + Math.random() * (maxYPct - 14); // % of viewport height
-  var size = 40 + Math.floor(Math.random() * 22);  // 40–62px
-  var dur  = 2.4 + Math.random() * 1.5;
+  var x   = 20 + Math.random() * 60;
+  var y   = 8  + Math.random() * (maxYPct - 14);
+  var dur = cfg.bubMin + Math.random() * (cfg.bubMax - cfg.bubMin);
 
   var el = document.createElement('div');
   el.className = 'bbl';
-  el.style.left   = x + '%';
-  el.style.top    = y + '%';
-  el.style.width  = size + 'px';
-  el.style.height = size + 'px';
+  el.style.left = x + '%';
+  el.style.top  = y + '%';
   el.style.setProperty('--bbl-dur', dur + 's');
 
-  var ring = document.createElement('div');
-  ring.className = 'bbl-ring';
-
-  var icon = document.createElement('div');
-  icon.className  = 'bbl-icon';
-  icon.textContent = '\u2193'; // ↓ reel in!
-
-  el.appendChild(ring);
-  el.appendChild(icon);
+  var txt = document.createElement('span');
+  txt.className   = 'bbl-txt';
+  txt.textContent = 'CLICK';
+  el.appendChild(txt);
 
   var id = Date.now() + Math.random();
   el.dataset.bid = id;
@@ -1214,17 +1343,17 @@ function onBubbleHit(id, el) {
   var rect = el.getBoundingClientRect(); // capture BEFORE removing
   G.bubbles = G.bubbles.filter(function(b){ return b.id !== id; });
   el.remove();
-  G.tension = Math.max(0, G.tension - 22);
+  G.tension = Math.max(5, G.tension - 22);
 
-  // Show +pop
+  // Show pop
   var sr  = $('scene').getBoundingClientRect();
   var pop = document.createElement('div');
   pop.style.cssText = 'position:absolute;' +
     'left:' + (rect.left - sr.left + rect.width/2) + 'px;' +
     'top:'  + (rect.top  - sr.top  + rect.height/2) + 'px;' +
-    'font-size:1.3rem;font-weight:700;color:#66bb6a;z-index:60;pointer-events:none;' +
+    'font-size:1.1rem;font-weight:900;color:#66bb6a;z-index:60;pointer-events:none;' +
     'transform:translate(-50%,-50%);animation:cpop .45s ease-out forwards';
-  pop.textContent = '\u2193\u2713';
+  pop.textContent = '\u2713 REEL';
   $('scene').appendChild(pop);
   setTimeout(function(){ pop.remove(); }, 480);
 }
@@ -1232,12 +1361,16 @@ function onBubbleHit(id, el) {
 function onBubbleMiss(b) {
   b.el.remove();
   if (G.st !== 'battle') return;
-  G.tension = Math.min(100, G.tension + 16);
-  G.missCount++;
-  updateMissDots();
-  if (G.missCount >= 3) {
-    showLost('Too many missed chances! The ' + (G.fish ? G.fish.name : 'fish') + ' got away!');
-  }
+  var cfg = SESS[G.mode];
+  G.erraticUntil = performance.now() + cfg.erraticDur;
+  var warn = $('erratic-warn');
+  warn.classList.add('on');
+  setTimeout(function(){ warn.classList.remove('on'); }, cfg.erraticDur);
+  // Screen flash red
+  var fl = document.createElement('div');
+  fl.style.cssText = 'position:absolute;inset:0;background:rgba(239,83,80,.22);z-index:58;pointer-events:none;animation:cpop .5s ease-out forwards';
+  $('scene').appendChild(fl);
+  setTimeout(function(){ fl.remove(); }, 520);
 }
 
 function tickBubbles(dt) {
@@ -1254,13 +1387,6 @@ function clearBubbles() {
   G.bubbles.forEach(function(b){ if (b.el && b.el.parentNode) b.el.remove(); });
   G.bubbles = [];
   bubLayer.innerHTML = '';
-}
-
-function updateMissDots() {
-  for (var i = 0; i < 3; i++) {
-    var d = $('md' + i);
-    if (d) d.className = 'mdot' + (i < G.missCount ? ' used' : '');
-  }
 }
 
 // ═══════════════════════════════════════════
@@ -1282,6 +1408,7 @@ function showCatch() {
 
   $('co-name').textContent = f.name;
   $('co-dep').textContent  = 'Caught at ' + m + 'm depth';
+  $('co-sz').textContent   = f.weight ? f.weight + (f.len ? ' · ' + f.len : '') : '';
   $('co-fact').textContent = f.fact;
   $('co-pb').style.display = isNew ? 'block' : 'none';
 
@@ -1305,37 +1432,7 @@ function drawCatchFish(f) {
   };
   var pal  = pals[f.rarity || 'common'];
   var pair = pal[Math.floor(Math.random() * pal.length)];
-  var c1 = pair[0], c2 = pair[1];
-  var shapes = {
-    legendary:
-      '<ellipse cx="54" cy="32" rx="36" ry="18" fill="' + c1 + '"/>' +
-      '<polygon points="90,32 108,16 112,32 108,48" fill="' + c2 + '"/>' +
-      '<path d="M30,14 Q52,4 76,15" stroke="' + c2 + '" stroke-width="3.5" fill="none" stroke-linecap="round"/>' +
-      '<path d="M34,50 Q54,60 72,51" stroke="' + c2 + '" stroke-width="2" fill="none" stroke-linecap="round"/>' +
-      '<ellipse cx="46" cy="27" rx="15" ry="7" fill="' + c2 + '" opacity=".22"/>' +
-      '<line x1="22" y1="20" x2="18" y2="44" stroke="' + c2 + '" stroke-width="2.2" stroke-linecap="round"/>' +
-      '<circle cx="14" cy="29" r="5" fill="white"/><circle cx="13" cy="28" r="2.5" fill="#111"/>',
-    rare:
-      '<ellipse cx="58" cy="32" rx="38" ry="11" fill="' + c1 + '"/>' +
-      '<polygon points="96,32 112,22 114,32 112,42" fill="' + c2 + '"/>' +
-      '<path d="M36,21 Q64,12 88,22" stroke="' + c2 + '" stroke-width="2.5" fill="none"/>' +
-      '<line x1="20" y1="32" x2="3" y2="30" stroke="' + c2 + '" stroke-width="3.5" stroke-linecap="round"/>' +
-      '<circle cx="22" cy="30" r="4" fill="white"/><circle cx="21" cy="29" r="2.2" fill="#111"/>',
-    uncommon:
-      '<ellipse cx="52" cy="33" rx="30" ry="17" fill="' + c1 + '"/>' +
-      '<polygon points="82,33 98,22 100,33 98,44" fill="' + c2 + '"/>' +
-      '<path d="M36,17 Q52,10 72,19" stroke="' + c2 + '" stroke-width="3" fill="none" stroke-linecap="round"/>' +
-      '<path d="M38,48 Q52,56 68,49" stroke="' + c2 + '" stroke-width="2" fill="none" stroke-linecap="round"/>' +
-      '<line x1="34" y1="24" x2="30" y2="40" stroke="' + c2 + '" stroke-width="1.8" stroke-linecap="round"/>' +
-      '<circle cx="28" cy="31" r="5" fill="white"/><circle cx="27" cy="30" r="2.5" fill="#111"/>',
-    common:
-      '<ellipse cx="50" cy="33" rx="26" ry="18" fill="' + c1 + '"/>' +
-      '<polygon points="76,33 93,22 95,33 93,44" fill="' + c2 + '"/>' +
-      '<path d="M36,17 Q50,10 66,19" stroke="' + c2 + '" stroke-width="2.5" fill="none"/>' +
-      '<line x1="38" y1="27" x2="34" y2="39" stroke="' + c2 + '" stroke-width="1.5" stroke-linecap="round"/>' +
-      '<circle cx="28" cy="31" r="5" fill="white"/><circle cx="27" cy="30" r="2.5" fill="#111"/>',
-  };
-  svg.innerHTML = shapes[f.rarity] || shapes.common;
+  svg.innerHTML = fishShapeElements(f.shape || f.rarity || 'common', pair[0], pair[1]);
 }
 
 // ═══════════════════════════════════════════
