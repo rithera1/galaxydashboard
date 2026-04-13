@@ -53,12 +53,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;color:#e0f0ff;touch-action:none
 #z2{position:absolute;top:1400px;height:1200px;left:0;right:0;background:linear-gradient(180deg,#020812,#010508)}
 #z3{position:absolute;top:2600px;height:1100px;left:0;right:0;background:linear-gradient(180deg,#010508,#010203)}
 
-/* ROCK WALLS — jagged clip-path applied via JS */
-.wall{position:absolute;top:100px;bottom:0;width:82px;z-index:5;
-  background:linear-gradient(180deg,#2a6080 0px,#1e4a65 320px,#122e48 700px,#0a1e35 1300px,#061220 2000px,#030c18 2800px,#010508 3700px)}
-.wall::before{content:'';position:absolute;inset:0;
-  background:repeating-linear-gradient(180deg,transparent 0,transparent 28px,rgba(0,0,0,.15) 28px,rgba(0,0,0,.15) 30px),
-             repeating-linear-gradient(90deg,transparent 0,transparent 14px,rgba(0,0,0,.09) 14px,rgba(0,0,0,.09) 16px)}
+/* ROCK WALLS — built as SVG in JS, positioned flush to edges */
+.wall{position:absolute;top:0;z-index:5;pointer-events:none;overflow:visible}
 #wl{left:0}
 #wr{right:0}
 
@@ -171,7 +167,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;color:#e0f0ff;touch-action:none
   padding:1.4rem 1.6rem;max-width:310px;width:88%;text-align:center;
   animation:cpop .22s cubic-bezier(.175,.885,.32,1.275)}
 @keyframes cpop{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}
-.fc-em{font-size:2.8rem;margin-bottom:.4rem}
+.fc-em{margin-bottom:.4rem;display:flex;align-items:center;justify-content:center}
+.fc-em svg{width:110px;height:64px}
 .fc-n{font-size:1.05rem;font-weight:700;color:#29b6f6;margin-bottom:.15rem}
 .fc-d{font-size:.67rem;color:rgba(150,200,255,.55);margin-bottom:.65rem}
 .fc-t{font-size:.82rem;color:rgba(200,230,255,.85);line-height:1.5;margin-bottom:.9rem}
@@ -658,21 +655,32 @@ function fishShapeElements(shape, c1, c2) {
 }
 
 // ═══════════════════════════════════════════
-//  SVG FISH ICONS (world creatures)
+//  DETERMINISTIC CREATURE COLORS
+//  Same fish type always shows same colors everywhere
+// ═══════════════════════════════════════════
+function getCreatureColors(c) {
+  var pals = {
+    common:    [['#64b5f6','#1565c0'],['#81c784','#2e7d32'],['#ffb74d','#e65100']],
+    uncommon:  [['#80cbc4','#004d40'],['#ce93d8','#6a1b9a'],['#a5d6a7','#1b5e20']],
+    rare:      [['#b39ddb','#311b92'],['#ef9a9a','#b71c1c'],['#80deea','#006064']],
+    legendary: [['#ffd54f','#e65100'],['#ffe082','#bf360c'],['#fff176','#f57f17']],
+  };
+  var pal = pals[c.rarity || 'common'];
+  var id  = c.id || c.name || '';
+  var h   = 0;
+  for (var i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) & 0xffff;
+  return pal[h % pal.length];
+}
+
+// ═══════════════════════════════════════════
+//  SVG FISH ICONS (world creatures + fact card)
 // ═══════════════════════════════════════════
 function makeFishSVG(c) {
-  var pals = {
-    common:    ['#5b9bd5','#1a4a8c'],
-    uncommon:  ['#4db6ac','#006064'],
-    rare:      ['#ab47bc','#6a1b9a'],
-    legendary: ['#ffca28','#e65100'],
-  };
-  var p  = pals[c.rarity] || pals.common;
+  var p  = getCreatureColors(c);
   var sh = c.shape || c.rarity || 'common';
   var biolumDot = c.biolum
     ? '<circle cx="18" cy="26" r="2.5" fill="rgba(80,255,180,.9)"><animate attributeName="opacity" values="0.2;1;0.2" dur="1.8s" repeatCount="indefinite"/></circle>'
     : '';
-  // viewBox matches shape coordinate space (110×64); width/height scales it small
   return '<svg viewBox="0 0 115 64" width="54" height="30" xmlns="http://www.w3.org/2000/svg">' +
     fishShapeElements(sh, p[0], p[1]) + biolumDot + '</svg>';
 }
@@ -703,142 +711,211 @@ function makeMysteryFishSVG(zone) {
 //  ROCKY WALLS (smooth noise profile + ledges)
 // ═══════════════════════════════════════════
 function buildRockyWalls() {
-  // 1D smooth value noise
-  function makeNoise(n) { var a=[]; for(var i=0;i<n;i++) a.push(Math.random()); return a; }
-  function sampleNoise(a, t) {
-    var s=t*(a.length-1), i=Math.floor(s), f=s-i;
+  function rnd(n) { var a=[]; for(var i=0;i<n;i++) a.push(Math.random()); return a; }
+  function sm(a, t) {
+    var s=t*(a.length-1), i0=Math.floor(s), f=s-i0;
     f=f*f*(3-2*f); // smoothstep
-    return a[i]*(1-f)+(a[Math.min(i+1,a.length-1)])*f;
+    return a[i0]*(1-f)+(a[Math.min(i0+1,a.length-1)])*f;
   }
-  var STEPS = 280;
-  var nL1=makeNoise(32), nL2=makeNoise(22), nR1=makeNoise(32), nR2=makeNoise(22);
 
-  ['wl','wr'].forEach(function(id) {
-    var isLeft = id==='wl';
-    var ns1=isLeft?nL1:nR1, ns2=isLeft?nL2:nR2;
-    var pts = isLeft ? ['0% 0%'] : ['100% 0%','100% 100%'];
+  var SVG_W=220, SVG_H=WORLD_H, STEPS=220;
+  var nL1=rnd(26),nL2=rnd(18),nL3=rnd(10);
+  var nR1=rnd(26),nR2=rnd(18),nR3=rnd(10);
 
-    for(var i=(isLeft?0:STEPS); isLeft?i<=STEPS:i>=0; isLeft?i++:i--) {
-      var t    = i/STEPS;
-      var base = 28 + t*55;                              // wall gets wider with depth
-      var amp  = 10 + t*46;
-      var n1   = sampleNoise(ns1, t);
-      var n2   = sampleNoise(ns2, (t*2.7)%1);
-      var edge = base + (n1-0.5)*amp + (n2-0.5)*amp*0.4;
-      edge = Math.max(6, Math.min(94, edge));
-      var pct  = (t*100).toFixed(1);
-      pts.push((isLeft ? edge : (100-edge)).toFixed(1)+'% '+pct+'%');
+  // Build organic profile: array of x-values (inner edge width at each step)
+  function makeProfile(ns1, ns2, ns3) {
+    var pts=[];
+    for(var i=0; i<=STEPS; i++) {
+      var t=i/STEPS;
+      var base=52+t*115;
+      var p=base + (sm(ns1,t)-0.5)*(10+t*24)
+                 + (sm(ns2,(t*3.2)%1)-0.5)*(5+t*16)
+                 + (sm(ns3,(t*7.5)%1)-0.5)*(t*10);
+      pts.push(Math.max(28, Math.min(SVG_W-4, p)));
     }
-    if(isLeft) pts.push('0% 100%');
-    $(id).style.clipPath = 'polygon('+pts.join(',')+')';
-  });
+    return pts;
+  }
 
-  buildWallLedges();
+  function wallSVG(isLeft, prof) {
+    var W=SVG_W, H=SVG_H;
+    var gid=isLeft?'wgL':'wgR';
+    var gx1=isLeft?'1':'0', gx2=isLeft?'0':'1';
+
+    // Main wall body (flush to screen edge, organic inner face)
+    var d=isLeft
+      ? 'M 0 0 L '+prof[0].toFixed(1)+' 0'
+      : 'M '+W+' 0 L '+(W-prof[0]).toFixed(1)+' 0';
+    for(var i=1; i<=STEPS; i++) {
+      var y=(i/STEPS*H).toFixed(1);
+      d += isLeft
+        ? ' L '+prof[i].toFixed(1)+' '+y
+        : ' L '+(W-prof[i]).toFixed(1)+' '+y;
+    }
+    d += isLeft ? ' L 0 '+H+' Z' : ' L '+W+' '+H+' Z';
+
+    // Inner face highlight (55% of profile width = slight 3D depth)
+    var d2=isLeft
+      ? 'M 0 0 L '+(prof[0]*0.55).toFixed(1)+' 0'
+      : 'M '+W+' 0 L '+(W-prof[0]*0.55).toFixed(1)+' 0';
+    for(var j=1; j<=STEPS; j++) {
+      var y2=(j/STEPS*H).toFixed(1);
+      var x2=prof[j]*0.55;
+      d2 += isLeft ? ' L '+x2.toFixed(1)+' '+y2 : ' L '+(W-x2).toFixed(1)+' '+y2;
+    }
+    d2 += isLeft ? ' L 0 '+H+' Z' : ' L '+W+' '+H+' Z';
+
+    // Horizontal rock strata lines
+    var strata='';
+    for(var s=0; s<38; s++) {
+      var sy=Math.round(H*s/38 + Math.random()*(H/44));
+      var st=sy/H, sp=52+st*115;
+      var lx1=isLeft?0:W, lx2=isLeft?(sp*0.86).toFixed(0):(W-sp*0.86).toFixed(0);
+      strata+='<line x1="'+lx1+'" y1="'+sy+'" x2="'+lx2+'" y2="'+sy
+        +'" stroke="rgba(0,0,0,'+(0.04+Math.random()*0.09).toFixed(2)+')" stroke-width="'+(0.4+Math.random()*1.3).toFixed(1)+'"/>';
+    }
+
+    return '<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'">'
+      +'<defs>'
+        +'<linearGradient id="'+gid+'" x1="'+gx1+'" y1="0" x2="'+gx2+'" y2="0">'
+          +'<stop offset="0%" stop-color="#020709"/>'
+          +'<stop offset="40%" stop-color="#0b1726"/>'
+          +'<stop offset="78%" stop-color="#142032"/>'
+          +'<stop offset="100%" stop-color="#1a2c46" stop-opacity="0.5"/>'
+        +'</linearGradient>'
+        +'<linearGradient id="'+gid+'d" x1="0" y1="0" x2="0" y2="1">'
+          +'<stop offset="0%" stop-color="#1e3e5c"/>'
+          +'<stop offset="22%" stop-color="#0d1e38"/>'
+          +'<stop offset="60%" stop-color="#04091a"/>'
+          +'<stop offset="100%" stop-color="#010205"/>'
+        +'</linearGradient>'
+      +'</defs>'
+      +'<path d="'+d+'" fill="url(#'+gid+'d)"/>'
+      +'<path d="'+d+'" fill="url(#'+gid+')"/>'
+      +'<path d="'+d2+'" fill="rgba(255,255,255,0.024)"/>'
+      +strata
+      +'</svg>';
+  }
+
+  var profL=makeProfile(nL1,nL2,nL3);
+  var profR=makeProfile(nR1,nR2,nR3);
+
+  var wlEl=$('wl');
+  wlEl.style.cssText='position:absolute;top:0;left:0;width:'+SVG_W+'px;height:'+SVG_H+'px;z-index:5;pointer-events:none;';
+  wlEl.innerHTML=wallSVG(true, profL);
+
+  var wrEl=$('wr');
+  wrEl.style.cssText='position:absolute;top:0;right:0;width:'+SVG_W+'px;height:'+SVG_H+'px;z-index:5;pointer-events:none;';
+  wrEl.innerHTML=wallSVG(false, profR);
+
   buildWallDecor();
 }
 
-function buildWallLedges() {
-  var dl = $('dlayer');
-  // Rock shelf configs: gets heavier/wider at depth
-  var ledgeCfgs = [
-    { yMin:800,  yMax:1400, count:8,  wMin:45,  wMax:95,  hMin:14, hMax:32, col:'#0e1f35', op:0.7 },
-    { yMin:1400, yMax:2600, count:14, wMin:60,  wMax:130, hMin:18, hMax:48, col:'#090f1e', op:0.82 },
-    { yMin:2600, yMax:3700, count:10, wMin:80,  wMax:160, hMin:22, hMax:60, col:'#04060e', op:0.9  },
-  ];
-  ledgeCfgs.forEach(function(cfg) {
-    for(var i=0; i<cfg.count; i++) {
-      var wy  = cfg.yMin + Math.random()*(cfg.yMax-cfg.yMin);
-      var lft = Math.random()<.5;
-      var w   = cfg.wMin + Math.random()*(cfg.wMax-cfg.wMin);
-      var h   = cfg.hMin + Math.random()*(cfg.hMax-cfg.hMin);
-      var el  = document.createElement('div');
-      var op  = (cfg.op-0.1+Math.random()*0.2).toFixed(2);
-      // Varied ledge shapes: flat shelf, angled slab, or pointed
-      var shapeType = Math.floor(Math.random()*3);
-      var cp;
-      if(shapeType===0) cp = lft ? 'polygon(0% 0%,88% 0%,100% 50%,88% 100%,0% 100%)' : 'polygon(100% 0%,12% 0%,0% 50%,12% 100%,100% 100%)';
-      else if(shapeType===1) cp = lft ? 'polygon(0% 0%,100% 0%,80% 100%,0% 100%)' : 'polygon(0% 0%,100% 0%,100% 100%,20% 100%)';
-      else cp = lft ? 'polygon(0% 0%,0% 100%,100% 50%)' : 'polygon(100% 0%,100% 100%,0% 50%)';
-      el.style.cssText = 'position:absolute;top:'+wy+'px;'+(lft?'left:38px':'right:38px')+
-        ';width:'+w+'px;height:'+h+'px;background:'+cfg.col+
-        ';clip-path:'+cp+';pointer-events:none;z-index:5;opacity:'+op;
-      dl.appendChild(el);
-    }
-  });
-  // Stalactites at deep zones
-  var stalCols = ['#080f1c','#040810'];
-  [{ yMin:1400,yMax:2600,count:10,col:stalCols[0] },
-   { yMin:2600,yMax:3700,count:8, col:stalCols[1] }].forEach(function(cfg) {
-    for(var i=0; i<cfg.count; i++) {
-      var wy  = cfg.yMin + Math.random()*(cfg.yMax-cfg.yMin);
-      var lft = Math.random()<.5;
-      var w   = 6+Math.random()*22, h=32+Math.random()*90;
-      var xp  = (55+Math.random()*18)+'px';
-      var el  = document.createElement('div');
-      el.style.cssText = 'position:absolute;top:'+wy+'px;'+(lft?'left:'+xp:'right:'+xp)+
-        ';width:'+w+'px;height:'+h+'px;background:'+cfg.col+
-        ';clip-path:polygon(50% 100%,0% 0%,100% 0%);pointer-events:none;z-index:5;opacity:0.75';
-      dl.appendChild(el);
-    }
-  });
-}
 
 function buildWallDecor() {
   var dl = $('dlayer');
-  // Coral clusters near walls — shallow zones
-  var coralSet = ['\u{1FAB8}','\u{1FAB8}','\u{1FAB8}','\u{1F33F}','\u{1F41A}','\u{1F99F}','\u{1FAB8}','\u{1F33F}'];
-  for(var i=0; i<28; i++) {
-    var wy  = 110+Math.random()*780;
-    var lft = Math.random()<.5;
-    var xp  = lft ? (1+Math.random()*13)+'%' : (85+Math.random()*13)+'%';
-    var sz  = (1.0+Math.random()*1.1).toFixed(2);
-    var op  = (0.45+Math.random()*0.5).toFixed(2);
-    var el  = document.createElement('div');
-    el.style.cssText = 'position:absolute;top:'+wy+'px;left:'+xp+
-      ';font-size:'+sz+'rem;opacity:'+op+';pointer-events:none;z-index:6;'+
-      (!lft?'transform:scaleX(-1)':'');
-    el.textContent = coralSet[Math.floor(Math.random()*coralSet.length)];
+
+  // SVG shape generators
+  function svgCoral(c1, c2, h) {
+    var hh=(h*0.44).toFixed(0), hf=(h*0.64).toFixed(0);
+    var t1=(h*0.07).toFixed(0), t2=(h*0.05).toFixed(0), t3=(h*0.22).toFixed(0);
+    return '<svg width="42" height="'+h+'" viewBox="0 0 42 '+h+'">'
+      +'<path d="M21 '+h+' L21 '+hh+' M21 '+hf+' L9 '+t3+' M21 '+hf+' L33 '+t3+' M21 '+hh+' L17 '+t1+' M21 '+hh+' L28 '+t2+'"'
+      +' stroke="'+c1+'" stroke-width="4.5" stroke-linecap="round" fill="none"/>'
+      +'<circle cx="17" cy="'+t1+'" r="5" fill="'+c2+'"/>'
+      +'<circle cx="28" cy="'+t2+'" r="5" fill="'+c2+'"/>'
+      +'<circle cx="9"  cy="'+t3+'" r="5" fill="'+c2+'"/>'
+      +'<circle cx="33" cy="'+t3+'" r="5" fill="'+c2+'"/>'
+      +'</svg>';
+  }
+  function svgKelp(col, h) {
+    var m=(h*0.5).toFixed(0), q1=(h*0.25).toFixed(0), q3=(h*0.75).toFixed(0);
+    return '<svg width="10" height="'+h+'" viewBox="0 0 10 '+h+'">'
+      +'<path d="M5 '+h+' Q9 '+q3+' 5 '+m+' Q1 '+q1+' 5 0"'
+      +' stroke="'+col+'" stroke-width="4" stroke-linecap="round" fill="none"/>'
+      +'</svg>';
+  }
+  function svgAnemone(col) {
+    var lines='';
+    [0,45,90,135,180,225,270,315].forEach(function(a) {
+      var r=a*Math.PI/180;
+      lines+='<line x1="18" y1="22" x2="'+(18+Math.cos(r)*13).toFixed(1)+'" y2="'+(22+Math.sin(r)*13).toFixed(1)+'"'
+        +' stroke="'+col+'" stroke-width="2.5" stroke-linecap="round"/>';
+    });
+    return '<svg width="36" height="36" viewBox="0 0 36 36">'+lines+'<circle cx="18" cy="22" r="6" fill="'+col+'"/></svg>';
+  }
+  function svgCrystal(col) {
+    return '<svg width="20" height="34" viewBox="0 0 20 34">'
+      +'<polygon points="10,0 19,8 16,34 4,34 1,8" fill="'+col+'" opacity="0.62"/>'
+      +'<polygon points="10,2 18,9 10,32" fill="rgba(255,255,255,0.14)"/>'
+      +'</svg>';
+  }
+
+  function addDecor(wy, lft, xLft, xRgt, op, html) {
+    var el=document.createElement('div');
+    el.style.cssText='position:absolute;top:'+wy+'px;left:'+(lft?xLft:xRgt)+';pointer-events:none;z-index:6;opacity:'+op.toFixed(2);
+    el.innerHTML=html;
     dl.appendChild(el);
   }
-  // Mid-depth: anemones, small marine growth (twilight zone 600-1400)
-  var midSet = ['\u{1F99F}','\u2728','\u{1F41A}','\u{1F33F}'];
+
+  // SHALLOW coral (100-900)
+  var ccols=[['#c62828','#ff8a80'],['#ad1457','#f48fb1'],['#6a1b9a','#ce93d8'],
+             ['#e65100','#ffb74d'],['#1565c0','#90caf9'],['#00695c','#80cbc4']];
+  for(var i=0; i<24; i++) {
+    var lft=Math.random()<.5;
+    var cp=ccols[Math.floor(Math.random()*ccols.length)];
+    var h=38+Math.random()*28;
+    addDecor(110+Math.random()*790, lft,
+      (Math.random()*11)+'%', (89+Math.random()*9)+'%',
+      0.55+Math.random()*0.4,
+      svgCoral(cp[0],cp[1],h));
+  }
+
+  // SHALLOW-MID kelp (100-700)
+  var kcols=['#2e7d32','#388e3c','#1b5e20','#33691e','#004d40'];
   for(var j=0; j<18; j++) {
-    var wy2 = 600+Math.random()*800;
-    var lft2= Math.random()<.5;
-    var xp2 = lft2 ? (1+Math.random()*11)+'%' : (87+Math.random()*11)+'%';
-    var el2 = document.createElement('div');
-    el2.style.cssText = 'position:absolute;top:'+wy2+'px;left:'+xp2+
-      ';font-size:'+(0.6+Math.random()*0.6).toFixed(2)+'rem;opacity:'+(0.3+Math.random()*0.38).toFixed(2)+
-      ';pointer-events:none;z-index:6';
-    el2.textContent = midSet[Math.floor(Math.random()*midSet.length)];
-    dl.appendChild(el2);
+    var lft2=Math.random()<.5;
+    var kc=kcols[Math.floor(Math.random()*kcols.length)];
+    var kh=38+Math.random()*40;
+    addDecor(110+Math.random()*590, lft2,
+      (Math.random()*13)+'%', (87+Math.random()*11)+'%',
+      0.48+Math.random()*0.42,
+      svgKelp(kc,kh));
   }
-  // Deep: bioluminescent wall patches (midnight zone 1400-2600)
-  for(var k=0; k<22; k++) {
-    var wy3 = 1400+Math.random()*1200;
-    var lft3= Math.random()<.5;
-    var xp3 = lft3 ? (Math.random()*14)+'%' : (86+Math.random()*12)+'%';
-    var el3 = document.createElement('div');
-    var glc = ['rgba(80,255,180,.55)','rgba(41,182,246,.4)','rgba(180,80,255,.4)'][Math.floor(Math.random()*3)];
-    var bs  = 2+Math.random()*4;
-    el3.style.cssText = 'position:absolute;top:'+wy3+'px;left:'+xp3+
-      ';width:'+bs+'px;height:'+bs+'px;border-radius:50%;background:'+glc+
-      ';box-shadow:0 0 '+(bs*3)+'px '+glc+';pointer-events:none;z-index:6;'+
-      'animation:biolum 2s ease-in-out infinite alternate;animation-delay:-'+(Math.random()*2).toFixed(1)+'s';
-    dl.appendChild(el3);
+
+  // MID anemones (600-1400)
+  var acols=['#ff7043','#f06292','#ab47bc','#26a69a','#42a5f5','#ffca28'];
+  for(var k=0; k<16; k++) {
+    var lft3=Math.random()<.5;
+    var ac=acols[Math.floor(Math.random()*acols.length)];
+    addDecor(600+Math.random()*800, lft3,
+      (Math.random()*12)+'%', (88+Math.random()*10)+'%',
+      0.45+Math.random()*0.45,
+      svgAnemone(ac));
   }
-  // Abyss: crystal/mineral deposits (2600-3700)
-  var crystalSet = ['\u2728','\u26AA','\u{1F4AB}'];
-  for(var m=0; m<20; m++) {
-    var wy4 = 2600+Math.random()*1100;
-    var lft4= Math.random()<.5;
-    var xp4 = lft4 ? (Math.random()*16)+'%' : (83+Math.random()*15)+'%';
-    var el4 = document.createElement('div');
-    el4.style.cssText = 'position:absolute;top:'+wy4+'px;left:'+xp4+
-      ';font-size:'+(0.4+Math.random()*0.55).toFixed(2)+'rem;opacity:'+(0.18+Math.random()*0.4).toFixed(2)+
-      ';pointer-events:none;z-index:6;filter:blur(.3px)';
-    el4.textContent = crystalSet[Math.floor(Math.random()*crystalSet.length)];
+
+  // MIDNIGHT bioluminescent orbs (1400-2600)
+  var glcols=['rgba(80,255,180,.65)','rgba(41,182,246,.55)','rgba(200,80,255,.55)','rgba(80,255,120,.6)'];
+  for(var m=0; m<30; m++) {
+    var lft4=Math.random()<.5;
+    var bs=3+Math.random()*5;
+    var glc=glcols[Math.floor(Math.random()*glcols.length)];
+    var el4=document.createElement('div');
+    el4.style.cssText='position:absolute;top:'+(1400+Math.random()*1200)+'px;left:'+(lft4?(Math.random()*15)+'%':(85+Math.random()*13)+'%')
+      +';width:'+bs+'px;height:'+bs+'px;border-radius:50%;background:'+glc
+      +';box-shadow:0 0 '+(bs*3).toFixed(0)+'px '+glc+';pointer-events:none;z-index:6;'
+      +'animation:biolum 2s ease-in-out infinite alternate;animation-delay:-'+(Math.random()*2).toFixed(1)+'s';
     dl.appendChild(el4);
+  }
+
+  // ABYSS mineral crystals (2600-3700)
+  var crystcols=['#7e57c2','#5c6bc0','#26c6da','#4fc3f7','#7986cb','#80deea'];
+  for(var n=0; n<20; n++) {
+    var lft5=Math.random()<.5;
+    var cc=crystcols[Math.floor(Math.random()*crystcols.length)];
+    addDecor(2600+Math.random()*1100, lft5,
+      (Math.random()*16)+'%', (83+Math.random()*15)+'%',
+      0.3+Math.random()*0.5,
+      svgCrystal(cc));
   }
 }
 
@@ -873,15 +950,9 @@ function buildWorld() {
       var inner = document.createElement('div');
       inner.className = 'cem';
 
-      if (c.catchable) {
-        // SVG fish icon for catchable creatures
-        inner.innerHTML = makeFishSVG(c);
-        inner.style.lineHeight = '0';
-      } else {
-        // Emoji for ambient creatures
-        inner.textContent = c.em;
-        inner.style.fontSize = (1.25 + Math.random() * .65) + 'rem';
-      }
+      // All creatures use SVG — ensures world icon matches catch card
+      inner.innerHTML = makeFishSVG(c);
+      inner.style.lineHeight = '0';
 
       wrap.appendChild(inner);
 
@@ -898,24 +969,41 @@ function buildWorld() {
     }
   });
 
-  // Decorative bottom elements
-  [
-    { emojis:['\u{1FAB8}','\u{1FAB8}','\u{1FAB8}','\u{1F33F}','\u{1F41A}','\u2605','\u{1F980}','\u{1FAB8}'], yRange:[150,900], count:32 },
-    { emojis:['\u{1F33F}','\u{1FAA8}','\u{1F41A}','\u2605'], yRange:[900,1400], count:16 },
-    { emojis:['\u{1FAA8}'],                                                yRange:[1400,3700], count:20 },
-  ].forEach(function(d) {
-    for (var i = 0; i < d.count; i++) {
-      var wy  = d.yRange[0] + Math.random() * (d.yRange[1] - d.yRange[0]);
-      var lft = Math.random() < .5;
-      var xp  = lft ? (6 + Math.random() * 16) : (64 + Math.random() * 25);
-      var em  = d.emojis[Math.floor(Math.random() * d.emojis.length)];
-      var el  = document.createElement('div');
-      el.style.cssText = 'position:absolute;top:' + wy + 'px;left:' + xp + '%;' +
-        'font-size:' + (.65+Math.random()*.7) + 'rem;opacity:' + (.28+Math.random()*.38) + ';pointer-events:none;z-index:4';
-      el.textContent = em;
+  // Background decorative SVG shapes (not clickable, z-index:4)
+  (function() {
+    // Shallow coral nubs (150-900)
+    var coralStemCols=['#c62828','#ad1457','#6a1b9a','#1565c0','#00695c','#e65100'];
+    var coralTipCols =['#ff8a80','#f48fb1','#ce93d8','#90caf9','#80cbc4','#ffb74d'];
+    for(var i=0; i<30; i++) {
+      var wy=150+Math.random()*750, lft=Math.random()<.5;
+      var xp=lft?(6+Math.random()*16):(64+Math.random()*25);
+      var ci=Math.floor(Math.random()*coralStemCols.length);
+      var h=14+Math.random()*18|0;
+      var hh=(h*0.42|0), hf=(h*0.62|0);
+      var el=document.createElement('div');
+      el.style.cssText='position:absolute;top:'+wy+'px;left:'+xp+'%;pointer-events:none;z-index:4;opacity:'+(0.28+Math.random()*0.35).toFixed(2);
+      el.innerHTML='<svg width="22" height="'+h+'" viewBox="0 0 22 '+h+'">'
+        +'<path d="M11 '+h+' L11 '+hh+' M11 '+hf+' L5 '+(h*0.14|0)+' M11 '+hf+' L17 '+(h*0.14|0)+'" stroke="'+coralStemCols[ci]+'" stroke-width="3" stroke-linecap="round" fill="none"/>'
+        +'<circle cx="5"  cy="'+(h*0.14|0)+'" r="2.8" fill="'+coralTipCols[ci]+'"/>'
+        +'<circle cx="17" cy="'+(h*0.14|0)+'" r="2.8" fill="'+coralTipCols[ci]+'"/>'
+        +'<circle cx="11" cy="'+hh+'" r="2.8" fill="'+coralTipCols[ci]+'"/>'
+        +'</svg>';
       $('dlayer').appendChild(el);
     }
-  });
+    // Rock formations — mid and shallow floor (150-1400)
+    for(var j=0; j<22; j++) {
+      var wy2=150+Math.random()*1250, lft2=Math.random()<.5;
+      var xp2=lft2?(8+Math.random()*18):(62+Math.random()*26);
+      var rx=8+Math.random()*14|0, ry=5+Math.random()*9|0;
+      var dl=Math.floor(30+Math.random()*20), dg=Math.floor(40+Math.random()*25), db=Math.floor(50+Math.random()*30);
+      var el2=document.createElement('div');
+      el2.style.cssText='position:absolute;top:'+wy2+'px;left:'+xp2+'%;pointer-events:none;z-index:4;opacity:'+(0.25+Math.random()*0.3).toFixed(2);
+      el2.innerHTML='<svg width="'+(rx*2)+'" height="'+(ry*2)+'" viewBox="0 0 '+(rx*2)+' '+(ry*2)+'">'
+        +'<ellipse cx="'+rx+'" cy="'+ry+'" rx="'+rx+'" ry="'+ry+'" fill="rgb('+dl+','+dg+','+db+')"/>'
+        +'</svg>';
+      $('dlayer').appendChild(el2);
+    }
+  })();
 
   // Bioluminescent particles
   for (var i = 0; i < 55; i++) {
@@ -1106,9 +1194,12 @@ function doCast() {
 
 function spawnSplash(sx, sy) {
   var el = document.createElement('div');
-  el.style.cssText = 'position:absolute;left:' + sx + 'px;top:' + sy + 'px;font-size:1.4rem;' +
-    'z-index:20;pointer-events:none;animation:splash .7s ease-out forwards;';
-  el.textContent = '\u{1F4A6}';
+  el.style.cssText = 'position:absolute;left:' + sx + 'px;top:' + sy + 'px;width:28px;height:20px;' +
+    'z-index:20;pointer-events:none;transform:translate(-50%,-50%);animation:splash .7s ease-out forwards;';
+  el.innerHTML = '<svg viewBox="0 0 28 20" width="28" height="20">'
+    + '<ellipse cx="14" cy="14" rx="9" ry="4" fill="rgba(41,182,246,.6)"/>'
+    + '<path d="M8 12 Q6 4 10 2 M14 10 Q14 1 14 0 M20 12 Q22 4 18 2" stroke="rgba(100,210,255,.8)" stroke-width="2" fill="none" stroke-linecap="round"/>'
+    + '</svg>';
   vp.appendChild(el);
   setTimeout(function(){ el.remove(); }, 780);
 }
@@ -1209,10 +1300,10 @@ function battleLoop(now) {
   var erratic = performance.now() < G.erraticUntil;
   var erraticBonus = erratic ? cfg.erraticBoost : 0;
 
-  // Fish always drifts tension RIGHT (pulling away)
-  G.tension += ((f.diff || 3) * 1.5 + erraticBonus) * cfg.tensRate * dt;
+  // Fish naturally lets line go slack — drifts tension LEFT (escaping)
+  G.tension -= ((f.diff || 3) * 1.5 + erraticBonus) * cfg.tensRate * dt;
 
-  // Fish surges — spike tension right, fish sinks
+  // Fish surges — spike tension RIGHT (fish suddenly pulls hard = tighter line)
   G.surgeT -= dt;
   if (G.surgeT <= 0) {
     var spike = 14 + Math.random() * 16;
@@ -1222,9 +1313,10 @@ function battleLoop(now) {
     G.surgeT = erratic ? base * 0.5 : base;
   }
 
-  // Reel: hold pulls tension LEFT and reels fish up
+  // Reel: CLICKING moves tension RIGHT (you pulling tight) and reels fish up
+  // Letting go: tension drifts LEFT (line goes slack, fish sinks)
   if (G.holding) {
-    G.tension -= 18 * dt;
+    G.tension += 16 * dt;
     G.fishY   -= 95 * cfg.reelRate * dt;
   } else {
     G.fishY += 18 * dt;
@@ -1343,7 +1435,8 @@ function onBubbleHit(id, el) {
   var rect = el.getBoundingClientRect(); // capture BEFORE removing
   G.bubbles = G.bubbles.filter(function(b){ return b.id !== id; });
   el.remove();
-  G.tension = Math.max(5, G.tension - 22);
+  // Bubble hit eases tension toward center (helpful after a surge spike)
+  G.tension += (50 - G.tension) * 0.3;
 
   // Show pop
   var sr  = $('scene').getBoundingClientRect();
@@ -1423,16 +1516,8 @@ function showCatch() {
 }
 
 function drawCatchFish(f) {
-  var svg = $('co-svg');
-  var pals = {
-    common:    [['#64b5f6','#1565c0'],['#81c784','#2e7d32'],['#ffb74d','#e65100']],
-    uncommon:  [['#80cbc4','#004d40'],['#ce93d8','#6a1b9a'],['#a5d6a7','#1b5e20']],
-    rare:      [['#b39ddb','#311b92'],['#ef9a9a','#b71c1c'],['#80deea','#006064']],
-    legendary: [['#ffd54f','#e65100'],['#ffe082','#bf360c'],['#fff176','#f57f17']],
-  };
-  var pal  = pals[f.rarity || 'common'];
-  var pair = pal[Math.floor(Math.random() * pal.length)];
-  svg.innerHTML = fishShapeElements(f.shape || f.rarity || 'common', pair[0], pair[1]);
+  var pair = getCreatureColors(f);
+  $('co-svg').innerHTML = fishShapeElements(f.shape || f.rarity || 'common', pair[0], pair[1]);
 }
 
 // ═══════════════════════════════════════════
@@ -1453,9 +1538,12 @@ function showLost(msg) {
 //  FACT CARD
 // ═══════════════════════════════════════════
 function showFact(c) {
-  $('fc-em').textContent = c.em;
+  // Show SVG fish matching what was visible in the world
+  var pair = getCreatureColors(c);
+  $('fc-em').innerHTML = '<svg viewBox="0 0 115 64" xmlns="http://www.w3.org/2000/svg">'
+    + fishShapeElements(c.shape || c.rarity || 'common', pair[0], pair[1]) + '</svg>';
   $('fc-n').textContent  = c.name;
-  $('fc-d').textContent  = 'Depth: ' + c.depth;
+  $('fc-d').textContent  = 'Depth: ' + c.depth + (c.weight ? '  |  ' + c.weight : '');
   $('fc-t').textContent  = c.fact;
   fcard.classList.add('on');
 }
