@@ -297,7 +297,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;color:#e0f0ff;touch-action:none
       </div>
       <div id="ten-needle"></div>
     </div>
-    <button id="reel-btn">&#9660; HOLD TO REEL &#9660;</button>
+    <button id="reel-btn">&#9650; HOLD TO PULL &#9650;</button>
   </div>
 
   <!-- Bubble targets layer -->
@@ -807,12 +807,17 @@ function buildRockyWalls() {
   wrEl.style.cssText='position:absolute;top:0;right:0;width:'+SVG_W+'px;height:'+SVG_H+'px;z-index:5;pointer-events:none;';
   wrEl.innerHTML=wallSVG(false, profR);
 
-  buildWallDecor();
+  buildWallDecor(profL, profR);
 }
 
 
-function buildWallDecor() {
+function buildWallDecor(profL, profR) {
   var dl = $('dlayer');
+  var WSTEPS = 220;
+  function profAt(prof, wy) {
+    var idx = Math.min(WSTEPS - 1, Math.floor(wy / WORLD_H * WSTEPS));
+    return prof[Math.max(0, idx)];
+  }
 
   // SVG shape generators
   function svgCoral(c1, c2, h) {
@@ -856,18 +861,27 @@ function buildWallDecor() {
     el.innerHTML=html;
     dl.appendChild(el);
   }
+  function addDecorR(wy, xPx, op, html) {
+    var el=document.createElement('div');
+    el.style.cssText='position:absolute;top:'+wy+'px;right:'+xPx+'px;pointer-events:none;z-index:6;opacity:'+op.toFixed(2);
+    el.innerHTML=html;
+    dl.appendChild(el);
+  }
 
-  // SHALLOW coral (100-900)
+  // SHALLOW coral — base at wall inner face, 25% overlaps rock, 75% in water
   var ccols=[['#c62828','#ff8a80'],['#ad1457','#f48fb1'],['#6a1b9a','#ce93d8'],
              ['#e65100','#ffb74d'],['#1565c0','#90caf9'],['#00695c','#80cbc4']];
+  var cw=42;
   for(var i=0; i<24; i++) {
     var lft=Math.random()<.5;
     var cp=ccols[Math.floor(Math.random()*ccols.length)];
     var h=38+Math.random()*28;
-    addDecor(110+Math.random()*790, lft,
-      (Math.random()*11)+'%', (89+Math.random()*9)+'%',
-      0.55+Math.random()*0.4,
-      svgCoral(cp[0],cp[1],h));
+    var wy=110+Math.random()*790;
+    var wx=profAt(lft?profL:profR, wy);
+    var xp=(wx - cw*0.75)|0;
+    var op=0.6+Math.random()*0.35;
+    if (lft) { addDecor(wy-h, true, xp+'px', xp+'px', op, svgCoral(cp[0],cp[1],h)); }
+    else      { addDecorR(wy-h, xp, op, svgCoral(cp[0],cp[1],h)); }
   }
 
   // SHALLOW-MID kelp (100-700)
@@ -1313,14 +1327,16 @@ function battleLoop(now) {
     G.surgeT = erratic ? base * 0.5 : base;
   }
 
-  // Reel: CLICKING moves tension RIGHT (you pulling tight) and reels fish up
-  // Letting go: tension drifts LEFT (line goes slack, fish sinks)
-  if (G.holding) {
-    G.tension += 16 * dt;
-    G.fishY   -= 95 * cfg.reelRate * dt;
+  // Reel: auto-reels while tension is in the green zone (20–80)
+  // Holding adds tension (tighter line) and boosts reel speed — but risks snapping
+  var inGreen = G.tension >= 20 && G.tension <= 80;
+  if (inGreen) {
+    G.fishY -= 60 * cfg.reelRate * dt;          // base auto-reel
+    if (G.holding) G.fishY -= 60 * cfg.reelRate * dt; // holding doubles speed
   } else {
-    G.fishY += 18 * dt;
+    G.fishY += 18 * dt;                          // outside green: fish sinks back
   }
+  if (G.holding) G.tension += 20 * dt;           // holding always tightens line
 
   G.tension = Math.max(0, Math.min(100, G.tension));
 
