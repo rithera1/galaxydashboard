@@ -232,6 +232,12 @@
   .audio-btn.upload-cust:hover{background:var(--blue);color:white;}
   .sli-btn.audio-toggle{background:#f0f5ff;color:var(--blue);}
   .sli-btn.audio-toggle:hover{background:var(--blue);color:white;}
+  .sli-btn.edit-toggle{background:#f5f0ff;color:var(--purple);}
+  .sli-btn.edit-toggle:hover{background:var(--purple);color:white;}
+  .edit-panel{background:#faf8ff;border:2px solid #ede0ff;border-radius:12px;padding:14px 16px;margin-top:6px;display:flex;flex-direction:column;gap:10px;}
+  .edit-panel h4{font-family:'Fredoka One',cursive;font-size:.92rem;color:#888;margin:0;}
+  .edit-save-btn{background:linear-gradient(135deg,var(--purple),var(--blue));color:white;border:none;border-radius:99px;padding:9px 24px;font-size:.9rem;font-family:'Fredoka One',cursive;cursor:pointer;transition:transform .15s;align-self:flex-start;}
+  .edit-save-btn:hover{transform:scale(1.04);}
 
   .hidden{display:none!important;}
   @keyframes bounce{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
@@ -957,15 +963,20 @@ function renderSection(type,containerId) {
       <div style="flex:1"><div class="sli-name">${esc(list.name)}</div><div class="sli-meta">${count}</div></div>
       <div class="sli-btns">
         ${audioBtn}
+        <button class="sli-btn edit-toggle" id="edit-toggle-${list.id}" onclick="toggleEditPanel('${list.id}','${type}')">✏️ Edit</button>
         <button class="sli-btn ${list.active?'toggle-off':'toggle-on'}" onclick="toggleList('${list.id}',${list.active})">
           ${list.active?'🔴 Deactivate':'🟢 Activate'}</button>
         <button class="sli-btn del-btn" onclick="deleteList('${list.id}')">🗑</button>
       </div>`;
     wrapper.appendChild(div);
+    // Edit panel (all types)
+    const editPanel=document.createElement('div');
+    editPanel.id=`edit-panel-${list.id}`; editPanel.className='edit-panel hidden';
+    wrapper.appendChild(editPanel);
     if (type==='spell') {
-      const panel=document.createElement('div');
-      panel.id=`audio-panel-${list.id}`; panel.className='audio-panel hidden';
-      wrapper.appendChild(panel);
+      const audioPanel=document.createElement('div');
+      audioPanel.id=`audio-panel-${list.id}`; audioPanel.className='audio-panel hidden';
+      wrapper.appendChild(audioPanel);
     }
     container.appendChild(wrapper);
   });
@@ -1047,6 +1058,63 @@ window.handleUpload = (e,textareaId,labelId)=>{
   const file=e.target.files[0]; if(!file) return;
   new FileReader().onload = ev=>{ document.getElementById(textareaId).value=ev.target.result; document.getElementById(labelId).textContent='📄 '+file.name; };
   const r=new FileReader(); r.onload=ev=>{ document.getElementById(textareaId).value=ev.target.result; document.getElementById(labelId).textContent='📄 '+file.name; }; r.readAsText(file);
+};
+
+// ── EDIT PANEL ───────────────────────────────────────────────────────────────
+window.toggleEditPanel = (listId, type) => {
+  const panel  = document.getElementById(`edit-panel-${listId}`);
+  const toggle = document.getElementById(`edit-toggle-${listId}`);
+  if (!panel.classList.contains('hidden')) {
+    panel.classList.add('hidden');
+    toggle.textContent = '✏️ Edit';
+    return;
+  }
+  const list = allLists.find(l => l.id === listId);
+  if (!list) return;
+
+  let contentVal;
+  let hint;
+  if (type === 'spell') {
+    contentVal = list.words.join('\n');
+    hint = 'One word per line (or comma-separated)';
+  } else {
+    contentVal = list.pairs.map(p => `${p.word}: ${p.def}`).join('\n');
+    hint = 'Word: Definition — one pair per line';
+  }
+
+  panel.innerHTML = `
+    <h4>✏️ Edit List</h4>
+    <div class="form-field">
+      <label>List Name</label>
+      <input type="text" id="edit-name-${listId}" value="${esc(list.name)}" style="border:2px solid #e8e0d5;border-radius:10px;padding:9px 12px;font-family:'Nunito',sans-serif;font-size:.92rem;font-weight:700;color:#444;outline:none;width:100%;">
+    </div>
+    <div class="form-field">
+      <label>${type === 'spell' ? 'Words' : 'Word Pairs'}</label>
+      <p style="font-size:.75rem;color:#bbb;font-weight:600;margin:0 0 4px;">${hint}</p>
+      <textarea id="edit-content-${listId}" style="min-height:140px;">${esc(contentVal)}</textarea>
+    </div>
+    <button class="edit-save-btn" onclick="saveEditedList('${listId}','${type}')">💾 Save Changes</button>`;
+
+  panel.classList.remove('hidden');
+  toggle.textContent = '✏️ Edit ▲';
+};
+
+window.saveEditedList = async (listId, type) => {
+  const name = document.getElementById(`edit-name-${listId}`).value.trim();
+  const text = document.getElementById(`edit-content-${listId}`).value.trim();
+  if (!name) { toast('List name cannot be empty', 'err'); return; }
+  const data    = type === 'spell' ? parseWords(text) : parsePairs(text);
+  const dataKey = type === 'spell' ? 'words' : 'pairs';
+  if (!data.length) { toast('No items found — check your format', 'err'); return; }
+  showLoading(true);
+  try {
+    await updateDoc(doc(db, 'lists', listId), { name, [dataKey]: data });
+    const l = allLists.find(x => x.id === listId);
+    if (l) { l.name = name; l[dataKey] = data; }
+    renderAdminLists();
+    toast(`"${name}" updated — ${data.length} ${type === 'spell' ? 'words' : 'pairs'} ✅`);
+  } catch(e) { toast('Error saving: ' + e.message, 'err'); }
+  showLoading(false);
 };
 
 // ── AUDIO PANEL ──────────────────────────────────────────────────────────────
