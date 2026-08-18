@@ -949,7 +949,8 @@ function renderAdminLists() {
 
 function renderSection(type,containerId) {
   const container=document.getElementById(containerId);
-  const lists=allLists.filter(l=>l.type===type);
+  const lists=allLists.filter(l=>l.type===type)
+    .sort((a,b)=>(b.active-a.active)||((b.createdAt||0)-(a.createdAt||0)));
   container.innerHTML='';
   if (!lists.length) { container.innerHTML=`<p style="color:#ccc;font-weight:700;font-size:.88rem;margin-bottom:8px;">No ${type} lists yet — add one below.</p>`; return; }
   lists.forEach(list=>{
@@ -1014,8 +1015,9 @@ window.addList = async(type)=>{
   if (!data.length) { toast('No items found — check your format','err'); return; }
   showLoading(true);
   try {
-    const ref=await addDoc(collection(db,'lists'),{name,type,active:true,[dataKey]:data});
-    allLists.push({id:ref.id,name,type,active:true,[dataKey]:data});
+    const createdAt=Date.now();
+    const ref=await addDoc(collection(db,'lists'),{name,type,active:true,createdAt,[dataKey]:data});
+    allLists.push({id:ref.id,name,type,active:true,createdAt,[dataKey]:data});
     document.getElementById(nameId).value=''; document.getElementById(textId).value='';
     document.getElementById(type==='spell'?'spellFileLbl':'matchFileLbl').textContent='';
     renderAdminLists(); toast(`"${name}" saved — ${data.length} ${type==='spell'?'words':'pairs'} ✅`,'ok');
