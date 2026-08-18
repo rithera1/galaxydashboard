@@ -469,8 +469,6 @@ import { initializeApp }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, getDoc, setDoc }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject }
-  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
 // ── FIREBASE CONFIG ──────────────────────────────────────────────────────────
 // The web API key is safe to be public — it only identifies the project.
@@ -484,9 +482,8 @@ const firebaseConfig = {
   appId:             "1:560505318218:web:4c2cccd84dcea3112befb3"
 };
 
-const app     = initializeApp(firebaseConfig);
-const db      = getFirestore(app);
-const storage = getStorage(app);
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
 
 // ── SHA-256 ──────────────────────────────────────────────────────────────────
 async function sha256(str) {
@@ -595,29 +592,26 @@ async function saveMWKey(key) { await setDoc(doc(db,'config','mwKey'),{key}); }
 async function loadCustomAudioIndex() {
   try {
     const snap = await getDocs(collection(db,'audioIndex'));
-    snap.docs.forEach(d => { _customAudioIndex[d.id] = d.data().url; });
+    snap.docs.forEach(d => { _customAudioIndex[d.id] = d.data().dataUrl; });
   } catch(e) { console.warn('Could not load custom audio index', e); }
 }
 
-async function saveCustomAudio(word, blob, ext='webm') {
-  const key  = word.toLowerCase();
-  const path = `custom-audio/${key}.${ext}`;
-  const sRef = storageRef(storage, path);
-  await uploadBytes(sRef, blob, { contentType: `audio/${ext === 'mp3' ? 'mpeg' : ext}` });
-  const url  = await getDownloadURL(sRef);
-  await setDoc(doc(db,'audioIndex',key), { url, path, word });
-  _customAudioIndex[key] = url;
-  delete _mwCache[key]; // invalidate MW cache for this word
-  return url;
+async function saveCustomAudio(word, blob) {
+  const key    = word.toLowerCase();
+  const dataUrl = await new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload  = () => res(r.result);
+    r.onerror = rej;
+    r.readAsDataURL(blob);
+  });
+  await setDoc(doc(db,'audioIndex',key), { dataUrl, word });
+  _customAudioIndex[key] = dataUrl;
+  delete _mwCache[key];
 }
 
 async function deleteCustomAudio(word) {
-  const key   = word.toLowerCase();
-  const entry = await getDoc(doc(db,'audioIndex',key));
-  if (entry.exists()) {
-    try { await deleteObject(storageRef(storage, entry.data().path)); } catch {}
-    await deleteDoc(doc(db,'audioIndex',key));
-  }
+  const key = word.toLowerCase();
+  await deleteDoc(doc(db,'audioIndex',key));
   delete _customAudioIndex[key];
 }
 
@@ -1122,10 +1116,9 @@ window.handleRecordBtn = async (word, listId) => {
         if (!_recordingWord) return;
         const { word: w, listId: lid } = _recordingWord;
         const k   = w.toLowerCase();
-        const ext = mimeType.includes('webm') ? 'webm' : 'ogg';
         const blob = new Blob(_recordChunks, { type: mimeType });
         try {
-          await saveCustomAudio(w, blob, ext);
+          await saveCustomAudio(w, blob);
           toast(`Recording saved for "${w}" ✅`);
           refreshAudioRow(w, lid);
         } catch(e) { toast('Upload failed: ' + e.message, 'err'); refreshAudioRow(w, lid); }
@@ -1148,12 +1141,11 @@ function stopRecording() {
 
 window.handleAudioUpload = async (e, word, listId) => {
   const file = e.target.files[0]; if (!file) return;
-  const ext  = file.name.split('.').pop().toLowerCase().replace('mpeg','mp3') || 'mp3';
   const key  = word.toLowerCase();
   const statusEl = document.getElementById(`astatus-${key}`);
   if (statusEl) { statusEl.textContent = 'Uploading…'; statusEl.className = 'audio-status loading'; }
   try {
-    await saveCustomAudio(word, file, ext);
+    await saveCustomAudio(word, file);
     toast(`Audio saved for "${word}" ✅`);
     refreshAudioRow(word, listId);
   } catch(err) { toast('Upload failed: ' + err.message, 'err'); refreshAudioRow(word, listId); }
