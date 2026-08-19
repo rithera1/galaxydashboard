@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>Cosmic Keys · Galaxy Dashboard</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Nunito',sans-serif;background:#060c1e;color:#e8f4ff;user-select:none;-webkit-user-select:none}
+
+:root{
+  --bg:#060c1e; --bg2:#0d1a35; --bg3:#0a1228;
+  --cyan:#00e5ff; --gold:#ffd700; --coral:#ff4757; --mint:#2ed573;
+  --dim:rgba(232,244,255,.45); --text:#e8f4ff;
+  --f0:#b48ef7; --f1:#4dabf7; --f2:#51cf66; --f3:#a9e34b;
+  --f4:#fcc419; --f5:#ff922b; --f6:#ff6b6b; --f7:#f783ac; --f8:#868e96;
+}
+
+/* ---- NAV ---- */
+.site-nav{
+  position:fixed;top:0;left:0;right:0;height:48px;
+  display:flex;align-items:center;gap:1rem;padding:0 1.25rem;
+  background:rgba(6,12,30,.97);border-bottom:1px solid rgba(0,229,255,.15);z-index:600;
+}
+.site-nav a{color:rgba(232,244,255,.4);text-decoration:none;font-size:.82rem;font-weight:700;transition:color .15s}
+.site-nav a:hover{color:var(--cyan)}
+.nav-title{font-family:'Fredoka One',cursive;color:var(--cyan);font-size:1.15rem;letter-spacing:.04em;margin-right:auto}
+#btnMenu{
+  background:rgba(0,229,255,.08);border:1px solid rgba(0,229,255,.22);
+  color:var(--cyan);padding:.28rem .75rem;border-radius:.45rem;
+  font-size:.78rem;font-weight:800;cursor:pointer;transition:background .15s;letter-spacing:.04em;
+}
+#btnMenu:hover{background:rgba(0,229,255,.18)}
+
+/* ---- SCREENS ---- */
+.screen{position:fixed;inset:0;padding-top:48px;display:none;flex-direction:column;overflow:hidden}
+.screen.active{display:flex}
+
+/* ================================================================
+   HOME SCREEN
+   ================================================================ */
+#screen-home{overflow-y:auto;overflow-x:hidden;align-items:center;justify-content:flex-start;padding-bottom:2.5rem}
+
+.home-header{text-align:center;padding:2rem 1rem 1.5rem}
+.home-emoji{font-size:3.5rem;display:block;animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-12px) rotate(5deg)}}
+.home-title{
+  font-family:'Fredoka One',cursive;font-size:clamp(2rem,6vw,3rem);
+  color:var(--cyan);text-shadow:0 0 32px rgba(0,229,255,.45);margin:.25rem 0 .15rem;
+}
+.home-sub{color:var(--dim);font-size:.88rem;font-weight:700;letter-spacing:.05em}
+
+.mode-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+  gap:1.1rem;padding:0 1.4rem;max-width:880px;width:100%;
+}
+.mode-card{
+  background:var(--bg2);border:2px solid rgba(0,229,255,.14);border-radius:1.2rem;
+  padding:1.7rem 1.5rem 1.4rem;cursor:pointer;text-align:center;
+  transition:transform .2s cubic-bezier(.34,1.56,.64,1),border-color .2s,box-shadow .2s;
+  position:relative;overflow:hidden;
+}
+.mode-card::before{
+  content:'';position:absolute;inset:0;border-radius:1.2rem;
+  background:radial-gradient(ellipse at 50% 0%,rgba(0,229,255,.05) 0%,transparent 70%);
+  pointer-events:none;
+}
+.mode-card:hover{transform:translateY(-6px) scale(1.02);border-color:var(--cyan);box-shadow:0 0 30px rgba(0,229,255,.18)}
+.mode-emoji{font-size:2.6rem;display:block;margin-bottom:.55rem}
+.mode-name{font-family:'Fredoka One',cursive;font-size:1.4rem;color:var(--cyan);margin-bottom:.35rem}
+.mode-desc{color:var(--dim);font-size:.83rem;font-weight:600;line-height:1.5}
+
+.mode-tag{
+  display:inline-block;margin-top:.75rem;padding:.2rem .7rem;border-radius:999px;
+  font-size:.7rem;font-weight:800;letter-spacing:.07em;
+}
+.tag-mint{background:rgba(46,213,115,.12);color:var(--mint);border:1px solid rgba(46,213,115,.28)}
+.tag-cyan{background:rgba(0,229,255,.1);color:var(--cyan);border:1px solid rgba(0,229,255,.22)}
+.tag-gold{background:rgba(255,215,0,.1);color:var(--gold);border:1px solid rgba(255,215,0,.22)}
+
+.diff-row{display:flex;gap:.45rem;justify-content:center;margin-top:.8rem;flex-wrap:wrap}
+.diff-btn{
+  padding:.28rem .85rem;border-radius:999px;border:1.5px solid rgba(255,255,255,.14);
+  background:transparent;color:var(--dim);font-size:.74rem;font-weight:800;
+  cursor:pointer;transition:all .15s;letter-spacing:.05em;font-family:'Nunito',sans-serif;
+}
+.diff-btn.sel,.diff-btn:hover{border-color:var(--cyan);color:var(--cyan);background:rgba(0,229,255,.08)}
+
+/* ================================================================
+   GAME SCREEN
+   ================================================================ */
+#screen-game{justify-content:space-between}
+
+/* HUD */
+.hud{
+  width:100%;display:flex;align-items:center;gap:.8rem;
+  padding:.5rem 1.2rem;background:rgba(13,26,53,.85);
+  border-bottom:1px solid rgba(0,229,255,.1);flex-shrink:0;flex-wrap:wrap;
+}
+.hud-block{display:flex;flex-direction:column;align-items:center;min-width:44px}
+.hud-lbl{font-size:.58rem;font-weight:800;color:var(--dim);letter-spacing:.08em;text-transform:uppercase}
+.hud-val{font-family:'Orbitron',sans-serif;font-size:.92rem;font-weight:700;color:var(--cyan)}
+.hud-sep{flex:1}
+#hud-lives{font-size:1.1rem;letter-spacing:.12rem;min-width:60px;text-align:right}
+
+/* Game content area */
+#game-area{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;width:100%;padding:.8rem 1rem .5rem;
+  min-height:0;overflow:hidden;
+}
+
+/* ---- KEY QUEST ---- */
+#quest-display{display:none;text-align:center}
+.q-level-lbl{font-size:.7rem;font-weight:800;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.5rem}
+.q-target{
+  width:110px;height:110px;border-radius:18px;
+  background:var(--bg3);border:3px solid var(--cyan);
+  box-shadow:0 0 28px rgba(0,229,255,.3),inset 0 0 18px rgba(0,229,255,.06);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Fredoka One',cursive;font-size:3.8rem;
+  color:var(--cyan);margin:0 auto .65rem;
+  transition:all .1s;text-transform:uppercase;
+}
+.q-target.ok{background:rgba(46,213,115,.18);border-color:var(--mint);color:var(--mint);
+  box-shadow:0 0 36px rgba(46,213,115,.45);transform:scale(1.1)}
+.q-target.bad{background:rgba(255,71,87,.18);border-color:var(--coral);color:var(--coral);
+  box-shadow:0 0 36px rgba(255,71,87,.4);transform:scale(.91)}
+.q-hint{color:var(--dim);font-size:.82rem;font-weight:700;margin-bottom:.8rem}
+.q-dots{display:flex;gap:.4rem;justify-content:center;flex-wrap:wrap;max-width:320px;margin:0 auto}
+.dot{
+  width:11px;height:11px;border-radius:50%;flex-shrink:0;
+  background:rgba(0,229,255,.1);border:1.5px solid rgba(0,229,255,.25);transition:all .18s;
+}
+.dot.hit{background:var(--cyan);border-color:var(--cyan);box-shadow:0 0 7px var(--cyan)}
+.dot.miss{background:var(--coral);border-color:var(--coral)}
+
+/* ---- SPEED BURST ---- */
+#burst-display{display:none;text-align:center;width:100%}
+.ring-wrap{position:relative;width:130px;height:130px;margin:0 auto .6rem}
+.ring-wrap svg{transform:rotate(-90deg)}
+.ring-timer-txt{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-family:'Orbitron',sans-serif;font-size:2rem;font-weight:900;color:var(--cyan);
+}
+.b-target{
+  width:96px;height:96px;border-radius:15px;
+  background:var(--bg3);border:3px solid var(--gold);
+  box-shadow:0 0 22px rgba(255,215,0,.28);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Fredoka One',cursive;font-size:3.2rem;color:var(--gold);
+  margin:0 auto .4rem;transition:all .1s;text-transform:uppercase;
+}
+.b-target.ok{background:rgba(46,213,115,.18);border-color:var(--mint);color:var(--mint);transform:scale(1.08)}
+.b-target.bad{background:rgba(255,71,87,.18);border-color:var(--coral);color:var(--coral);transform:scale(.91)}
+.b-count{font-family:'Orbitron',sans-serif;font-size:.8rem;color:var(--dim)}
+
+/* ---- WORD WARP ---- */
+#warp-display{display:none;text-align:center;width:100%;max-width:580px}
+.w-wpm{font-size:.75rem;font-weight:800;color:var(--dim);margin-bottom:.4rem;letter-spacing:.06em}
+.w-word{
+  font-family:'Fredoka One',cursive;
+  font-size:clamp(1.8rem,7vw,3.2rem);
+  letter-spacing:.07em;margin-bottom:.4rem;
+  display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:.03em;
+}
+.wc{color:rgba(232,244,255,.22)}
+.wc.ok{color:var(--mint)}
+.wc.on{color:var(--cyan);text-decoration:underline;text-underline-offset:5px;animation:pulse-char .6s ease-in-out infinite alternate}
+.wc.bad{color:var(--coral)}
+@keyframes pulse-char{from{opacity:.7}to{opacity:1}}
+.w-streak{font-size:.75rem;font-weight:800;color:var(--dim)}
+
+/* ================================================================
+   VIRTUAL KEYBOARD
+   ================================================================ */
+#kb-wrap{
+  width:100%;padding:.45rem .4rem .65rem;
+  background:rgba(4,9,22,.92);border-top:1px solid rgba(0,229,255,.1);
+  flex-shrink:0;
+}
+.kb-row{display:flex;align-items:center;justify-content:center;gap:3px;margin-bottom:3px}
+.kb-key{
+  height:40px;min-width:32px;border-radius:7px;
+  background:rgba(13,26,53,.9);border:1.5px solid rgba(255,255,255,.07);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Nunito',sans-serif;font-size:.72rem;font-weight:800;
+  color:rgba(232,244,255,.5);cursor:pointer;
+  transition:transform .06s,background .1s,border-color .1s,color .1s,box-shadow .1s;
+  flex:0 0 auto;text-transform:uppercase;position:relative;
+}
+.kb-key.wide{min-width:52px}
+.kb-key.spc{min-width:160px;flex:0 1 260px}
+.kb-key:active,.kb-key.pressed{transform:scale(.88)}
+
+.kb-key.f0{border-top:2.5px solid var(--f0)}
+.kb-key.f1{border-top:2.5px solid var(--f1)}
+.kb-key.f2{border-top:2.5px solid var(--f2)}
+.kb-key.f3{border-top:2.5px solid var(--f3)}
+.kb-key.f4{border-top:2.5px solid var(--f4)}
+.kb-key.f5{border-top:2.5px solid var(--f5)}
+.kb-key.f6{border-top:2.5px solid var(--f6)}
+.kb-key.f7{border-top:2.5px solid var(--f7)}
+.kb-key.f8{border-top:2.5px solid var(--f8)}
+
+.kb-key.tgt{
+  background:rgba(0,229,255,.16);border:1.5px solid var(--cyan);border-top-width:2.5px;
+  color:var(--cyan);box-shadow:0 0 10px rgba(0,229,255,.3);
+}
+.kb-key.tgt-gold{
+  background:rgba(255,215,0,.12);border:1.5px solid var(--gold);border-top-width:2.5px;
+  color:var(--gold);box-shadow:0 0 10px rgba(255,215,0,.25);
+}
+.kb-key.fgreen{background:rgba(46,213,115,.28)!important;border-color:var(--mint)!important;
+  color:var(--mint)!important;box-shadow:0 0 14px rgba(46,213,115,.35)!important}
+.kb-key.fred{background:rgba(255,71,87,.28)!important;border-color:var(--coral)!important;
+  color:var(--coral)!important;box-shadow:0 0 14px rgba(255,71,87,.3)!important}
+
+.kb-legend{display:flex;flex-wrap:wrap;gap:.28rem;justify-content:center;padding:.3rem .4rem 0}
+.leg-item{display:flex;align-items:center;gap:.25rem;font-size:.58rem;font-weight:700;color:var(--dim)}
+.leg-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+
+/* ================================================================
+   RESULTS SCREEN
+   ================================================================ */
+#screen-results{align-items:center;justify-content:center;overflow-y:auto}
+.res-card{
+  background:var(--bg2);border:2px solid rgba(0,229,255,.22);border-radius:1.5rem;
+  padding:2rem 1.8rem;max-width:420px;width:92%;text-align:center;
+  box-shadow:0 0 60px rgba(0,229,255,.07);margin:1rem 0;
+}
+.res-emoji{font-size:2.8rem;display:block;margin-bottom:.3rem}
+.res-title{font-family:'Fredoka One',cursive;font-size:1.75rem;color:var(--cyan);margin-bottom:.2rem}
+.res-stars{font-size:1.8rem;letter-spacing:.15rem;margin-bottom:1.2rem}
+.res-grid{display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-bottom:1.4rem}
+.res-box{
+  background:rgba(0,0,0,.3);border-radius:.75rem;
+  padding:.65rem .4rem;border:1px solid rgba(255,255,255,.05);
+}
+.res-val{font-family:'Orbitron',sans-serif;font-size:1.45rem;font-weight:900;color:var(--cyan)}
+.res-lbl{font-size:.62rem;font-weight:800;color:var(--dim);letter-spacing:.07em;text-transform:uppercase;margin-top:.1rem}
+.res-btns{display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap}
+.rbtn{
+  padding:.6rem 1.3rem;border-radius:.65rem;border:none;
+  font-size:.88rem;font-weight:800;cursor:pointer;
+  transition:transform .1s;letter-spacing:.03em;font-family:'Nunito',sans-serif;
+}
+.rbtn:active{transform:scale(.95)}
+.rbtn-p{background:linear-gradient(135deg,#00c4e8,#0060d9);color:#fff;box-shadow:0 4px 18px rgba(0,200,255,.28)}
+.rbtn-s{background:rgba(255,255,255,.07);color:var(--dim);border:1px solid rgba(255,255,255,.11)}
+
+/* ---- POP FLASH ---- */
+#pop{
+  position:fixed;top:40%;left:50%;transform:translate(-50%,-50%) scale(0);
+  font-family:'Fredoka One',cursive;font-size:2.4rem;
+  color:var(--gold);text-shadow:0 0 20px rgba(255,215,0,.55);
+  pointer-events:none;z-index:999;opacity:0;
+  transition:transform .15s cubic-bezier(.34,1.56,.64,1),opacity .3s;white-space:nowrap;
+}
+#pop.show{transform:translate(-50%,-50%) scale(1);opacity:1}
+
+/* ---- STARS BG ---- */
+.star-dot{
+  position:fixed;border-radius:50%;background:#fff;pointer-events:none;z-index:0;
+  animation:twinkle 3s ease-in-out infinite;
+}
+@keyframes twinkle{0%,100%{opacity:.03;transform:scale(1)}50%{opacity:.16;transform:scale(1.35)}}
+
+/* ---- RESPONSIVE ---- */
+@media(max-width:480px){
+  .kb-key{height:35px;min-width:25px;font-size:.62rem;border-radius:5px}
+  .kb-key.wide{min-width:40px}
+  .kb-key.spc{min-width:100px}
+  .q-target{width:88px;height:88px;font-size:3rem}
+  .b-target{width:80px;height:80px;font-size:2.6rem}
+  .mode-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- BG stars (JS-generated) -->
+
+<!-- Pop flash -->
+<div id="pop"></div>
+
+<!-- NAV -->
+<nav class="site-nav">
+  <a href="../">← Home</a>
+  <span class="nav-title">⌨️ Cosmic Keys</span>
+  <button id="btnMenu" style="display:none" onclick="goHome()">☰ Menu</button>
+</nav>
+
+<!-- ================================================================
+     HOME SCREEN
+     ================================================================ -->
+<div id="screen-home" class="screen active">
+  <div class="home-header">
+    <span class="home-emoji">⌨️</span>
+    <div class="home-title">Cosmic Keys</div>
+    <div class="home-sub">Master the keyboard — one key at a time</div>
+  </div>
+
+  <div class="mode-grid">
+
+    <!-- Key Quest -->
+    <div class="mode-card" id="card-quest" tabindex="0" role="button" aria-label="Start Key Quest">
+      <span class="mode-emoji">🔑</span>
+      <div class="mode-name">Key Quest</div>
+      <div class="mode-desc">Learn key positions step by step. Start with the home row and unlock new rows as you level up!</div>
+      <span class="mode-tag tag-mint">9 LEVELS · GUIDED</span>
+    </div>
+
+    <!-- Speed Burst -->
+    <div class="mode-card" id="card-burst" tabindex="0" role="button" aria-label="Start Speed Burst">
+      <span class="mode-emoji">⚡</span>
+      <div class="mode-name">Speed Burst</div>
+      <div class="mode-desc">30 seconds. Hit as many keys as you can. How fast are your fingers?</div>
+      <div class="diff-row" id="burst-diff-row" onclick="event.stopPropagation()">
+        <button class="diff-btn sel" data-diff="easy">Easy</button>
+        <button class="diff-btn" data-diff="medium">Medium</button>
+        <button class="diff-btn" data-diff="hard">Hard</button>
+      </div>
+      <span class="mode-tag tag-cyan">30 SEC · KPM</span>
+    </div>
+
+    <!-- Word Warp -->
+    <div class="mode-card" id="card-warp" tabindex="0" role="button" aria-label="Start Word Warp">
+      <span class="mode-emoji">📝</span>
+      <div class="mode-name">Word Warp</div>
+      <div class="mode-desc">Type 20 real words as fast as you can. Build your streak and track your WPM!</div>
+      <div class="diff-row" id="warp-diff-row" onclick="event.stopPropagation()">
+        <button class="diff-btn sel" data-diff="easy">Easy</button>
+        <button class="diff-btn" data-diff="medium">Medium</button>
+        <button class="diff-btn" data-diff="hard">Hard</button>
+      </div>
+      <span class="mode-tag tag-gold">20 WORDS · WPM</span>
+    </div>
+
+  </div>
+</div>
+
+<!-- ================================================================
+     GAME SCREEN
+     ================================================================ -->
+<div id="screen-game" class="screen">
+
+  <!-- HUD -->
+  <div class="hud">
+    <div class="hud-block">
+      <span class="hud-lbl">Mode</span>
+      <span class="hud-val" id="hud-mode" style="font-size:.75rem;font-family:'Nunito',sans-serif;font-weight:800">—</span>
+    </div>
+    <div class="hud-block" id="hud-b1" style="display:none">
+      <span class="hud-lbl" id="hud-l1"></span>
+      <span class="hud-val" id="hud-v1">—</span>
+    </div>
+    <div class="hud-block" id="hud-b2" style="display:none">
+      <span class="hud-lbl" id="hud-l2"></span>
+      <span class="hud-val" id="hud-v2">—</span>
+    </div>
+    <div class="hud-sep"></div>
+    <div id="hud-lives"></div>
+  </div>
+
+  <!-- Game content -->
+  <div id="game-area">
+
+    <!-- KEY QUEST display -->
+    <div id="quest-display">
+      <div class="q-level-lbl" id="qlbl">LEVEL 1 · HOME ROW: F &amp; J</div>
+      <div class="q-target" id="qtgt">F</div>
+      <div class="q-hint" id="qhint">Feel the bump — anchor fingers here!</div>
+      <div class="q-dots" id="qdots"></div>
+    </div>
+
+    <!-- SPEED BURST display -->
+    <div id="burst-display">
+      <div class="ring-wrap">
+        <svg width="130" height="130" viewBox="0 0 130 130">
+          <circle id="rbg" cx="65" cy="65" r="56" fill="none" stroke="rgba(0,229,255,.1)" stroke-width="8"/>
+          <circle id="rfill" cx="65" cy="65" r="56" fill="none" stroke="var(--cyan)" stroke-width="8"
+            stroke-dasharray="352" stroke-dashoffset="0" stroke-linecap="round"/>
+        </svg>
+        <div class="ring-timer-txt" id="btimer">30</div>
+      </div>
+      <div class="b-target" id="btgt">F</div>
+      <div class="b-count"><span id="bcount">0</span> keys</div>
+    </div>
+
+    <!-- WORD WARP display -->
+    <div id="warp-display">
+      <div class="w-wpm" id="wwpm">WPM: —</div>
+      <div class="w-word" id="wword"></div>
+      <div class="w-streak">Streak: <span id="wstreak">0</span><span id="wfire" style="display:none"> 🔥</span></div>
+    </div>
+
+  </div>
+
+  <!-- Virtual Keyboard -->
+  <div id="kb-wrap">
+    <div id="kb-rows"></div>
+    <div class="kb-legend" id="kb-legend"></div>
+  </div>
+
+</div>
+
+<!-- ================================================================
+     RESULTS SCREEN
+     ================================================================ -->
+<div id="screen-results" class="screen">
+  <div class="res-card">
+    <span class="res-emoji" id="rEmoji">🏆</span>
+    <div class="res-title" id="rTitle">Cosmic Champion!</div>
+    <div class="res-stars" id="rStars">⭐⭐⭐</div>
+    <div class="res-grid" id="rGrid"></div>
+    <div class="res-btns">
+      <button class="rbtn rbtn-p" id="rPlayAgain">Play Again</button>
+      <button class="rbtn rbtn-s" onclick="goHome()">Choose Mode</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+/* ================================================================
+   CONSTANTS
+   ================================================================ */
+
+// Finger index (0=L.Pinky … 7=R.Pinky, 8=thumbs)
+const KF = {
+  '1':0,'q':0,'a':0,'z':0,
+  '2':1,'w':1,'s':1,'x':1,
+  '3':2,'e':2,'d':2,'c':2,
+  '4':3,'r':3,'f':3,'v':3,'5':3,'t':3,'g':3,'b':3,
+  '6':4,'y':4,'h':4,'n':4,'7':4,'u':4,'j':4,'m':4,
+  '8':5,'i':5,'k':5,
+  '9':6,'o':6,'l':6,
+  '0':7,'p':7,';':7,
+  ' ':8,
+};
+
+const KB = [
+  ['1','2','3','4','5','6','7','8','9','0'],
+  ['q','w','e','r','t','y','u','i','o','p'],
+  ['a','s','d','f','g','h','j','k','l',';'],
+  ['z','x','c','v','b','n','m'],
+  [' '],
+];
+
+const LEGEND = [
+  {lbl:'L. Pinky',v:'--f0'},{lbl:'L. Ring',v:'--f1'},{lbl:'L. Middle',v:'--f2'},
+  {lbl:'L. Index',v:'--f3'},{lbl:'R. Index',v:'--f4'},{lbl:'R. Middle',v:'--f5'},
+  {lbl:'R. Ring',v:'--f6'},{lbl:'R. Pinky',v:'--f7'},{lbl:'Thumbs',v:'--f8'},
+];
+
+const LEVELS = [
+  {name:'HOME ROW · F & J',        keys:['f','j'],                              hint:'Feel the bumps — these are your anchor keys!', goal:10},
+  {name:'LEFT HOME ROW',           keys:['a','s','d','f'],                       hint:'Left hand: A S D F — fingers rest here!',      goal:10},
+  {name:'RIGHT HOME ROW',          keys:['j','k','l',';'],                       hint:'Right hand: J K L ; — find your footing!',     goal:10},
+  {name:'FULL HOME ROW',           keys:['a','s','d','f','g','h','j','k','l',';'],hint:'Both hands together on the home row!',       goal:12},
+  {name:'TOP ROW VOWELS',          keys:['e','i','o','u'],                       hint:'Reach up! E I O U — the important vowels.',    goal:10},
+  {name:'FULL TOP ROW',            keys:['q','w','e','r','t','y','u','i','o','p'],hint:'Top row stretch — keep wrists relaxed!',      goal:12},
+  {name:'BOTTOM ROW',              keys:['z','x','c','v','b','n','m'],           hint:'Curl down for the bottom row!',                goal:10},
+  {name:'ALL LETTERS',             keys:'abcdefghijklmnopqrstuvwxyz'.split(''), hint:'Full alphabet — you\'ve got this!',             goal:15},
+  {name:'LETTERS + NUMBERS',       keys:'abcdefghijklmnopqrstuvwxyz0123456789'.split(''), hint:'Pro mode! Letters AND numbers!',      goal:15},
+];
+
+const BURST = {
+  easy:   'asdfjkl'.split(''),
+  medium: 'abcdefghijklmnopqrstuvwxyz'.split(''),
+  hard:   'abcdefghijklmnopqrstuvwxyz0123456789'.split(''),
+};
+
+const WORDS = {
+  easy: [
+    'cat','dog','sun','hat','run','fun','big','red','fly','hot',
+    'sit','top','map','box','cup','log','net','bag','fox','wet',
+    'dig','jam','mud','pen','win','yes','bed','key','joy','ice',
+    'owl','ear','eye','new','old','dad','eat','ask','cut','arm',
+    'leg','two','six','ten','far','zip','tap','saw','hop','mix',
+  ],
+  medium: [
+    'space','light','happy','brave','funny','quick','great','smart',
+    'cloud','train','night','storm','ocean','tiger','eagle','chess',
+    'start','place','dance','color','magic','dream','world','party',
+    'pizza','robot','water','paper','music','candy','learn','phone',
+    'plant','stone','climb','flame','frost','grade','river','slime',
+  ],
+  hard: [
+    'keyboard','typing','fingers','practice','learning','spaceship',
+    'explorer','treasure','universe','computer','adventure','discovery',
+    'champion','excellent','lightning','wonderful','birthday','fantastic',
+    'telescope','thousand','elephant','together','remember','challenge',
+    'patience','celebrate','beautiful','different','tomorrow','owledge',
+  ],
+};
+
+/* ================================================================
+   STATE
+   ================================================================ */
+let MODE = null;         // 'quest' | 'burst' | 'warp'
+let burstDiff = 'easy';
+let warpDiff  = 'easy';
+
+// Key Quest
+let qLevel = 0, qCorrect = 0, qTotalHits = 0, qCurKey = '';
+let qDots = [];   // array of null|true|false
+
+// Speed Burst
+let bTimer = null, bSecs = 30, bCount = 0, bCurKey = '';
+
+// Word Warp
+let wWords = [], wIdx = 0, wChar = 0, wCorrect = 0;
+let wLives = 3, wStreak = 0, wCharErr = 0;
+let wTotalChars = 0, wStartTime = 0, wStarted = false;
+const WARP_GOAL = 20;
+
+let _popT = null;
+
+/* ================================================================
+   BACKGROUND STARS
+   ================================================================ */
+(function(){
+  for(let i=0;i<55;i++){
+    const d=document.createElement('div');
+    d.className='star-dot';
+    const s=1+Math.random()*3;
+    d.style.cssText=`width:${s}px;height:${s}px;left:${(Math.random()*100).toFixed(1)}%;top:${(Math.random()*100).toFixed(1)}%;animation-delay:${(Math.random()*5).toFixed(2)}s;animation-duration:${(2.2+Math.random()*3).toFixed(2)}s`;
+    document.body.appendChild(d);
+  }
+})();
+
+/* ================================================================
+   KEYBOARD
+   ================================================================ */
+function buildKb(){
+  const wrap = document.getElementById('kb-rows');
+  wrap.innerHTML = '';
+  KB.forEach(row=>{
+    const rd = document.createElement('div');
+    rd.className = 'kb-row';
+    row.forEach(k=>{
+      const el = document.createElement('div');
+      el.className = 'kb-key';
+      const fi = KF[k] ?? 8;
+      el.classList.add('f'+fi);
+      if(k===' '){ el.classList.add('spc'); el.textContent='SPACE'; }
+      else el.textContent = k.toUpperCase();
+      el.id = 'kk-'+eid(k);
+      el.addEventListener('pointerdown', e=>{ e.preventDefault(); handleKey(k); });
+      rd.appendChild(el);
+    });
+    wrap.appendChild(rd);
+  });
+  // Legend
+  const leg = document.getElementById('kb-legend');
+  leg.innerHTML = '';
+  LEGEND.forEach(f=>{
+    leg.innerHTML += `<div class="leg-item"><div class="leg-dot" style="background:var(${f.v})"></div><span>${f.lbl}</span></div>`;
+  });
+}
+
+function eid(k){ return k===' '?'sp':k===';'?'sc':k; }
+function $k(k){ return document.getElementById('kk-'+eid(k)); }
+
+function setTarget(k, gold=false){
+  document.querySelectorAll('.kb-key.tgt,.kb-key.tgt-gold').forEach(e=>e.classList.remove('tgt','tgt-gold'));
+  if(!k) return;
+  const el = $k(k.toLowerCase());
+  if(el) el.classList.add(gold?'tgt-gold':'tgt');
+}
+
+function flashKey(k, ok){
+  const el = $k(k.toLowerCase()); if(!el) return;
+  const cls = ok?'fgreen':'fred';
+  el.classList.add(cls,'pressed');
+  setTimeout(()=>el.classList.remove(cls,'pressed'), 220);
+}
+
+/* ================================================================
+   SCREEN / NAV
+   ================================================================ */
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+  document.getElementById('btnMenu').style.display = id==='home'?'none':'block';
+}
+
+function goHome(){
+  stopAll();
+  MODE = null;
+  document.removeEventListener('keydown', onKey);
+  showScreen('home');
+}
+
+function stopAll(){
+  if(bTimer){ clearInterval(bTimer); bTimer=null; }
+  document.removeEventListener('keydown', onKey);
+}
+
+/* ================================================================
+   MODE CARDS + DIFF BUTTONS
+   ================================================================ */
+document.getElementById('card-quest').addEventListener('click', ()=>startQuest());
+document.getElementById('card-burst').addEventListener('click', ()=>startBurst());
+document.getElementById('card-warp').addEventListener('click',  ()=>startWarp());
+['card-quest','card-burst','card-warp'].forEach(id=>{
+  document.getElementById(id).addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' ') e.currentTarget.click(); });
+});
+
+function initDiff(rowId, stateKey){
+  document.querySelectorAll('#'+rowId+' .diff-btn').forEach(btn=>{
+    btn.addEventListener('click', e=>{
+      document.querySelectorAll('#'+rowId+' .diff-btn').forEach(b=>b.classList.remove('sel'));
+      btn.classList.add('sel');
+      if(stateKey==='burst') burstDiff = btn.dataset.diff;
+      else warpDiff = btn.dataset.diff;
+      e.stopPropagation();
+    });
+  });
+}
+initDiff('burst-diff-row','burst');
+initDiff('warp-diff-row','warp');
+
+/* ================================================================
+   HUD HELPERS
+   ================================================================ */
+function setHud(mode, l1, v1, l2, v2, lives){
+  document.getElementById('hud-mode').textContent = mode;
+  const b1=document.getElementById('hud-b1'), b2=document.getElementById('hud-b2');
+  if(l1){ b1.style.display='flex'; document.getElementById('hud-l1').textContent=l1; document.getElementById('hud-v1').textContent=v1; }
+  else b1.style.display='none';
+  if(l2){ b2.style.display='flex'; document.getElementById('hud-l2').textContent=l2; document.getElementById('hud-v2').textContent=v2; }
+  else b2.style.display='none';
+  document.getElementById('hud-lives').textContent = lives||'';
+}
+function setHudV1(v){ document.getElementById('hud-v1').textContent=v; }
+function setHudV2(v){ document.getElementById('hud-v2').textContent=v; }
+
+function showGamePanels(quest, burst, warp){
+  document.getElementById('quest-display').style.display = quest?'block':'none';
+  document.getElementById('burst-display').style.display = burst?'block':'none';
+  document.getElementById('warp-display').style.display  = warp?'block':'none';
+}
+
+/* ================================================================
+   KEY QUEST
+   ================================================================ */
+function startQuest(){
+  stopAll();
+  MODE='quest'; qLevel=0; qTotalHits=0;
+  showScreen('game');
+  setHud('Key Quest','Level','1 / 9','Correct','0','');
+  showGamePanels(true,false,false);
+  buildKb();
+  loadQLevel();
+  document.addEventListener('keydown', onKey);
+}
+
+function loadQLevel(){
+  const lv = LEVELS[qLevel];
+  qCorrect=0; qCurKey=''; qDots=new Array(lv.goal).fill(null);
+  document.getElementById('qlbl').textContent = `LEVEL ${qLevel+1} · ${lv.name}`;
+  document.getElementById('qhint').textContent = lv.hint;
+  setHudV1(`${qLevel+1} / 9`);
+  setHudV2(qTotalHits);
+  pickQKey();
+  renderDots();
+}
+
+function pickQKey(){
+  const keys = LEVELS[qLevel].keys;
+  let k;
+  do { k=keys[Math.floor(Math.random()*keys.length)]; }
+  while(k===qCurKey && keys.length>1);
+  qCurKey=k;
+  document.getElementById('qtgt').textContent = k.toUpperCase();
+  document.getElementById('qtgt').className='q-target';
+  setTarget(k,'cyan');
+}
+
+function renderDots(){
+  const lv=LEVELS[qLevel];
+  const wrap=document.getElementById('qdots'); wrap.innerHTML='';
+  for(let i=0;i<lv.goal;i++){
+    const d=document.createElement('div');
+    d.className='dot';
+    if(qDots[i]===true) d.classList.add('hit');
+    else if(qDots[i]===false) d.classList.add('miss');
+    wrap.appendChild(d);
+  }
+}
+
+function handleQKey(k){
+  const lv=LEVELS[qLevel];
+  if(k===qCurKey){
+    flashKey(k,true);
+    document.getElementById('qtgt').className='q-target ok';
+    qDots[qCorrect]=true; qCorrect++; qTotalHits++;
+    setHudV2(qTotalHits);
+    renderDots();
+    if(qCorrect>=lv.goal){
+      setTimeout(()=>{
+        if(qLevel>=LEVELS.length-1) endQuest();
+        else { popFlash('⭐ Level Up!'); qLevel++; loadQLevel(); }
+      }, 400);
+    } else {
+      setTimeout(pickQKey, 210);
+    }
+  } else {
+    flashKey(k,false);
+    document.getElementById('qtgt').className='q-target bad';
+    qDots[qCorrect]=false; renderDots();
+    setTimeout(()=>{ document.getElementById('qtgt').className='q-target'; qDots[qCorrect]=null; renderDots(); }, 320);
+  }
+}
+
+function endQuest(){
+  const stars = qLevel>=8?3:qLevel>=5?2:1;
+  showResults('quest',{stars,
+    l1:'Levels Done', v1:`${qLevel+1} / 9`,
+    l2:'Keys Typed',  v2:qTotalHits,
+  });
+}
+
+/* ================================================================
+   SPEED BURST
+   ================================================================ */
+function startBurst(){
+  stopAll();
+  MODE='burst'; bCount=0; bSecs=30; bCurKey='';
+  showScreen('game');
+  setHud('Speed Burst · '+burstDiff.toUpperCase(),'Keys Hit','0','KPM','0','');
+  showGamePanels(false,true,false);
+  buildKb();
+  pickBKey();
+  setRing(30,30);
+  bTimer=setInterval(burstTick,1000);
+  document.addEventListener('keydown', onKey);
+}
+
+function pickBKey(){
+  const keys=BURST[burstDiff]; let k;
+  do { k=keys[Math.floor(Math.random()*keys.length)]; }
+  while(k===bCurKey && keys.length>1);
+  bCurKey=k;
+  document.getElementById('btgt').textContent=k.toUpperCase();
+  document.getElementById('btgt').className='b-target';
+  setTarget(k,true); // gold
+}
+
+function setRing(left,total){
+  const circ=2*Math.PI*56; // ~352
+  const frac=left/total;
+  document.getElementById('rfill').style.strokeDashoffset=circ*(1-frac);
+  document.getElementById('btimer').textContent=left;
+  const color=frac>0.5?'var(--cyan)':frac>0.25?'var(--gold)':'var(--coral)';
+  document.getElementById('rfill').style.stroke=color;
+  document.getElementById('btimer').style.color=color;
+}
+
+function burstTick(){
+  bSecs--;
+  setRing(bSecs,30);
+  if(bSecs<=0){
+    clearInterval(bTimer); bTimer=null;
+    const kpm=bCount*2;
+    let stars=1;
+    if(burstDiff==='easy')   stars=bCount>=22?3:bCount>=14?2:1;
+    else if(burstDiff==='medium') stars=bCount>=18?3:bCount>=11?2:1;
+    else                     stars=bCount>=14?3:bCount>=8?2:1;
+    showResults('burst',{stars,l1:'Keys Hit',v1:bCount,l2:'KPM',v2:kpm});
+  }
+}
+
+function handleBKey(k){
+  if(bSecs<=0) return;
+  if(k===bCurKey){
+    flashKey(k,true);
+    document.getElementById('btgt').className='b-target ok';
+    bCount++;
+    document.getElementById('bcount').textContent=bCount;
+    setHudV1(bCount);
+    const elapsed=30-bSecs||0.5;
+    setHudV2(Math.round(bCount/elapsed*60));
+    if(bCount>0&&bCount%10===0) popFlash('🔥 '+bCount+'!');
+    setTimeout(pickBKey,110);
+  } else {
+    flashKey(k,false);
+    document.getElementById('btgt').className='b-target bad';
+    setTimeout(()=>{ document.getElementById('btgt').className='b-target'; },210);
+  }
+}
+
+/* ================================================================
+   WORD WARP
+   ================================================================ */
+function startWarp(){
+  stopAll();
+  MODE='warp';
+  const pool=[...WORDS[warpDiff]]; shuffle(pool);
+  wWords=pool.slice(0,WARP_GOAL+(WARP_GOAL>pool.length?0:0)); // ensure enough words
+  // If pool smaller than goal, repeat
+  while(wWords.length<WARP_GOAL){ const p2=[...WORDS[warpDiff]]; shuffle(p2); wWords.push(...p2); }
+  wWords=wWords.slice(0,WARP_GOAL);
+  wIdx=0; wChar=0; wCorrect=0; wLives=3; wStreak=0; wCharErr=0;
+  wTotalChars=0; wStartTime=0; wStarted=false;
+  showScreen('game');
+  setHud('Word Warp · '+warpDiff.toUpperCase(),'Words','0 / '+WARP_GOAL,'WPM','—','🚀🚀🚀');
+  showGamePanels(false,false,true);
+  buildKb();
+  renderWWord();
+  document.addEventListener('keydown', onKey);
+}
+
+function renderWWord(){
+  if(wIdx>=wWords.length){ endWarp(); return; }
+  const word=wWords[wIdx];
+  document.getElementById('wword').innerHTML=word.split('').map((c,i)=>{
+    let cls='wc';
+    if(i<wChar) cls+=' ok';
+    else if(i===wChar) cls+=' on';
+    return `<span class="${cls}">${c}</span>`;
+  }).join('');
+  setTarget(word[wChar]||null,'cyan');
+  document.getElementById('wstreak').textContent=wStreak;
+  document.getElementById('wfire').style.display=wStreak>=5?'inline':'none';
+}
+
+function handleWKey(k){
+  if(wLives<=0||wIdx>=wWords.length) return;
+  if(k==='backspace'||k.length>1) return; // ignore non-char keys
+  if(!wStarted){ wStartTime=Date.now(); wStarted=true; }
+  const word=wWords[wIdx];
+  const expected=word[wChar].toLowerCase();
+  if(k===expected){
+    flashKey(k,true);
+    wCharErr=0; wChar++; wTotalChars++;
+    if(wChar>=word.length){
+      // Word complete
+      wCorrect++; wStreak++; wIdx++; wChar=0; wCharErr=0;
+      setHudV1(`${wCorrect} / ${WARP_GOAL}`);
+      updateWPM();
+      if(wStreak===5) popFlash('🔥 Streak!');
+      else if(wStreak===10) popFlash('⚡ On Fire!!');
+      else if(wStreak===20) popFlash('🚀 Legendary!!');
+      renderWWord();
+    } else {
+      renderWWord();
+    }
+  } else {
+    flashKey(k,false);
+    wStreak=0; wCharErr++;
+    // Flash current char red
+    const spans=document.getElementById('wword').querySelectorAll('.wc');
+    if(spans[wChar]){
+      spans[wChar].className='wc bad';
+      setTimeout(()=>{ if(spans[wChar]) spans[wChar].className='wc on'; },260);
+    }
+    document.getElementById('wstreak').textContent=0;
+    document.getElementById('wfire').style.display='none';
+    // 5 errors on same char → skip word + lose life
+    if(wCharErr>=5){
+      wCharErr=0; wIdx++; wChar=0;
+      loseWLife();
+      renderWWord();
+    }
+  }
+}
+
+function loseWLife(){
+  wLives=Math.max(0,wLives-1);
+  document.getElementById('hud-lives').textContent='🚀'.repeat(wLives);
+  if(wLives<=0) setTimeout(endWarp,300);
+}
+
+function updateWPM(){
+  if(!wStarted) return;
+  const mins=(Date.now()-wStartTime)/60000;
+  const wpm=mins>0?Math.round((wTotalChars/5)/mins):0;
+  setHudV2(wpm);
+  document.getElementById('wwpm').textContent=`WPM: ${wpm}`;
+}
+
+function endWarp(){
+  updateWPM();
+  const mins=wStartTime?(Date.now()-wStartTime)/60000:1;
+  const wpm=mins>0?Math.round((wTotalChars/5)/mins):0;
+  let stars=1;
+  if(warpDiff==='easy')   stars=wpm>=45?3:wpm>=25?2:1;
+  else if(warpDiff==='medium') stars=wpm>=35?3:wpm>=18?2:1;
+  else                    stars=wpm>=25?3:wpm>=12?2:1;
+  showResults('warp',{stars,l1:'Words Done',v1:`${wCorrect} / ${WARP_GOAL}`,l2:'WPM',v2:wpm});
+}
+
+/* ================================================================
+   KEY HANDLER
+   ================================================================ */
+function onKey(e){
+  if(e.ctrlKey||e.altKey||e.metaKey) return;
+  // Don't prevent for F5 / browser reload
+  if(e.key==='F5') return;
+  e.preventDefault();
+  const k = e.key.length===1 ? e.key.toLowerCase() : e.key.toLowerCase();
+  handleKey(k);
+}
+
+function handleKey(k){
+  if(!MODE) return;
+  if(MODE==='quest') handleQKey(k);
+  else if(MODE==='burst') handleBKey(k);
+  else if(MODE==='warp') handleWKey(k);
+}
+
+/* ================================================================
+   RESULTS
+   ================================================================ */
+function showResults(mode, {stars,l1,v1,l2,v2}){
+  stopAll();
+  MODE=null;
+  const emojis=['🌙','⭐','🚀'];
+  const titles=['Keep Going!','Nice Work!','Cosmic Champion!'];
+  document.getElementById('rEmoji').textContent=emojis[stars-1];
+  document.getElementById('rTitle').textContent=titles[stars-1];
+  document.getElementById('rStars').textContent='⭐'.repeat(stars)+'☆'.repeat(3-stars);
+  document.getElementById('rGrid').innerHTML=`
+    <div class="res-box"><div class="res-val">${v1}</div><div class="res-lbl">${l1}</div></div>
+    <div class="res-box"><div class="res-val">${v2}</div><div class="res-lbl">${l2}</div></div>
+  `;
+  document.getElementById('rPlayAgain').onclick=()=>{
+    if(mode==='quest') startQuest();
+    else if(mode==='burst') startBurst();
+    else startWarp();
+  };
+  showScreen('results');
+}
+
+/* ================================================================
+   UTILITIES
+   ================================================================ */
+function popFlash(txt){
+  const p=document.getElementById('pop');
+  clearTimeout(_popT);
+  p.textContent=txt; p.classList.add('show');
+  _popT=setTimeout(()=>p.classList.remove('show'),950);
+}
+
+function shuffle(a){
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+}
+
+// Init keyboard on load (shown on home screen as decoration)
+buildKb();
+</script>
+</body>
+</html>
