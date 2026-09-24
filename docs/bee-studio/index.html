@@ -115,6 +115,10 @@
   .match-chip.matched-correct{border-color:var(--green);background:#f0fff3;cursor:default;color:#2a8040;}
   .match-chip.matched-wrong{border-color:var(--red);background:#fff0f3;animation:shake .4s ease;}
   .match-chip.locked{cursor:default;}
+  .match-chip.linked-pair{border-color:var(--blue);background:#eef3ff;box-shadow:0 3px 10px rgba(77,150,255,.18);}
+  .match-done-btn{background:linear-gradient(135deg,var(--green),var(--teal));color:white;border:none;border-radius:99px;padding:11px 32px;font-size:1rem;font-family:'Fredoka One',cursive;cursor:pointer;box-shadow:0 4px 16px rgba(107,203,119,.3);transition:transform .15s;margin-top:6px;align-self:center;}
+  .match-done-btn:hover:not(:disabled){transform:scale(1.05);}
+  .match-done-btn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
   @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
   .match-badge{position:absolute;top:-7px;right:-7px;width:21px;height:21px;border-radius:50%;font-size:.68rem;display:flex;align-items:center;justify-content:center;font-weight:800;border:2px solid white;background:var(--green);color:white;}
 
@@ -370,11 +374,12 @@
   <p class="subtitle" id="matchListLabel"></p>
   <div class="progress-wrap"><div class="progress-bar match-bar" id="matchProgressBar" style="width:0%"></div></div>
   <div class="progress-label" id="matchProgressLabel">0 / 0 matched</div>
-  <div class="match-instructions">👆 Tap a <strong style="color:var(--orange)">word</strong>, then its <strong style="color:var(--teal)">definition</strong> — or start from either side!</div>
+  <div class="match-instructions">👆 Link each <strong style="color:var(--orange)">word</strong> to its <strong style="color:var(--teal)">definition</strong>. Tap a linked pair to change it. Hit <strong>Check Answers</strong> when you're done!</div>
   <div class="match-container" id="matchContainer">
     <div class="match-col"><div class="match-col-label words-label">📖 Words</div><div id="wordsCol"></div></div>
     <div class="match-col"><div class="match-col-label defs-label">💬 Definitions</div><div id="defsCol"></div></div>
   </div>
+  <button id="matchDoneBtn" class="match-done-btn" onclick="scorePairs()" disabled>✔ Check Answers</button>
   <div class="results hidden" id="matchResults" style="margin-top:16px;">
     <h2 id="matchResultTitle">All Matched! 🎉</h2>
     <div class="score-ring" id="matchScoreRing"><span class="score-text" id="matchScoreText"></span></div>
@@ -840,77 +845,189 @@ document.getElementById('spellInput').addEventListener('keydown',e=>{ if(e.key==
 
 // ── MATCHING ─────────────────────────────────────────────────────────────────
 function startMatching(list) {
-  document.getElementById('matchListLabel').textContent=list.name;
+  document.getElementById('matchListLabel').textContent = list.name;
   document.getElementById('matchResults').classList.add('hidden');
   document.getElementById('matchContainer').classList.remove('hidden');
-  mState={selWord:null,selDef:null,matched:new Array(list.pairs.length).fill(false),attempts:0};
+  const doneBtn = document.getElementById('matchDoneBtn');
+  doneBtn.disabled = true;
+  doneBtn.classList.remove('hidden');
+  mState = { selWord: null, selDef: null, links: {}, scored: false, correctCount: 0 };
 
-  const sw=[...list.pairs.map((p,i)=>({...p,idx:i}))].sort(()=>Math.random()-.5);
-  const sd=[...list.pairs.map((p,i)=>({...p,idx:i}))].sort(()=>Math.random()-.5);
-  const wCol=document.getElementById('wordsCol'), dCol=document.getElementById('defsCol');
-  wCol.innerHTML=''; dCol.innerHTML='';
+  const sw = [...list.pairs.map((p,i) => ({...p, idx:i}))].sort(() => Math.random() - .5);
+  const sd = [...list.pairs.map((p,i) => ({...p, idx:i}))].sort(() => Math.random() - .5);
+  const wCol = document.getElementById('wordsCol'), dCol = document.getElementById('defsCol');
+  wCol.innerHTML = ''; dCol.innerHTML = '';
 
-  sw.forEach(pair=>{ const c=makeChip(pair.word,'word',pair.idx); wCol.appendChild(c); });
-  sd.forEach(pair=>{ const c=makeChip(pair.def,'def',pair.idx);  dCol.appendChild(c); });
+  sw.forEach(pair => { const c = makeChip(pair.word, 'word', pair.idx); wCol.appendChild(c); });
+  sd.forEach(pair => { const c = makeChip(pair.def,  'def',  pair.idx); dCol.appendChild(c); });
   updateMatchProgress();
   showScreen('matchScreen');
 }
 
-function makeChip(text,type,idx) {
-  const c=document.createElement('div');
-  c.className='match-chip'; c.dataset.idx=idx; c.dataset.type=type;
-  c.textContent=text; c.onclick=()=>selectChip(c,type,idx); return c;
+function makeChip(text, type, idx) {
+  const c = document.createElement('div');
+  c.className = 'match-chip'; c.dataset.idx = idx; c.dataset.type = type;
+  c.textContent = text; c.onclick = () => selectChip(c, type, idx); return c;
 }
 
-function selectChip(chip,type,idx) {
-  if (chip.classList.contains('matched-correct')||chip.classList.contains('locked')) return;
-  if (type==='word') {
-    document.querySelectorAll('.match-chip[data-type="word"]').forEach(c=>{ if(!c.classList.contains('matched-correct')) c.classList.remove('selected-word'); });
-    if (mState.selWord===idx) { mState.selWord=null; return; }
-    mState.selWord=idx; chip.classList.add('selected-word');
-  } else {
-    document.querySelectorAll('.match-chip[data-type="def"]').forEach(c=>{ if(!c.classList.contains('matched-correct')) c.classList.remove('selected-def'); });
-    if (mState.selDef===idx) { mState.selDef=null; return; }
-    mState.selDef=idx; chip.classList.add('selected-def');
+function selectChip(chip, type, idx) {
+  if (mState.scored) return;
+
+  const isWord  = type === 'word';
+  const selKey  = isWord ? 'selWord' : 'selDef';
+  const selClass = isWord ? 'selected-word' : 'selected-def';
+
+  // Tapping the already-selected chip deselects it
+  if (mState[selKey] === idx) {
+    chip.classList.remove(selClass);
+    mState[selKey] = null;
+    return;
   }
-  if (mState.selWord!==null && mState.selDef!==null) attemptMatch();
+
+  // Clear any previous selection of this type
+  if (mState[selKey] !== null) {
+    const prev = document.querySelector(`.match-chip[data-type="${type}"][data-idx="${mState[selKey]}"]`);
+    if (prev) prev.classList.remove(selClass);
+  }
+
+  // If the chip is already in a linked pair, break that link so it can be re-paired
+  if (chip.classList.contains('linked-pair')) {
+    chip.classList.remove('linked-pair');
+    if (isWord) {
+      const oldDef = mState.links[idx];
+      if (oldDef !== undefined) {
+        const partner = document.querySelector(`.match-chip[data-type="def"][data-idx="${oldDef}"]`);
+        if (partner) partner.classList.remove('linked-pair');
+        delete mState.links[idx];
+        updateMatchProgress();
+        updateDoneButton();
+      }
+    } else {
+      const oldWordKey = Object.keys(mState.links).find(k => mState.links[k] === idx);
+      if (oldWordKey !== undefined) {
+        const partner = document.querySelector(`.match-chip[data-type="word"][data-idx="${oldWordKey}"]`);
+        if (partner) partner.classList.remove('linked-pair');
+        delete mState.links[oldWordKey];
+        updateMatchProgress();
+        updateDoneButton();
+      }
+    }
+  }
+
+  chip.classList.add(selClass);
+  mState[selKey] = idx;
+
+  // If both sides are now selected, create the link
+  if (mState.selWord !== null && mState.selDef !== null) createLink(mState.selWord, mState.selDef);
 }
 
-function attemptMatch() {
-  const wi=mState.selWord, di=mState.selDef;
-  const wc=document.querySelector(`.match-chip[data-type="word"][data-idx="${wi}"]`);
-  const dc=document.querySelector(`.match-chip[data-type="def"][data-idx="${di}"]`);
-  mState.attempts++;
-  if (wi===di) {
-    mState.matched[wi]=true;
-    [wc,dc].forEach(c=>{ c.classList.remove('selected-word','selected-def'); c.classList.add('matched-correct','locked'); const b=document.createElement('span'); b.className='match-badge'; b.textContent='✓'; c.appendChild(b); });
-    updateMatchProgress();
-    if (mState.matched.every(Boolean)) setTimeout(showMatchResults,700);
-  } else {
-    [wc,dc].forEach(c=>{ c.classList.remove('selected-word','selected-def'); c.classList.add('matched-wrong'); setTimeout(()=>c.classList.remove('matched-wrong'),500); });
+function createLink(wordIdx, defIdx) {
+  // Evict any existing link FROM this word
+  if (mState.links[wordIdx] !== undefined) {
+    const oldDef = document.querySelector(`.match-chip[data-type="def"][data-idx="${mState.links[wordIdx]}"]`);
+    if (oldDef) oldDef.classList.remove('linked-pair', 'selected-def');
   }
-  mState.selWord=null; mState.selDef=null;
+  // Evict any existing link TO this def from another word
+  const oldWordKey = Object.keys(mState.links).find(k => mState.links[k] === defIdx && parseInt(k) !== wordIdx);
+  if (oldWordKey !== undefined) {
+    const oldWord = document.querySelector(`.match-chip[data-type="word"][data-idx="${oldWordKey}"]`);
+    if (oldWord) oldWord.classList.remove('linked-pair', 'selected-word');
+    delete mState.links[oldWordKey];
+  }
+
+  mState.links[wordIdx] = defIdx;
+
+  const wc = document.querySelector(`.match-chip[data-type="word"][data-idx="${wordIdx}"]`);
+  const dc = document.querySelector(`.match-chip[data-type="def"][data-idx="${defIdx}"]`);
+  if (wc) { wc.classList.remove('selected-word'); wc.classList.add('linked-pair'); }
+  if (dc) { dc.classList.remove('selected-def');  dc.classList.add('linked-pair'); }
+
+  mState.selWord = null;
+  mState.selDef  = null;
+
+  updateMatchProgress();
+  updateDoneButton();
 }
 
 function updateMatchProgress() {
-  const done=mState.matched.filter(Boolean).length, total=currentList.pairs.length;
-  document.getElementById('matchProgressBar').style.width=(done/total*100)+'%';
-  document.getElementById('matchProgressLabel').textContent=`${done} / ${total} matched`;
+  const linked = Object.keys(mState.links).length, total = currentList.pairs.length;
+  document.getElementById('matchProgressBar').style.width = (linked / total * 100) + '%';
+  document.getElementById('matchProgressLabel').textContent = `${linked} / ${total} linked`;
 }
+
+function updateDoneButton() {
+  const btn = document.getElementById('matchDoneBtn');
+  btn.disabled = Object.keys(mState.links).length < currentList.pairs.length;
+}
+
+window.scorePairs = () => {
+  if (mState.scored) return;
+  mState.scored = true;
+  document.getElementById('matchDoneBtn').disabled = true;
+
+  let correct = 0;
+  const total = currentList.pairs.length;
+  for (let wi = 0; wi < total; wi++) {
+    const di = mState.links[wi];
+    const wc = document.querySelector(`.match-chip[data-type="word"][data-idx="${wi}"]`);
+    const dc = document.querySelector(`.match-chip[data-type="def"][data-idx="${di}"]`);
+    if (!wc || !dc) continue;
+    wc.classList.remove('linked-pair', 'selected-word');
+    dc.classList.remove('linked-pair', 'selected-def');
+    wc.classList.add('locked'); dc.classList.add('locked');
+    if (wi === di) {
+      correct++;
+      [wc, dc].forEach(c => {
+        c.classList.add('matched-correct');
+        const b = document.createElement('span'); b.className = 'match-badge'; b.textContent = '✓';
+        c.appendChild(b);
+      });
+    } else {
+      [wc, dc].forEach(c => c.classList.add('matched-wrong'));
+    }
+  }
+  mState.correctCount = correct;
+
+  const pct = Math.round(correct / total * 100);
+  document.getElementById('matchProgressBar').style.width = pct + '%';
+  document.getElementById('matchProgressLabel').textContent = `${correct} / ${total} correct`;
+
+  setTimeout(showMatchResults, correct === total ? 700 : 1500);
+};
 
 function showMatchResults() {
   document.getElementById('matchContainer').classList.add('hidden');
+  document.getElementById('matchDoneBtn').classList.add('hidden');
   document.getElementById('matchResults').classList.remove('hidden');
-  const total=currentList.pairs.length;
-  document.getElementById('matchScoreText').textContent=`${total}/${total}`;
-  document.getElementById('matchScoreRing').style.setProperty('--pct','100%');
-  document.getElementById('matchResultTitle').textContent=mState.attempts===total?'Perfect Matches! 🏆':'All Matched! 🎉';
-  document.getElementById('matchScoreMsg').textContent=
-    mState.attempts===total?'🌟 First try on every one!':mState.attempts<=total+2?'🎉 Almost perfect!':'👍 You got them all!';
-  const list=document.getElementById('matchResultsList'); list.innerHTML='';
-  currentList.pairs.forEach(p=>{ const d=document.createElement('div'); d.className='result-item correct'; d.innerHTML=`<span><strong>${esc(p.word)}</strong> — ${esc(p.def)}</span><span>✅</span>`; list.appendChild(d); });
+
+  const total   = currentList.pairs.length;
+  const correct = mState.correctCount;
+  const pct     = Math.round(correct / total * 100);
+
+  document.getElementById('matchScoreText').textContent = `${correct}/${total}`;
+  document.getElementById('matchScoreRing').style.setProperty('--pct', pct + '%');
+  document.getElementById('matchResultTitle').textContent = pct === 100 ? 'Perfect Score! 🏆' : 'Matching Complete! 🎉';
+  document.getElementById('matchScoreMsg').textContent =
+    pct === 100 ? '🌟 First try on every one!' : pct >= 80 ? '🎉 Amazing! Almost perfect!' : pct >= 60 ? '👍 Good job! Keep going!' : '💪 Practice makes perfect!';
+
+  const listEl = document.getElementById('matchResultsList');
+  listEl.innerHTML = '';
+  currentList.pairs.forEach((p, i) => {
+    const linkedDef = mState.links[i];
+    const isCorrect = linkedDef === i;
+    const d = document.createElement('div');
+    d.className = `result-item ${isCorrect ? 'correct' : 'incorrect'}`;
+    if (isCorrect) {
+      d.innerHTML = `<span><strong>${esc(p.word)}</strong> — ${esc(p.def)}</span><span>✅</span>`;
+    } else {
+      const chosen = currentList.pairs[linkedDef] ? esc(currentList.pairs[linkedDef].def) : '?';
+      d.innerHTML = `<div style="flex:1"><div><strong>${esc(p.word)}</strong></div><div class="result-answer">You chose: "${chosen}"</div><div class="result-answer" style="color:#2a8040;">Correct: "${esc(p.def)}"</div></div><span>❌</span>`;
+    }
+    listEl.appendChild(d);
+  });
 }
-window.restartMatching = ()=>startMatching(currentList);
+
+window.restartMatching = () => startMatching(currentList);
 
 // ── PIN ──────────────────────────────────────────────────────────────────────
 window.openPinModal  = ()=>{ pinBuffer=''; updateDots(); document.getElementById('pinError').textContent=''; document.getElementById('pinModal').classList.remove('hidden'); };
