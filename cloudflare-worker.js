@@ -59,6 +59,15 @@ export default {
       return jsonError('Topic is required.', 400, corsHeaders);
     }
 
+    // Optional skill focus array (validated against whitelist)
+    const VALID_SKILLS = new Set([
+      'Sequence', 'Character Motivation', 'Theme', 'Point of View',
+      'Vocabulary', 'Inference', 'Cause & Effect', 'Compare & Contrast',
+      "Author's Purpose", 'Main Idea',
+    ]);
+    const rawSkills = Array.isArray(body.skills) ? body.skills : [];
+    const skills = rawSkills.filter(s => typeof s === 'string' && VALID_SKILLS.has(s));
+
     // Call Claude
     let anthropicRes;
     try {
@@ -72,7 +81,7 @@ export default {
         body: JSON.stringify({
           model: 'claude-opus-4-6',
           max_tokens: 2800,
-          messages: [{ role: 'user', content: buildPrompt(topic) }],
+          messages: [{ role: 'user', content: buildPrompt(topic, skills) }],
         }),
       });
     } catch (err) {
@@ -132,12 +141,58 @@ function jsonError(message, status, corsHeaders) {
 }
 
 // ============================================================
+// SKILL DEFINITIONS (FL B.E.S.T. aligned)
+// ============================================================
+const SKILL_DEFS = {
+  'Sequence':             { standard: 'ELA.3.R.3.2',  instruction: 'Ask about the ORDER OF EVENTS: what happened first, next, or last in the story.' },
+  'Character Motivation': { standard: 'ELA.3.R.1.1',  instruction: 'Ask WHY a specific character did a specific action — their reason or feeling behind it.' },
+  'Theme':                { standard: 'ELA.3.R.1.2',  instruction: 'Ask what LESSON or MESSAGE the story teaches. The correct answer should be a universal truth, not a plot summary.' },
+  'Point of View':        { standard: 'ELA.3.R.1.3',  instruction: 'Ask about a character\'s PERSPECTIVE or FEELINGS about an event — how they see or feel about something.' },
+  'Vocabulary':           { standard: 'ELA.3.V.1.3',  instruction: 'Choose a word that ACTUALLY APPEARS in the story and ask what it means in context. Quote the sentence it appears in.' },
+  'Inference':            { standard: 'ELA.3.R.1.1',  instruction: 'Ask something the reader can FIGURE OUT that is NOT directly stated. The answer requires reading between the lines.' },
+  'Cause & Effect':       { standard: 'ELA.3.R.2.1',  instruction: 'Ask what CAUSED something to happen, or what HAPPENED AS A RESULT of a story event.' },
+  'Compare & Contrast':   { standard: 'ELA.3.R.3.3',  instruction: 'Ask how two CHARACTERS, SETTINGS, or EVENTS are similar or different.' },
+  "Author's Purpose":     { standard: 'ELA.3.R.2.3',  instruction: 'Ask WHY the author included a specific detail, dialogue, or description — what effect it has on the reader.' },
+  'Main Idea':            { standard: 'ELA.3.R.2.2',  instruction: 'Ask what the story is MOSTLY ABOUT — the central idea, not a minor detail.' },
+};
+
+const DEFAULT_SKILLS = [
+  'Sequence', 'Character Motivation', 'Theme', 'Vocabulary', 'Inference', 'Cause & Effect',
+];
+
+// ============================================================
 // CLAUDE PROMPT
 // ============================================================
-function buildPrompt(topic) {
+function buildPrompt(topic, selectedSkills) {
+  // Determine which 6 skills to use
+  let skillsToUse;
+  if (selectedSkills && selectedSkills.length > 0) {
+    // Pad to 6 by cycling through the selection if fewer than 6 chosen
+    skillsToUse = [...selectedSkills];
+    let i = 0;
+    while (skillsToUse.length < 6) {
+      skillsToUse.push(selectedSkills[i % selectedSkills.length]);
+      i++;
+    }
+    skillsToUse = skillsToUse.slice(0, 6);
+  } else {
+    skillsToUse = DEFAULT_SKILLS;
+  }
+
+  const focusNote = selectedSkills && selectedSkills.length > 0
+    ? `NOTE: The student has chosen to focus on these skills: ${selectedSkills.join(', ')}. Design all 6 questions around these skills (repeating skills if fewer than 6 were chosen).`
+    : 'Use the balanced default skill mix below.';
+
+  const questionList = skillsToUse.map((skill, i) => {
+    const def = SKILL_DEFS[skill] || { standard: 'ELA.3.R.1.1', instruction: 'Create an appropriate comprehension question.' };
+    return `${i + 1}. ${skill.toUpperCase()} (${def.standard}) — ${def.instruction}`;
+  }).join('\n');
+
   return `You are creating a reading comprehension activity for a Florida 3rd grade student.
 
 STUDENT'S STORY IDEAS: "${topic}"
+
+${focusNote}
 
 ═══════════════════════════════════════
 STEP 1 — WRITE THE STORY
@@ -168,14 +223,9 @@ If anything fails, silently rewrite and recheck before continuing.
 ═══════════════════════════════════════
 STEP 3 — CREATE 6 COMPREHENSION QUESTIONS
 ═══════════════════════════════════════
-Write exactly 6 multiple-choice questions covering these Florida B.E.S.T. ELA skills (one each):
+Write exactly 6 multiple-choice questions using these Florida B.E.S.T. ELA skills:
 
-1. SEQUENCE (ELA.3.R.1.1) — Ask about the order of events: what happened first, next, or last.
-2. CHARACTER MOTIVATION (ELA.3.R.1.2) — Ask WHY a character did a specific action.
-3. STORY ELEMENTS (ELA.3.R.1.1) — Ask about the main problem OR setting OR solution.
-4. THEME (ELA.3.R.1.3) — Ask what lesson or message the story teaches.
-5. VOCABULARY IN CONTEXT (ELA.3.V.1.3) — Pick a word that ACTUALLY APPEARS in your story and ask what it means in context. Quote the sentence it appears in.
-6. INFERENCE (ELA.3.R.3.1) — Ask something the reader can figure out that is NOT directly stated in the story.
+${questionList}
 
 Each question must:
 • Have exactly 4 answer choices
@@ -190,7 +240,7 @@ STEP 4 — VERIFY QUESTIONS (silently)
 For each question confirm:
 ✓ Correct answer is clearly supported by story text
 ✓ Distractors are plausible but wrong
-✓ Vocabulary word is actually present in the story text
+✓ Vocabulary word (if applicable) is actually present in the story text
 ✓ Question language is appropriate for 3rd grade
 If any question fails, silently fix it before outputting.
 

@@ -158,6 +158,87 @@ html, body {
   color: var(--mint);
 }
 
+/* ===== SKILLS SELECTOR ===== */
+.skills-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 1rem;
+  padding: 0.6rem 0.85rem;
+  background: rgba(176,154,248,0.07);
+  border: 1.5px solid rgba(176,154,248,0.2);
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 800;
+  font-size: 0.84rem;
+  color: var(--purple);
+  width: 100%;
+  transition: background 0.15s, border-color 0.15s;
+}
+.skills-toggle:hover {
+  background: rgba(176,154,248,0.13);
+  border-color: rgba(176,154,248,0.4);
+}
+.skills-arrow {
+  font-size: 0.7rem;
+  transition: transform 0.25s ease;
+}
+.skills-arrow.open { transform: rotate(180deg); }
+
+.skills-panel {
+  display: none;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 0.6rem;
+  padding: 0.75rem;
+  background: rgba(0,0,0,0.18);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+.skills-panel.open { display: flex; }
+
+.skills-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--textdim);
+}
+
+.skills-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.skill-chip {
+  background: rgba(255,255,255,0.04);
+  border: 1.5px solid rgba(255,255,255,0.1);
+  border-radius: 20px;
+  padding: 0.3rem 0.72rem;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--textdim);
+  cursor: pointer;
+  transition: all 0.14s;
+  font-family: 'Nunito', sans-serif;
+}
+.skill-chip:hover {
+  background: rgba(176,154,248,0.1);
+  border-color: rgba(176,154,248,0.4);
+  color: var(--purple);
+}
+.skill-chip.active {
+  background: rgba(176,154,248,0.18);
+  border-color: var(--purple);
+  color: var(--purple);
+}
+
+.skills-selected-note {
+  font-size: 0.73rem;
+  font-weight: 700;
+  color: var(--mint);
+  display: none;
+}
+.skills-selected-note.show { display: block; }
+
 .note {
   text-align: center;
   color: var(--textdim);
@@ -673,6 +754,28 @@ html, body {
       <span class="hint" onclick="addHint('video games come to life')">🎮 Games</span>
       <span class="hint" onclick="addHint('underwater ocean world')">🌊 Ocean</span>
     </div>
+    <!-- Skills focus selector -->
+    <button type="button" class="skills-toggle" onclick="toggleSkillsPanel()">
+      <span>🎯 Optional: Focus on specific skills</span>
+      <span class="skills-arrow" id="skillsArrow">▼</span>
+    </button>
+    <div class="skills-panel" id="skillsPanel">
+      <span class="skills-label">Pick skills to practice — leave empty for a balanced mix of all 6:</span>
+      <div class="skills-grid">
+        <button type="button" class="skill-chip" onclick="toggleSkill(this)" data-skill="Sequence">📋 Sequence</button>
+        <button type="button" class="skill-chip" onclick="toggleSkill(this)" data-skill="Character Motivation">💭 Motivation</button>
+        <button type="button" class="skill-chip" onclick="toggleSkill(this)" data-skill="Theme">💡 Theme</button>
+        <button type="button" class="skill-chip" onclick="toggleSkill(this)" data-skill="Point of View">👁️ Point of View</button>
+        <button type="button" class="skill-chip" onclick="toggleSkill(this)" data-skill="Vocabulary">📝 Vocabulary</button>
+        <button type="button" class="skill-chip" onclick="toggleSkill(this)" data-skill="Inference">🔍 Inference</button>
+        <button type="button" class="skill-chip" onclick="toggleSkill(this)" data-skill="Cause & Effect">⚡ Cause &amp; Effect</button>
+        <button type="button" class="skill-chip" onclick="toggleSkill(this)" data-skill="Compare & Contrast">⚖️ Compare &amp; Contrast</button>
+        <button type="button" class="skill-chip" onclick="toggleSkill(this)" data-skill="Author's Purpose">✏️ Author's Purpose</button>
+        <button type="button" class="skill-chip" onclick="toggleSkill(this)" data-skill="Main Idea">🎯 Main Idea</button>
+      </div>
+      <span class="skills-selected-note" id="skillsNote"></span>
+    </div>
+
     <button class="btn btn-gold" id="generateBtn" onclick="generateStory()">
       ✨ Create My Story!
     </button>
@@ -812,6 +915,38 @@ function addHint(text) {
 }
 
 /* ============================================================
+   SKILLS SELECTOR
+   ============================================================ */
+function toggleSkillsPanel() {
+  const panel = document.getElementById('skillsPanel');
+  const arrow = document.getElementById('skillsArrow');
+  panel.classList.toggle('open');
+  arrow.classList.toggle('open');
+}
+
+function toggleSkill(btn) {
+  btn.classList.toggle('active');
+  updateSkillsNote();
+}
+
+function getSelectedSkills() {
+  return Array.from(document.querySelectorAll('.skill-chip.active'))
+    .map(b => b.dataset.skill);
+}
+
+function updateSkillsNote() {
+  const skills = getSelectedSkills();
+  const note   = document.getElementById('skillsNote');
+  if (skills.length === 0) {
+    note.textContent = '';
+    note.classList.remove('show');
+  } else {
+    note.textContent = `✓ ${skills.length} skill${skills.length !== 1 ? 's' : ''} selected — questions will focus on these areas.`;
+    note.classList.add('show');
+  }
+}
+
+/* ============================================================
    ERROR TOAST
    ============================================================ */
 let toastTimer = null;
@@ -840,12 +975,20 @@ let msgIdx = 0, msgTimer = null;
 function startMsgs() {
   msgIdx = 0;
   const el = document.getElementById('loadMsg');
+  el.style.opacity = '1';
   el.textContent = MSGS[0];
   msgTimer = setInterval(() => {
-    msgIdx = (msgIdx + 1) % MSGS.length;
+    // Fade out first
     el.style.opacity = '0';
-    setTimeout(() => { el.textContent = MSGS[msgIdx]; el.style.opacity = '1'; }, 220);
-  }, 3000);
+    // Wait for fade-out to finish (300ms transition), then swap text + fade in.
+    // Double rAF ensures the opacity:0 paint completes before we trigger opacity:1
+    // — fixes a Safari/iOS Safari rendering skip where both changes collapse into one frame.
+    setTimeout(() => {
+      msgIdx = (msgIdx + 1) % MSGS.length;
+      el.textContent = MSGS[msgIdx];
+      requestAnimationFrame(() => requestAnimationFrame(() => { el.style.opacity = '1'; }));
+    }, 310);
+  }, 3600);
 }
 function stopMsgs() { if (msgTimer) { clearInterval(msgTimer); msgTimer = null; } }
 
@@ -864,10 +1007,11 @@ async function generateStory() {
   startMsgs();
 
   try {
+    const selectedSkills = getSelectedSkills();
     const res = await fetch(WORKER_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ topic }),
+      body: JSON.stringify({ topic, skills: selectedSkills }),
     });
 
     if (!res.ok) {
