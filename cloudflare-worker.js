@@ -1,13 +1,18 @@
 /**
- * Stellar Stories — Cloudflare Worker
+ * GalaxyDashboard — Cloudflare Worker
  * =====================================
  * DEPLOY INSTRUCTIONS (see bottom of file for step-by-step)
  *
- * This Worker proxies requests from the Stellar Stories game to the Claude API.
+ * This Worker proxies requests from GalaxyDashboard games to the Claude API.
  * The API key is stored as a Cloudflare secret — never in code or committed to git.
  *
- * After deploying, copy your Worker URL and paste it into:
+ * Games served by this Worker:
+ *   - Stellar Stories  (game: 'stellar-stories' or omitted)
+ *   - Spark Station    (game: 'spark-station')
+ *
+ * After deploying, copy your Worker URL and paste it into each game file:
  *   docs/stellar-stories/index.html  →  const WORKER_URL = 'YOUR_WORKER_URL_HERE';
+ *   docs/spark-station/index.html    →  const WORKER_URL = 'YOUR_WORKER_URL_HERE';
  */
 
 // ============================================================
@@ -53,11 +58,20 @@ export default {
       return jsonError('Invalid request body.', 400, corsHeaders);
     }
 
-    // Validate topic
+    // Validate topic (shared by all games)
     const topic = String(body.topic || '').trim().slice(0, 600);
     if (topic.length < 3) {
       return jsonError('Topic is required.', 400, corsHeaders);
     }
+
+    // Route to game-specific handler
+    const game = String(body.game || 'stellar-stories');
+
+    if (game === 'spark-station') {
+      return handleSparkStation(body, topic, env, corsHeaders);
+    }
+
+    // ── Stellar Stories ────────────────────────────────────────
 
     // Optional skill focus array (validated against whitelist)
     const VALID_SKILLS = new Set([
@@ -129,6 +143,70 @@ export default {
     });
   },
 };
+
+// ============================================================
+// SPARK STATION HANDLER
+// ============================================================
+async function handleSparkStation(body, topic, env, corsHeaders) {
+  const rawPrev = Array.isArray(body.previousIdeas) ? body.previousIdeas : [];
+  // Sanitize: strings only, capped to prevent prompt injection via huge arrays
+  const previousIdeas = rawPrev
+    .filter(s => typeof s === 'string')
+    .slice(0, 25)
+    .map(s => s.slice(0, 200));
+
+  let anthropicRes;
+  try {
+    anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: 'claude-opus-4-6',
+        max_tokens: 1200,
+        messages: [{ role: 'user', content: buildSparkPrompt(topic, previousIdeas) }],
+      }),
+    });
+  } catch (err) {
+    console.error('Fetch to Anthropic failed (Spark Station):', err);
+    return jsonError('Could not reach the AI service. Please try again.', 502, corsHeaders);
+  }
+
+  if (!anthropicRes.ok) {
+    const errText = await anthropicRes.text().catch(() => '');
+    console.error('Anthropic API error (Spark Station):', anthropicRes.status, errText);
+    return jsonError('AI service returned an error. Please try again.', 502, corsHeaders);
+  }
+
+  const apiData = await anthropicRes.json().catch(() => null);
+  const rawText = apiData?.content?.[0]?.text || '';
+
+  const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) {
+    console.error('No JSON found in Spark Station response:', rawText.slice(0, 500));
+    return jsonError('Idea generation failed. Please try again.', 502, corsHeaders);
+  }
+
+  let result;
+  try {
+    result = JSON.parse(jsonMatch[0]);
+  } catch {
+    console.error('Failed to parse JSON from Spark Station response');
+    return jsonError('Idea generation failed. Please try again.', 502, corsHeaders);
+  }
+
+  if (!Array.isArray(result.ideas) || result.ideas.length < 2) {
+    console.error('Spark Station response missing ideas array');
+    return jsonError('Idea generation failed. Please try again.', 502, corsHeaders);
+  }
+
+  return new Response(JSON.stringify(result), {
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
+}
 
 // ============================================================
 // HELPERS
@@ -313,6 +391,58 @@ Return ONLY the JSON below — no markdown, no code fences, no explanation, no t
 }
 
 CRITICAL: The "correct" field is a 0-based index into the "choices" array. Double-check each correct index before outputting. Return ONLY the raw JSON — nothing else.`;
+}
+
+// ============================================================
+// SPARK STATION PROMPT
+// ============================================================
+function buildSparkPrompt(topic, previousIdeas) {
+  const prevBlock = previousIdeas.length > 0
+    ? `\nIMPORTANT: These ideas were already shown to the student — provide DIFFERENT ideas:\n${previousIdeas.map((p, i) => `${i + 1}. ${p}`).join('\n')}\n`
+    : '';
+
+  return `You are a helpful idea helper for elementary school students (grades 3–5).
+
+The student is working on or curious about: "${topic}"
+${prevBlock}
+════════════════════════════════
+STEP 1 — GENERATE 3–5 IDEAS
+════════════════════════════════
+Write 3 to 5 interesting, helpful, or fun ideas related to this topic.
+
+Requirements for each idea:
+• Written at grades 3–5 reading level (simple, clear sentences)
+• Specific and interesting — not too vague or too advanced
+• 1–2 sentences maximum
+• Include a reference source when possible (e.g., "According to NASA..." or "National Geographic says..." or "Scientists at [place] found...")
+• 100% kid-safe — no violence, scary content, or adult themes
+
+════════════════════════════════
+STEP 2 — REVIEW (silently, before outputting)
+════════════════════════════════
+For each idea, verify:
+✓ Completely kid-safe and age-appropriate for grades 3–5
+✓ Factually accurate (especially for science, history, real events)
+✓ Language is clear and simple enough for a 3rd grader
+✓ Reference is real and accurate (if included)
+✓ Not a repeat of any previously shown idea
+Silently fix any issues before outputting.
+
+════════════════════════════════
+STEP 3 — OUTPUT JSON ONLY
+════════════════════════════════
+Return ONLY this JSON — no markdown, no code fences, no explanation, nothing else:
+
+{
+  "ideas": [
+    {
+      "text": "The idea text here (1-2 sentences, grades 3-5 level).",
+      "ref": "Source or reference here, or empty string if none"
+    }
+  ]
+}
+
+CRITICAL: Return ONLY the raw JSON. Nothing before it, nothing after it.`;
 }
 
 /*
