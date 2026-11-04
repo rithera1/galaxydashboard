@@ -28,7 +28,7 @@ const ALLOWED_ORIGINS = [
 // MAIN HANDLER
 // ============================================================
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const origin = request.headers.get('Origin') || '';
     const allowedOrigin = ALLOWED_ORIGINS.includes(origin)
       ? origin
@@ -68,7 +68,7 @@ export default {
     const game = String(body.game || 'stellar-stories');
 
     if (game === 'spark-station') {
-      return handleSparkStation(body, topic, env, corsHeaders);
+      return handleSparkStation(body, topic, env, ctx, corsHeaders);
     }
 
     // ── Stellar Stories ────────────────────────────────────────
@@ -147,7 +147,7 @@ export default {
 // ============================================================
 // SPARK STATION HANDLER
 // ============================================================
-async function handleSparkStation(body, topic, env, corsHeaders) {
+async function handleSparkStation(body, topic, env, ctx, corsHeaders) {
   const rawPrev = Array.isArray(body.previousIdeas) ? body.previousIdeas : [];
   // Sanitize: strings only, capped to prevent prompt injection via huge arrays
   const previousIdeas = rawPrev
@@ -203,9 +203,39 @@ async function handleSparkStation(body, topic, env, corsHeaders) {
     return jsonError('Idea generation failed. Please try again.', 502, corsHeaders);
   }
 
+  // Fire-and-forget log to Firebase (non-blocking)
+  if (env.FIREBASE_API_KEY) {
+    const isMore = previousIdeas.length > 0;
+    ctx.waitUntil(logSparkSearch(topic, result.ideas.length, isMore, env.FIREBASE_API_KEY));
+  }
+
   return new Response(JSON.stringify(result), {
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   });
+}
+
+// ============================================================
+// FIREBASE LOGGING (Spark Station)
+// ============================================================
+async function logSparkSearch(topic, ideasCount, isMore, apiKey) {
+  try {
+    const url = `https://firestore.googleapis.com/v1/projects/bee-studio-c8d42/databases/(default)/documents/spark_logs?key=${apiKey}`;
+    await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fields: {
+          topic:      { stringValue: topic },
+          ts:         { timestampValue: new Date().toISOString() },
+          ideasCount: { integerValue: String(ideasCount) },
+          isMore:     { booleanValue: isMore },
+        },
+      }),
+    });
+  } catch (err) {
+    console.error('Spark Station Firebase log failed:', err);
+    // Non-fatal — never affects the user response
+  }
 }
 
 // ============================================================
