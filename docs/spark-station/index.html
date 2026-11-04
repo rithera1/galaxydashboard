@@ -887,9 +887,7 @@
             isMore:     { booleanValue: isMore },
           },
         }),
-      }).then(r => {
-        if (!r.ok) r.json().then(e => console.error('logSearch failed:', r.status, e));
-      }).catch(err => console.error('logSearch error:', err));
+      }).catch(() => {}); // fire-and-forget
     }
 
     // ============================================================
